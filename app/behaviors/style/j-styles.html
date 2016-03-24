@@ -1,0 +1,40 @@
+<!--
+This is a behavior that allows passing css into component 
+via an object.
+*background color on paper-buttons fills outside the edges
+for some reason.
+ -->
+ <script>
+ 
+ 	var StyleBehaviors = StyleBehaviors || {};
+ 	StyleBehaviors.JStyles = {
+
+ 		properties: {
+ 			styles: {
+ 				type: Object,
+ 				default: null,
+ 				readOnly: false,
+ 				observer: "setStyles",
+ 				notify: true
+ 			}
+ 		},
+		attached: function(){
+
+			this.setStyles();
+			
+
+		}, setStyles: function(){
+			var id = this.id;
+			if(this.styles !== null && (id !== undefined || id !== null || id != "")){
+				var e = document.querySelector("#"+id);
+				if(e!==null){
+					var styles = this.styles;
+					for(style in styles){
+						e.style[style] = styles[style];
+					}
+				}
+			}
+		}
+ 	};
+ 	
+ </script>

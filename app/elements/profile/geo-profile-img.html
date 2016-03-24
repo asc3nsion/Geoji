@@ -1,0 +1,181 @@
+<!-- 
+This is an element button used as a base for other buttons.
+ text = The text to be displayed on the button
+ icon = The icon to be desplayed on the button
+ iput = This is the id of the component the button will call a method on.
+
+ style of the button is set via j-styles behavior.
+ interaction is set via j-handler.
+ if the button doesn't have an explicit id, one is assigned via auto-id.
+-->
+<!-- components: -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/j-ui/j-button.html">
+<link rel="import" href="../../elements/j-ui/j-profile-img.html">
+<link rel="import" href="../../elements/j-ui/j-dialog.html">
+<link rel="import" href="../../elements/api/imgur-upload.html">
+<!-- behaviors: -->
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/interaction/j-events.html">
+<link rel="import" href="../../behaviors/selection/auto-id.html">
+
+<style is="custom-style">
+	#profilePic {
+	  width: 8%;
+	  height: 8%;
+	  --iron-image-width: 100%;
+	  --iron-image-height: 100%;
+	}
+
+</style>	
+
+<dom-module id= "geo-profile-img">
+	<template>
+		<imgur-upload id="{{assignCtrl('ImgUpload')}}" client-id="c16e7a9d7583546" auto="true"></imgur-upload>
+		<j-profile-img id="profilePic" class="j-profile-img" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
+		<paper-dialog id="{{assignCtrl('profileDialog')}}" modal role="alertdialog">
+			
+			<ul>
+				<li class="userDataInput center"><h1>User Profile</h1></li>
+				<li class="updateProfilePic horizontal">
+					<j-profile-img id="{{assignCtrl('loadProfileImg')}}" class="j-profile-img" url="{{url}}" on-tap="loadProfileImg"></j-profile-img>
+					<!-- <paper-card heading="Change" image="{{url}}" class="white horizontal" on-tap"loadProfileImg"></paper-card> -->
+				</li>
+				<li class="userDataInput center"><input id="{{assignCtrl('ImgInput')}}" type="file" hidden="true"></input></li>
+				<li class="userDataInput center"><input id="{{assignCtrl('NameInput')}}" value="{{userName::input}}"></li>
+				<li class="userDataInput center"><h3>{{email}}</h3></li>
+
+			</ul>
+		  <div class="buttons">
+		  	<paper-button dialog-dismiss on-tap="logoutUser">Log Out</paper-button>
+		    <paper-button dialog-dismiss on-tap="cancelProfileChanges">Cancel</paper-button>
+		    <paper-button dialog-confirm autofocus on-tap="updateUserData">Save</paper-button>
+		  </div>
+		</paper-dialog>
+	</template>
+</dom-module>
+
+<script>
+	// I pass the button handler property from the base element, defined as the input
+	// The call back is made via document.querySelector on the input element name.
+	Polymer({		
+		is: "geo-profile-img",
+		properties: {
+			url:{
+				type: String,
+				value:""
+			},
+			provider:{
+				type: String,
+				value:"",
+				observer: "providerStyle",
+        		notify: true
+			},
+			userName:{
+				type: String,
+				value:""
+			},
+			email:{
+				type: String,
+				value:""
+			},
+			customName:{
+				type: String,
+				value:""
+			},
+			customUrl:{
+				type: String,
+				value:""
+			},
+			update:{
+				type: Boolean,
+				value: false,
+				observer: "updateUserData",
+				notify: true
+			},
+			text:{
+				type: String,
+				value:""
+			},
+			icon:{
+				type: String,
+				value:""
+			},
+			input:{
+				type: String,
+				value:""
+			}
+		},
+
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId],
+
+		ready: function(){
+			app.elements.profileDialog = this.id;
+		},
+		attached: function(){
+
+			var e = this.getElem(this.ctrls.ImgInput);
+			var p = this.getElem(this.ctrls.ImgUpload);
+			var n = this.getElem(this.ctrls.NameInput);
+			var self = this;
+
+			e.addEventListener('change', function() {
+            	p.file = this.files[0];
+	            console.log(e.file);
+	        });
+			document.addEventListener('imgur-upload-success', function(e) {
+	          console.log(e);
+	          self.url = e.detail.link;
+	          self.customUrl = e.detail.link;
+	        });
+	        document.addEventListener('imgur-upload-failure', function(e) {
+	          console.log(e);
+	          alert(e.detail.data.error);
+	        });
+	        n.addEventListener('change', function(e) {
+	        	self.customName = this.value;
+	        });
+		},
+		setURL: function(url){
+			this.url = url;
+		},
+		providerStyle: function(){
+			this.addClass(this.provider);
+		},
+		dialogHandler: function(){
+			var e = this.getElem(this.ctrls.profileDialog);
+			this.userName = app.data.userName;
+			this.email = app.data.email;
+			e.toggle();
+		},
+		saveUserData: function(){
+			this.update = true;
+		},
+		updateUserData: function(){
+			var e = this.getElem(this.ctrls.NameInput);
+			if(e !== null && this.customName !== ""){
+				app.setUserData("customName", e.value);
+			}
+			if(this.customUrl !== ""){
+				app.setUserData("customProfileImg", this.customUrl);
+			}
+		},
+		logoutUser: function(){
+			app.logout();
+		},
+		cancelProfileChanges: function(){
+			var nameInput = this.getElem(this.ctrls.NameInput);
+			
+			nameInput.value = app.data.userName;
+			this.url = app.data.profileImg;
+		},
+		loadProfileImg: function(){
+			this.fireJMouseEvent(this.ctrls.ImgInput, "click");
+		},
+		_updateCustomName: function(){
+			
+		}
+
+	});
+</script>

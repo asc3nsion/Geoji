@@ -1,0 +1,98 @@
+/*
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+
+
+paper-button.theme {
+  background: #f50057;
+}
+
+paper-button.theme:hover {
+  background: #ff80ab;
+}
+
+google-map {
+  margin: auto;
+  padding: 5px;
+  width:500px;
+  height: 300px;
+}
+
+body {
+  background-color: #F0F4C3;
+  font-family: 'Droid Sans Mono', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #212121;
+}
+
+ul{
+  list-style-type: none;
+}
+
+li.userDataInput{
+    margin: 10px 0;
+}
+
+.updateProfilePic {
+    margin: auto;
+    padding: 5px;
+    width: 20vw;
+    --iron-image-width: 100%;
+
+}
+
+.center{
+  @apply(--layout);
+  text-align: center;
+  align-items:center;
+  -webkit-align-items: center;
+  justify-content:center;
+  -webkit-justify-content:center;
+}
+
+.horizontal {
+  @apply(--layout-horizontal);
+}
+
+.justified {
+  @apply(--layout-justified);
+}
+
+.quarterHeight {
+  height: 25%;
+}
+
+.inlineOneEighth {
+  display: inline-block;
+  width: 22.5%;
+}
+
+.inlineOneFourth {
+  display: inline-block;
+  width: 24.3%;
+}
+
+.inlineHalf {
+  display: inline-block;
+  width: 48.6%;
+}
+
+.inlineOneThird {
+  display: inline-block;
+  width: 31.8%;
+}
+
+.inlineTwoThirds {
+  display: inline-block;
+  width: 65%;
+}
+
+.inlineThreeEighths {
+  display: inline-block;
+  width: 75%;
+}

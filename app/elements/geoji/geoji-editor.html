@@ -1,0 +1,128 @@
+<!-- 
+This is an element button used as a base for other buttons.
+ text = The text to be displayed on the button
+ icon = The icon to be desplayed on the button
+ iput = This is the id of the component the button will call a method on.
+
+ style of the button is set via j-styles behavior.
+ interaction is set via j-handler.
+ if the button doesn't have an explicit id, one is assigned via auto-id.
+-->
+<!-- components: -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../elements/j-ui/j-button.html">
+<link rel="import" href="../../elements/j-ui/j-profile-img.html">
+<link rel="import" href="../../elements/j-ui/j-dialog.html">
+<link rel="import" href="../../elements/api/imgur-upload.html">
+<!-- behaviors: -->
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/selection/auto-id.html">
+
+<style is="custom-style">
+
+</style>	
+
+<dom-module id= "geoji-editor">
+	<template>
+		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
+		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
+		  <div class="card-content">{{detail}}</div>
+		  <google-map 
+		  id="{{assignCtrl('map')}}"
+		  latitude="{{currentLatitude}}" 
+		  longitude="{{currentLongitude}}" 
+		  min-zoom="9" 
+		  max-zoom="30"
+          language="en" 
+          api-key="AIzaSyCgmlzQ8iH-U2KDt2mhXJbZvQm-KB5dWSo"
+          clickEvents="true" 
+          google-map-dblclick="placeMarker"
+          fitToMarkers="true"
+          zoom="22" >
+		  <google-map-marker id=i"{{assignCtrl('initialMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
+		                     draggable="true" drag-events></google-map-marker></google-map>
+
+		  <div class="card-actions">
+		    <paper-button on-tap="placeMarker">Start</paper-button>
+		    </paper-icon-button>
+		  </div>
+		</paper-card>
+
+	</template>
+</dom-module>
+
+<script>
+	// I pass the button handler property from the base element, defined as the input
+	// The call back is made via document.querySelector on the input element name.
+	Polymer({		
+		is: "geoji-editor",
+		properties: {
+			cardImg: {
+				type: String,
+				value: ""
+			},
+			heading: {
+				type: String,
+				value: "GEOJI"
+			},
+			detail: {
+				type: String,
+				value: ""
+			},
+			description: {
+				type: String,
+				value: ""
+			},
+			currentLongitude: {
+				type: String
+			},
+			currentLatitude: {
+				type: String
+			}
+			
+		},
+
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+
+		ready: function(){
+
+		},
+		attached: function(){
+			var map = this.getElem(this.ctrls.map);
+			map.resize();
+
+			// var e = this.getElem(this.ctrls.profileImgInput);
+			// var p = this.getElem(this.ctrls.profileImgUpload);
+			// var self = this;
+
+			// e.addEventListener('change', function() {
+   //          	p.file = this.files[0];
+	  //           console.log(e.file);
+	  //       });
+			// document.addEventListener('imgur-upload-success', function(e) {
+	  //         console.log(e);
+	  //         self.url = e.detail.link;
+	  //         self.customUrl = e.detail.link;
+	  //       });
+	  //       document.addEventListener('imgur-upload-failure', function(e) {
+	  //         console.log(e);
+	  //         alert(e.detail.data.error);
+	  //       });
+		},
+		placeMarker: function(location){
+			console.log("place a map marker");
+			var map = this.getElem(this.ctrls.map);
+			var marker = document.createElement('google-map-marker');
+			marker.setAttribute('latitude', 37.78);
+			marker.setAttribute('longitude', -122.39);
+			marker.draggable = "true";
+			Polymer.dom(map).appendChild(marker);
+		},
+		_getCurrentLocation: function(){
+			console.log("getting current location.");
+		}
+
+	});
+</script>
