@@ -29,6 +29,10 @@ then the events table can be updated.
  			jCallbacks: {
  				type: Object,
  				value: {}
+ 			},
+ 			openEvents: {
+ 				type: Object,
+ 				value: {}
  			}
  		},
  		attached: function(){
@@ -77,6 +81,12 @@ then the events table can be updated.
 		      evt.initEvent(event, true, false);
 		      e.dispatchEvent(evt);
 		   }
+ 		},
+ 		addOpenEvent: function(key, val){
+ 			this.openEvents[key] = val;
+ 		},
+ 		removeOpenEvent: function(key){
+ 			delete(this.openEvents[key]);
  		},
  		_jEventHandler: function(){
 		

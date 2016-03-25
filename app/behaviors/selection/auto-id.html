@@ -145,10 +145,10 @@ makeId = creates and returns a unique id.
 			return uid;
 		},
 		assignCtrl: function(name){
-			console.log(name);
+			//console.log(name);
 			var uid = this.makeId();
 			var ctrlNum = this.id + "_" + uid;
-			console.log("assigning ctrl " + ctrlNum);
+			//console.log("assigning ctrl " + ctrlNum);
 
 			return this.storeCtrl(name, ctrlNum);
 		},
@@ -167,7 +167,7 @@ makeId = creates and returns a unique id.
 		},
 		ctrlSet: function(){
 
-			console.log(this.name);
+			//console.log(this.name);
 			//console.log(this.ctrl + " " + this.setCtrl);
 			// if(this.setCtrl !== ""){
 			// 	console.log("ctrl has been set to: " + this.setCtrl);

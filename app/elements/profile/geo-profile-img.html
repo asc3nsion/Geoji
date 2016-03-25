@@ -121,13 +121,22 @@ This is an element button used as a base for other buttons.
 			var self = this;
 
 			e.addEventListener('change', function() {
+				// Here I am setting the imgur file and waiting for 
+				// success response.  So I need to create an open 
+				// event for the listener locally.
+				self.addOpenEvent('imgur-upload-success', true);
             	p.file = this.files[0];
 	            console.log(e.file);
 	        });
 			document.addEventListener('imgur-upload-success', function(e) {
-	          console.log(e);
-	          self.url = e.detail.link;
-	          self.customUrl = e.detail.link;
+
+			  if(self.openEvents['imgur-upload-success']){
+				  console.log(e);
+			      self.url = e.detail.link;
+			      self.customUrl = e.detail.link;
+			      self.removeOpenEvent['imgur-upload-success'];
+			  }
+
 	        });
 	        document.addEventListener('imgur-upload-failure', function(e) {
 	          console.log(e);
@@ -172,9 +181,6 @@ This is an element button used as a base for other buttons.
 		},
 		loadProfileImg: function(){
 			this.fireJMouseEvent(this.ctrls.ImgInput, "click");
-		},
-		_updateCustomName: function(){
-			
 		}
 
 	});

@@ -16,7 +16,8 @@
     "social-media-icons": "^1.0.3",
     "paper-dialog-behavior": "PolymerElements/paper-dialog-behavior#^1.2.0",
     "google-map": "GoogleWebComponents/google-map#^1.1.10",
-    "geo-location": "^1.0.3"
+    "geo-location": "^1.0.3",
+    "cropperjs": "^0.7.0"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
