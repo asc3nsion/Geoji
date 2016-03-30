@@ -1,5 +1,5 @@
 <!--
-This is a behavior that allows attaches auto assignment of id to an element.
+This is a behavior that attaches auto assignment of id to an element.
 This is helpful in having full access of multiple instances of objects.
 HardId enables a check on whether or not the id is system created.
 
@@ -31,6 +31,10 @@ assignElem = creates returns a new id, and adds it to elems table.
 assignClass = method used for passing classes into child elements.
 
 makeId = creates and returns a unique id.
+
+ctrls = A table for ctrl elements, controlled locally.
+
+asignCtrl = Assigns unique id, and adds to ctrls table.
 
  -->
 
@@ -114,7 +118,7 @@ makeId = creates and returns a unique id.
 			return str;
 		},
 		addClass: function(cl){
-			console.log("adding class "+ cl);
+			//console.log("adding class "+ cl);
 			var e = this.getSelf();
 
 			if(e !== null){
@@ -176,6 +180,11 @@ makeId = creates and returns a unique id.
 			// 	this.id = assigned[1];
 			// 	parent.ctrls[this.ctrl] = this.id;
 			// }
+			
+		},
+		getCtrl: function(key){
+
+			return this.ctrls[key];
 			
 		},
 		idHandler: function(){

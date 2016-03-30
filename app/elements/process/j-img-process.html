@@ -142,7 +142,7 @@ fixedSize = it the size of the cropped square in pixels.
 
     <imgur-upload id="{{assignCtrl('imgurUpload')}}" client-id="c16e7a9d7583546" auto="true"></imgur-upload>
 
-    <input type="file" id="{{assignCtrl('fileInput')}}" on-change="fileChange" hidden accept="image/x-png, image/gif, image/jpeg" >
+    <input type="file" id="{{assignCtrl('imgInput')}}" on-change="fileChange" hidden accept="image/x-png, image/gif, image/jpeg" >
 	<img id="{{assignCtrl('imgResize')}}" hidden="true">
 
     <div hidden$='{{!file}}'>
@@ -154,10 +154,8 @@ fixedSize = it the size of the cropped square in pixels.
         <!-- <div id="previewSmall" class="previewSmall"></div> -->
 
         <div class="layout horizontal center-justified_"> </div>
-        <!-- <paper-button on-tap='onUpload' raised class=''>Upload</paper-button> -->
 
           <!-- <paper-progress value="{{progress}}"></paper-progress> -->
-
 
       </div>
 
@@ -166,10 +164,10 @@ fixedSize = it the size of the cropped square in pixels.
     </div>
 
     <div class="upload layout horizontal">
-        <paper-button raised class="blue center" on-tap="on_upload_dialog" hidden="{{hideButtons}}">
+        <paper-button id="{{assignCtrl('chooseBtn')}}" raised class="blue center" on-tap="on_upload_dialog" hidden="{{hideButtons}}">
           Choose file
         </paper-button>
-        <paper-button on-tap='onUpload' raised class='' disabled$='{{!file}}' hidden="{{hideButtons}}">
+        <paper-button id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class='' disabled$='{{!file}}' hidden="{{hideButtons}}">
           <iron-icon icon='file-upload'></iron-icon>
         Upload
         </paper-button>
@@ -202,11 +200,11 @@ fixedSize = it the size of the cropped square in pixels.
         },
         imgur: {
         	type: Boolean,
-        	value: true
+        	value: false
         },
         fixed: {
         	type: Boolean,
-        	value: true
+        	value: false
         },
         fixedSize: {
         	type: String,
@@ -219,7 +217,7 @@ fixedSize = it the size of the cropped square in pixels.
       },
       behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId],
       attached: function() {
-      	var input = this.getElem(this.ctrls.fileInput);
+      	var input = this.getElem(this.ctrls.imgInput);
       	var self = this;
         // console.log('ready')
         this.gap = 10;
@@ -253,7 +251,7 @@ fixedSize = it the size of the cropped square in pixels.
         // this.imgNode = document.createElement('img')
       },
       on_upload_dialog: function () {
-        var elem = this.getElem(this.ctrls.fileInput);
+        var elem = this.getElem(this.ctrls.imgInput);
         if(elem && document.createEvent) { // sanity check
           var evt = document.createEvent('MouseEvents');
           evt.initEvent('click', true, false);

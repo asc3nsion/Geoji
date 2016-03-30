@@ -38,19 +38,20 @@ This is an element button used as a base for other buttons.
 			
 			<ul>
 				<li class="userDataInput center"><h1>User Profile</h1></li>
-				<li class="updateProfilePic horizontal">
-					<j-profile-img id="{{assignCtrl('loadProfileImg')}}" class="j-profile-img" url="{{url}}" on-tap="loadProfileImg"></j-profile-img>
+				<li class="horizontal">
+					<j-profile-img id="{{assignCtrl('loadProfileImg')}}" class="updateProfilePic j-profile-img" url="{{url}}" on-tap="loadProfileImg"></j-profile-img>
+					<j-img-process id="{{assignCtrl('imgProcess')}}" imgur="true" fixed="true" fixedSize="200"></j-img-process>
 					<!-- <paper-card heading="Change" image="{{url}}" class="white horizontal" on-tap"loadProfileImg"></paper-card> -->
 				</li>
-				<li class="userDataInput center"><input id="{{assignCtrl('ImgInput')}}" type="file" hidden="true"></input></li>
-				<li class="userDataInput center"><input id="{{assignCtrl('NameInput')}}" value="{{userName::input}}"></li>
+				<li class="userDataInput center"><input id="{{assignCtrl('imgInput')}}" type="file" hidden="true"></input></li>
+				<li class="userDataInput center"><input id="{{assignCtrl('nameInput')}}" value="{{userName::input}}"></li>
 				<li class="userDataInput center"><h3>{{email}}</h3></li>
 
 			</ul>
 		  <div class="buttons">
-		  	<paper-button dialog-dismiss on-tap="logoutUser">Log Out</paper-button>
-		    <paper-button dialog-dismiss on-tap="cancelProfileChanges">Cancel</paper-button>
-		    <paper-button dialog-confirm autofocus on-tap="updateUserData">Save</paper-button>
+		  	<paper-button id="{{assignCtrl('logoutBtn')}}" dialog-dismiss on-tap="logoutUser">Log Out</paper-button>
+		    <paper-button id="{{assignCtrl('cancelBtn')}}" dialog-dismiss on-tap="cancelProfileChanges">Cancel</paper-button>
+		    <paper-button id="{{assignCtrl('saveBtn')}}" dialog-confirm autofocus on-tap="updateUserData" disabled="true">Save</paper-button>
 		  </div>
 		</paper-dialog>
 	</template>
@@ -78,15 +79,19 @@ This is an element button used as a base for other buttons.
 			},
 			email:{
 				type: String,
-				value:""
+				value: null
 			},
 			customName:{
 				type: String,
-				value:""
+				value: null,
+				observer: "_enableSave",
+				notify: true
 			},
 			customUrl:{
 				type: String,
-				value:""
+				value: null,
+				observer: "_enableSave",
+				notify: true
 			},
 			update:{
 				type: Boolean,
@@ -115,9 +120,9 @@ This is an element button used as a base for other buttons.
 		},
 		attached: function(){
 
-			var e = this.getElem(this.ctrls.ImgInput);
+			var e = this.getElem(this.ctrls.imgInput);
 			var p = this.getElem(this.ctrls.ImgUpload);
-			var n = this.getElem(this.ctrls.NameInput);
+			var n = this.getElem(this.ctrls.nameInput);
 			var self = this;
 
 			e.addEventListener('change', function() {
@@ -134,7 +139,7 @@ This is an element button used as a base for other buttons.
 				  console.log(e);
 			      self.url = e.detail.link;
 			      self.customUrl = e.detail.link;
-			      self.removeOpenEvent['imgur-upload-success'];
+			      self.removeOpenEvent('imgur-upload-success');
 			  }
 
 	        });
@@ -162,7 +167,7 @@ This is an element button used as a base for other buttons.
 			this.update = true;
 		},
 		updateUserData: function(){
-			var e = this.getElem(this.ctrls.NameInput);
+			var e = this.getElem(this.ctrls.nameInput);
 			if(e !== null && this.customName !== ""){
 				app.setUserData("customName", e.value);
 			}
@@ -174,13 +179,24 @@ This is an element button used as a base for other buttons.
 			app.logout();
 		},
 		cancelProfileChanges: function(){
-			var nameInput = this.getElem(this.ctrls.NameInput);
+			var nameInput = this.getElem(this.ctrls.nameInput);
 			
 			nameInput.value = app.data.userName;
 			this.url = app.data.profileImg;
 		},
 		loadProfileImg: function(){
-			this.fireJMouseEvent(this.ctrls.ImgInput, "click");
+			var imgProcess = this.getElem(this.ctrls.imgProcess);
+			var profileImg = this.getElem(this.ctrls.loadProfileImg);
+			var imgInput = imgProcess.ctrls.imgInput;
+			this.fireJMouseEvent(imgInput, "click");
+			profileImg.hidden = "true";
+		},
+		_enableSave: function(){
+			console.log("should set dirty..");
+			var e = this.getElem(this.ctrls.saveBtn);
+			if(e !== null){
+				this.getElem(this.ctrls.saveBtn).disabled = false;
+			}
 		}
 
 	});
