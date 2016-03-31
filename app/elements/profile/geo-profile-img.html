@@ -28,25 +28,47 @@ This is an element button used as a base for other buttons.
 	  --iron-image-height: 100%;
 	}
 
+	.avatarSpinner{
+      position: absolute;
+      top: 6px;
+      left: 6px;
+    }
+
 </style>	
 
 <dom-module id= "geo-profile-img">
 	<template>
-		<imgur-upload id="{{assignCtrl('ImgUpload')}}" client-id="c16e7a9d7583546" auto="true"></imgur-upload>
-		<j-profile-img id="profilePic" class="j-profile-img" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
+		<!-- <imgur-upload id="{{assignCtrl('ImgUpload')}}" client-id="c16e7a9d7583546" auto="true"></imgur-upload> -->
+		<div>
+			<j-profile-img id="profilePic" class="j-profile-img" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
+			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange avatarSpinner"></paper-spinner-lite>
+		</div>
+		
 		<paper-dialog id="{{assignCtrl('profileDialog')}}" modal role="alertdialog">
 			
 			<ul>
 				<li class="userDataInput center"><h1>User Profile</h1></li>
 				<li class="horizontal">
-					<j-profile-img id="{{assignCtrl('loadProfileImg')}}" class="updateProfilePic j-profile-img" url="{{url}}" on-tap="loadProfileImg"></j-profile-img>
-					<j-img-process id="{{assignCtrl('imgProcess')}}" imgur="true" fixed="true" fixedSize="200"></j-img-process>
+					<j-profile-img 
+					id="{{assignCtrl('loadProfileImg')}}" 
+					class="updateProfilePic j-profile-img" 
+					url="{{url}}" 
+					on-tap="loadProfileImg"
+					></j-profile-img>
+					<j-img-process 
+					id="{{assignCtrl('imgProcess')}}" 
+					imgur="true" 
+					fixed="true" 
+					fixedSize="200"
+					width="200"
+					height="200" 
+					hideButtons="true"
+					></j-img-process>
 					<!-- <paper-card heading="Change" image="{{url}}" class="white horizontal" on-tap"loadProfileImg"></paper-card> -->
 				</li>
 				<li class="userDataInput center"><input id="{{assignCtrl('imgInput')}}" type="file" hidden="true"></input></li>
 				<li class="userDataInput center"><input id="{{assignCtrl('nameInput')}}" value="{{userName::input}}"></li>
 				<li class="userDataInput center"><h3>{{email}}</h3></li>
-
 			</ul>
 		  <div class="buttons">
 		  	<paper-button id="{{assignCtrl('logoutBtn')}}" dialog-dismiss on-tap="logoutUser">Log Out</paper-button>
@@ -110,6 +132,10 @@ This is an element button used as a base for other buttons.
 			input:{
 				type: String,
 				value:""
+			},
+			editProfileImg:{
+				type: Boolean,
+				value: false
 			}
 		},
 
@@ -122,24 +148,31 @@ This is an element button used as a base for other buttons.
 
 			var e = this.getElem(this.ctrls.imgInput);
 			var p = this.getElem(this.ctrls.ImgUpload);
-			var n = this.getElem(this.ctrls.nameInput);
+			var nameInput = this.getElem(this.ctrls.nameInput);
+			var imageProcess = this.getElem(this.ctrls.imgProcess);
+			var processInput = this.getElem(imageProcess.ctrls.imgInput);
+			var progress = this.getElem(this.ctrls.progressSpinner);
 			var self = this;
 
-			e.addEventListener('change', function() {
+			processInput.addEventListener('change', function() {
 				// Here I am setting the imgur file and waiting for 
 				// success response.  So I need to create an open 
 				// event for the listener locally.
 				self.addOpenEvent('imgur-upload-success', true);
-            	p.file = this.files[0];
-	            console.log(e.file);
+            	//p.file = this.files[0];
+	            console.log(this.files[0]);
+
 	        });
 			document.addEventListener('imgur-upload-success', function(e) {
-
+				
 			  if(self.openEvents['imgur-upload-success']){
 				  console.log(e);
 			      self.url = e.detail.link;
 			      self.customUrl = e.detail.link;
 			      self.removeOpenEvent('imgur-upload-success');
+			      self.editProfileImg = false;
+			      progress.active = false;
+			      self.update = true;
 			  }
 
 	        });
@@ -147,7 +180,7 @@ This is an element button used as a base for other buttons.
 	          console.log(e);
 	          alert(e.detail.data.error);
 	        });
-	        n.addEventListener('change', function(e) {
+	        nameInput.addEventListener('change', function(e) {
 	        	self.customName = this.value;
 	        });
 		},
@@ -164,15 +197,38 @@ This is an element button used as a base for other buttons.
 			e.toggle();
 		},
 		saveUserData: function(){
+
+			if(this.editProfileImg){
+				this.editProfileImg = false;
+			}
+
 			this.update = true;
 		},
 		updateUserData: function(){
-			var e = this.getElem(this.ctrls.nameInput);
-			if(e !== null && this.customName !== ""){
-				app.setUserData("customName", e.value);
-			}
-			if(this.customUrl !== ""){
-				app.setUserData("customProfileImg", this.customUrl);
+			var nameInput = this.getElem(this.ctrls.nameInput);
+			var imgProcess = this.getElem(this.ctrls.imgProcess);
+			var profileImg = this.getElem(this.ctrls.loadProfileImg);
+			var profilePic = this.getElem("profilePic");
+			var progress = this.getElem(this.ctrls.progressSpinner);
+
+			if(this.editProfileImg){
+				var uploadBtn = imgProcess.ctrls.uploadBtn;
+				//profilePic.hidden = "true";
+				progress.active = "true";
+				this.fireJMouseEvent(uploadBtn, "click");
+			}else{
+
+				if(nameInput !== null && this.customName !== ""){
+					app.setUserData("customName", nameInput.value);
+				}
+				if(this.customUrl !== ""){
+					app.setUserData("customProfileImg", this.customUrl);
+					if(profilePic !== null && progress !== null){
+						console.log(progress);
+						//profilePic.hidden = "false";
+						
+					}
+				}
 			}
 		},
 		logoutUser: function(){
@@ -190,9 +246,10 @@ This is an element button used as a base for other buttons.
 			var imgInput = imgProcess.ctrls.imgInput;
 			this.fireJMouseEvent(imgInput, "click");
 			profileImg.hidden = "true";
+			this._enableSave();
+			this.editProfileImg = true;
 		},
 		_enableSave: function(){
-			console.log("should set dirty..");
 			var e = this.getElem(this.ctrls.saveBtn);
 			if(e !== null){
 				this.getElem(this.ctrls.saveBtn).disabled = false;

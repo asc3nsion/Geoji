@@ -11,6 +11,7 @@ This is an element button used as a base for other buttons.
 <!-- components: -->
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-marker.html">
 <link rel="import" href="../../elements/j-ui/j-button.html">
 <link rel="import" href="../../elements/j-ui/j-profile-img.html">
 <link rel="import" href="../../elements/j-ui/j-dialog.html">
@@ -42,7 +43,7 @@ This is an element button used as a base for other buttons.
           fitToMarkers="true"
           zoom="22" >
 		  <google-map-marker id=i"{{assignCtrl('initialMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
-		                     draggable="true" drag-events></google-map-marker></google-map>
+		                     draggable="true" drag-events="true" click-events="true"></google-map-marker></google-map>
 
 		  <div class="card-actions">
 		    <paper-button on-tap="placeMarker">Start</paper-button>
@@ -80,6 +81,10 @@ This is an element button used as a base for other buttons.
 			},
 			currentLatitude: {
 				type: String
+			},
+			markerArray: {
+				type: Array,
+				value:[]
 			}
 			
 		},
@@ -112,13 +117,41 @@ This is an element button used as a base for other buttons.
 	  //       });
 		},
 		placeMarker: function(location){
+			var self = this;
+			var selector = this.getElem("selector");
+			var id = this.makeId();
 			console.log("place a map marker");
+			console.log(this.currentLatitude);
+			console.log(this.currentLongitude);
 			var map = this.getElem(this.ctrls.map);
 			var marker = document.createElement('google-map-marker');
-			marker.setAttribute('latitude', 37.78);
-			marker.setAttribute('longitude', -122.39);
-			marker.draggable = "true";
+			marker.setAttribute('latitude', this.currentLatitude);
+			marker.setAttribute('longitude', this.currentLongitude);
+			marker.setAttribute('drag-events', true);
+			marker.setAttribute('click-events', true);
+			marker.draggable = true;
+			marker.animation = "DROP";
+			marker.id = this.assignCtrl(id);
+		
 			Polymer.dom(map).appendChild(marker);
+
+			setTimeout(function(){
+		        var elem = self.getElem(marker.id);
+		        self.markerArray.push(marker.id);
+				console.log(elem);
+				elem.addEventListener('google-map-marker-click', function(e) {
+				    console.log(e);
+				});
+				elem.addEventListener('google-map-marker-dragend', function(e) {
+				    console.log(e);
+				});
+		    }, 50);
+		},
+		markerHandler: function(){
+			console.log("marker clicked");
+		},
+		markerUpdater: function(){
+			console.log("marker moved");
 		},
 		_getCurrentLocation: function(){
 			console.log("getting current location.");

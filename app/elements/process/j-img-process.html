@@ -208,11 +208,19 @@ fixedSize = it the size of the cropped square in pixels.
         },
         fixedSize: {
         	type: String,
-        	value: "100"
+        	value: null
         },
         hideButtons: {
         	type: Boolean,
-        	value: false
+        	value: true
+        },
+        width: {
+        	type: String,
+        	value: null
+        },
+        height: {
+        	type: String,
+        	value: null
         }
       },
       behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId],
@@ -234,7 +242,9 @@ fixedSize = it the size of the cropped square in pixels.
         }
 
         document.addEventListener('imgur-upload-success', function(e) {
+
         	if(self.openEvents['imgur-upload-success']){
+        		console.log("UPLOAD IMG PROCESS SUCCESS has open event");
         		console.log(e);
         		self.removeOpenEvent['imgur-upload-success'];
         	}
@@ -288,6 +298,8 @@ fixedSize = it the size of the cropped square in pixels.
             //  Set the image to be cropped. The container size will fit the image.
             var img = new Image();
             img.src = URL.createObjectURL(file);
+
+
             // this.image = url;
             var self = this;
             if (!this.imageNode) {
@@ -295,6 +307,13 @@ fixedSize = it the size of the cropped square in pixels.
               this.imageNode = imgNode;
               this.domNode.appendChild(this.imageNode);
               this.imageNode.onload = function(){
+              	if(self.width !== null && self.height !== null){
+              		if(this.clientWidth < parseInt(self.width) || this.clientHeigth < parseInt(self.height)){
+              			self.resizeImage(this, parseInt(self.width), parseInt(self.height));
+              		}
+              	}
+              	console.log(this.clientWidth);
+              	console.log("imgNode");
                 self._setSize(this.offsetWidth, this.offsetHeight);
                 if (self.preview) {
                   util.each(self.preview, function(node) {
