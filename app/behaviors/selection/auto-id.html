@@ -125,6 +125,12 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 				e.className += ' ' + cl;
 			}	
 		},
+		assignClass: function(elem, cl){
+
+			if(elem !== null){
+				elem.className += ' ' + cl;
+			}	
+		},
 		setClass: function(cl){
 			var e = this.getSelf();
 
@@ -199,10 +205,6 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 			// 	console.log(e);
 			// }
 			
-		},
-		assignClass: function(id, cl){
-			var e = document.querySelector("#"+id);
-			e.className += ' ' + cl;	 
 		},
 		makeId: function(){
 			var uid = (new Date().getTime()).toString(36) + Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);

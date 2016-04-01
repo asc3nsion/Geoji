@@ -21,7 +21,20 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 
-<style is="custom-style">
+<style>
+
+paper-icon-button.createMarker #icon {
+
+	left: 2vw;
+  	padding: 5px;
+    width: 5vw;
+    height: 5vh;
+ }
+
+ paper-icon-button.createMarker{
+    width: 10vw;
+    height: 8vh;
+ }
 
 </style>	
 
@@ -41,13 +54,17 @@ This is an element button used as a base for other buttons.
           clickEvents="true" 
           google-map-dblclick="placeMarker"
           fitToMarkers="true"
-          zoom="22" >
+          zoom="21"
+          mapType="satellite" >
 		  <google-map-marker id=i"{{assignCtrl('initialMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
-		                     draggable="true" drag-events="true" click-events="true"></google-map-marker></google-map>
+		                     draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker></google-map>
 
 		  <div class="card-actions">
-		    <paper-button on-tap="placeMarker">Start</paper-button>
+		    <paper-icon-button on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker"></paper-icon-button>
 		    </paper-icon-button>
+		    <paper-icon-button on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker"></paper-icon-button>
+		    </paper-icon-button>
+		    <paper-icon-button on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker"></paper-icon-button>
 		  </div>
 		</paper-card>
 
@@ -118,7 +135,6 @@ This is an element button used as a base for other buttons.
 		},
 		placeMarker: function(location){
 			var self = this;
-			var selector = this.getElem("selector");
 			var id = this.makeId();
 			console.log("place a map marker");
 			console.log(this.currentLatitude);
@@ -146,6 +162,79 @@ This is an element button used as a base for other buttons.
 				    console.log(e);
 				});
 		    }, 50);
+		},
+		createMarker: function(){
+			var map = this.getElem(this.ctrls.map);
+			var marker = document.createElement('google-map-marker');
+			marker.setAttribute('latitude', this.currentLatitude);
+			marker.setAttribute('longitude', this.currentLongitude);
+			marker.setAttribute('drag-events', true);
+			marker.setAttribute('click-events', true);
+			marker.draggable = true;
+			marker.animation = "DROP";
+			marker.id = this.assignCtrl(id);
+
+			return marker;
+		},
+		setMarkerListeners: function(id, click, dragend){
+
+			var self = this;
+
+			setTimeout(function(){
+		        var elem = self.getElem(id);
+		        self.markerArray.push(id);
+
+				elem.addEventListener('google-map-marker-click', click);
+				elem.addEventListener('google-map-marker-dragend',dragend);
+		    }, 50);
+		},
+		txtMarker: function(){
+			var map = this.getElem(this.ctrls.map);
+			var marker = this.createMarker();
+			marker.icon = "/images/mascot-txt.png";
+
+			var onClick = function(e) {
+				    console.log(e);
+				};
+			var onDragEnd = function(e) {
+				    console.log(e);
+				};
+
+			Polymer.dom(map).appendChild(marker);
+			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+
+		},
+		imgMarker: function(){
+			var map = this.getElem(this.ctrls.map);
+			var marker = this.createMarker();
+			marker.icon = "/images/mascot-img.png";
+
+			var onClick = function(e) {
+				    console.log(e);
+				};
+			var onDragEnd = function(e) {
+				    console.log(e);
+				};
+				
+			Polymer.dom(map).appendChild(marker);
+			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+
+		},
+		vidMarker: function(){
+			var map = this.getElem(this.ctrls.map);
+			var marker = this.createMarker();
+			marker.icon = "/images/mascot-vid.png";
+
+			var onClick = function(e) {
+				    console.log(e);
+				};
+			var onDragEnd = function(e) {
+				    console.log(e);
+				};
+				
+			Polymer.dom(map).appendChild(marker);
+			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+
 		},
 		markerHandler: function(){
 			console.log("marker clicked");
