@@ -57,12 +57,14 @@ paper-icon-button.createMarker #icon {
  	color:red;
  }
 
- paper-input-container.createMarker{
+ paper-input-container{
  	--paper-input-container-color: black;
+ 	--paper-input-container-invalid-color: red;
+ 	--paper-input-container-valid-color: green;
  	width: 50%;
  }
  paper-card.emailList{
- 	float: right;
+ 	display: inline-block;
  }
 
 </style>	
@@ -78,12 +80,12 @@ paper-icon-button.createMarker #icon {
 			  <input id="{{assignCtrl('title')}}" class="createMarker" is="iron-input" bind-value="{{title}}">
 			  <paper-icon-button suffix icon="clear"></paper-icon-button>
 			</paper-input-container>
-			<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" hidden="true">
+			<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
 			  <label>Add Email</label>
-			  <input class="createMarker" is="gold-email-input" bind-value="">
-			  <paper-icon-button suffix icon="add"></paper-icon-button>
+			  <input id="{{assignCtrl('emailInput')}}" is="iron-input" bind-value="">
+			  <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
 			</paper-input-container>
-			<paper-card id="{{assignCtrl('list')}}">dsfsdf</paper-card>
+			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
 			<!-- <gold-email-input id="{{assignCtrl('email')}}" class="createMarker" label="add email" hidden="true"></gold-email-input> -->
 		  </div>
 		  <google-map 
@@ -160,6 +162,20 @@ paper-icon-button.createMarker #icon {
 			geoji: {
 				type: Object,
 				value: {}
+			},
+			emailValue: {
+				type: String,
+				value: ""
+			},
+			emailList: {
+				type: Array,
+				value: []
+			},
+			emailString: {
+				type: String,
+				value: "",
+				observer: "_updateEmails",
+				notify: true
 			}
 			
 		},
@@ -342,6 +358,30 @@ paper-icon-button.createMarker #icon {
 
 		  return latLngPosition;
 		},
+		addEmail: function(){
+			var email = this.getElem(this.ctrls.emailInput);
+			console.log(email.value);
+			//this.emailList.push(email.value);
+			if(this.emailValidate()){
+				email.valid = true;
+				this.emailString += "  " + email.value + ",";
+				email.value = "";
+			}else{
+				email.invalid = true;
+			}
+			
+
+		},
+		emailValidate: function(){
+			var email = this.getElem(this.ctrls.emailInput);
+			console.log("validate");
+			if(email.value.includes('@')&&email.value.includes('.')){
+				return true;
+			}else{
+				return false;
+			}
+
+		},
 		_getCurrentLocation: function(){
 			console.log("getting current location.");
 		},
@@ -359,6 +399,13 @@ paper-icon-button.createMarker #icon {
 				this.geoji.private = pToggle.checked;
 				this.getElem(this.ctrls.email).hidden = !pToggle.checked;
 			}
+		},
+		_updateEmails: function(){
+			console.log("helleo");
+			// for(str in this.emailList){
+			// 	console.log(str);
+			// 	this.emailString += " " + str;
+			// }
 		}
 
 	});
