@@ -23,17 +23,46 @@ This is an element button used as a base for other buttons.
 
 <style>
 
+google-map {
+    height: 30vh;
+    width: 60vw;
+}
+
 paper-icon-button.createMarker #icon {
 
 	left: 2vw;
   	padding: 5px;
-    width: 5vw;
-    height: 5vh;
+    width: 100%;
+    height: 100%;
  }
 
  paper-icon-button.createMarker{
-    width: 10vw;
+    width: 20%;
     height: 8vh;
+ }
+
+ input.createMarker{
+ 	margin: 1% 0;
+    bottom:10%;
+    width: 50%;
+ }
+
+ paper-button.saveGeoji{
+ 	float: right;
+    margin: 2% 0 10px 10px;
+ }
+
+ gold-email-input.createMarker{
+ 	background-color: orange;
+ 	color:red;
+ }
+
+ paper-input-container.createMarker{
+ 	--paper-input-container-color: black;
+ 	width: 50%;
+ }
+ paper-card.emailList{
+ 	float: right;
  }
 
 </style>	
@@ -42,7 +71,21 @@ paper-icon-button.createMarker #icon {
 	<template>
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
-		  <div class="card-content">{{detail}}</div>
+		  <div class="card-content">
+		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}">Private</paper-toggle-button>
+		  	<paper-input-container class="createMarker">
+			  <label>Title</label>
+			  <input id="{{assignCtrl('title')}}" class="createMarker" is="iron-input" bind-value="{{title}}">
+			  <paper-icon-button suffix icon="clear"></paper-icon-button>
+			</paper-input-container>
+			<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" hidden="true">
+			  <label>Add Email</label>
+			  <input class="createMarker" is="gold-email-input" bind-value="">
+			  <paper-icon-button suffix icon="add"></paper-icon-button>
+			</paper-input-container>
+			<paper-card id="{{assignCtrl('list')}}">dsfsdf</paper-card>
+			<!-- <gold-email-input id="{{assignCtrl('email')}}" class="createMarker" label="add email" hidden="true"></gold-email-input> -->
+		  </div>
 		  <google-map 
 		  id="{{assignCtrl('map')}}"
 		  latitude="{{currentLatitude}}" 
@@ -56,15 +99,14 @@ paper-icon-button.createMarker #icon {
           fitToMarkers="true"
           zoom="21"
           mapType="satellite" >
-		  <google-map-marker id=i"{{assignCtrl('initialMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
+		  <google-map-marker id="{{assignCtrl('targetMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
 		                     draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker></google-map>
 
 		  <div class="card-actions">
 		    <paper-icon-button on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker"></paper-icon-button>
-		    </paper-icon-button>
 		    <paper-icon-button on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker"></paper-icon-button>
-		    </paper-icon-button>
 		    <paper-icon-button on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker"></paper-icon-button>
+		    <paper-button id="{{assignCtrl('save')}}" class="saveGeoji" raised on-tap="">SAVE</paper-button>
 		  </div>
 		</paper-card>
 
@@ -77,6 +119,18 @@ paper-icon-button.createMarker #icon {
 	Polymer({		
 		is: "geoji-editor",
 		properties: {
+			title: {
+				type: String,
+				value: "",
+				observer: "_setTitle",
+				notify: true
+			},
+			private: {
+				type: Boolean,
+				value: false,
+				observer: "_setPrivate",
+				notify: true
+			},
 			cardImg: {
 				type: String,
 				value: ""
@@ -102,6 +156,10 @@ paper-icon-button.createMarker #icon {
 			markerArray: {
 				type: Array,
 				value:[]
+			},
+			geoji: {
+				type: Object,
+				value: {}
 			}
 			
 		},
@@ -133,38 +191,9 @@ paper-icon-button.createMarker #icon {
 	  //         alert(e.detail.data.error);
 	  //       });
 		},
-		placeMarker: function(location){
-			var self = this;
-			var id = this.makeId();
-			console.log("place a map marker");
-			console.log(this.currentLatitude);
-			console.log(this.currentLongitude);
-			var map = this.getElem(this.ctrls.map);
-			var marker = document.createElement('google-map-marker');
-			marker.setAttribute('latitude', this.currentLatitude);
-			marker.setAttribute('longitude', this.currentLongitude);
-			marker.setAttribute('drag-events', true);
-			marker.setAttribute('click-events', true);
-			marker.draggable = true;
-			marker.animation = "DROP";
-			marker.id = this.assignCtrl(id);
-		
-			Polymer.dom(map).appendChild(marker);
-
-			setTimeout(function(){
-		        var elem = self.getElem(marker.id);
-		        self.markerArray.push(marker.id);
-				console.log(elem);
-				elem.addEventListener('google-map-marker-click', function(e) {
-				    console.log(e);
-				});
-				elem.addEventListener('google-map-marker-dragend', function(e) {
-				    console.log(e);
-				});
-		    }, 50);
-		},
 		createMarker: function(){
 			var map = this.getElem(this.ctrls.map);
+			var id = this.makeId();
 			var marker = document.createElement('google-map-marker');
 			marker.setAttribute('latitude', this.currentLatitude);
 			marker.setAttribute('longitude', this.currentLongitude);
@@ -188,62 +217,148 @@ paper-icon-button.createMarker #icon {
 				elem.addEventListener('google-map-marker-dragend',dragend);
 		    }, 50);
 		},
+		storeMarker: function(id, obj){
+			this.geoji[id] = obj;
+		},
 		txtMarker: function(){
+			var self = this;
 			var map = this.getElem(this.ctrls.map);
 			var marker = this.createMarker();
+			var geoji = this.geoji;
 			marker.icon = "/images/mascot-txt.png";
 
 			var onClick = function(e) {
 				    console.log(e);
 				};
 			var onDragEnd = function(e) {
-				    console.log(e);
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+					var data = geoji[marker.id];
+				    
+				    if(data !== undefined || data !== null){
+				    	data.longitude = latLng.lng();
+				    	data.latitude = latLng.lat();
+				    }
+
+				    console.log(geoji);
 				};
 
 			Polymer.dom(map).appendChild(marker);
 			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+			self.updateMarker(marker);
 
 		},
 		imgMarker: function(){
+			var self = this;
 			var map = this.getElem(this.ctrls.map);
 			var marker = this.createMarker();
+			var geoji = this.geoji;
 			marker.icon = "/images/mascot-img.png";
 
 			var onClick = function(e) {
 				    console.log(e);
 				};
 			var onDragEnd = function(e) {
-				    console.log(e);
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+				    var data = geoji[marker.id];
+				    
+				    if(data !== undefined || data !== null){
+				    	data.longitude = latLng.lng();
+				    	data.latitude = latLng.lat();
+				    }
 				};
 				
 			Polymer.dom(map).appendChild(marker);
 			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+			this.updateMarker(marker);
 
 		},
 		vidMarker: function(){
+			var self = this;
 			var map = this.getElem(this.ctrls.map);
 			var marker = this.createMarker();
+			var geoji = this.geoji;
 			marker.icon = "/images/mascot-vid.png";
 
 			var onClick = function(e) {
 				    console.log(e);
 				};
 			var onDragEnd = function(e) {
-				    console.log(e);
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+				    var data = geoji[marker.id];
+				    
+				    if(data !== undefined || data !== null){
+				    	data.longitude = latLng.lng();
+				    	data.latitude = latLng.lat();
+				    }
 				};
 				
 			Polymer.dom(map).appendChild(marker);
 			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+			this.updateMarker(marker);
 
 		},
-		markerHandler: function(){
-			console.log("marker clicked");
+		updateMarker: function(marker){
+			console.log(marker);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var targetObj = {};
+			var icon = marker.icon;
+			var obj = {};
+
+			if(icon === null){
+				if(icon.search("txt")>0){
+					obj.type = "txt";
+				}else if(icon.search("img")>0){
+					obj.type = "img";
+				}else if(icon.search("vid")>0){
+					obj.type = "vid";
+				}
+			}
+			targetObj.longitude = target.longitude;
+			targetObj.latitude = target.latitude;
+			this.geoji.target = targetObj;
+			obj.private = this.private;
+			obj.latitude = marker.latitude;
+			obj.longitude = marker.longitude;
+			this.geoji[marker.id] = obj;
 		},
-		markerUpdater: function(){
-			console.log("marker moved");
+		pixelOffsetToLatLng: function(offsetx, offsety) {
+		  var map = document.querySelector('google-map').map;
+		  var latlng = map.getCenter();
+		  var scale = Math.pow(2, map.getZoom());
+		  var nw = new google.maps.LatLng(
+		      map.getBounds().getNorthEast().lat(),
+		      map.getBounds().getSouthWest().lng()
+		  );
+
+		  var worldCoordinateCenter = map.getProjection().fromLatLngToPoint(latlng);
+		  var pixelOffset = new google.maps.Point((offsetx/scale) || 0,(offsety/scale) ||0);
+
+		  var worldCoordinateNewCenter = new google.maps.Point(
+		      worldCoordinateCenter.x - pixelOffset.x,
+		      worldCoordinateCenter.y + pixelOffset.y
+		  );
+
+		  var latLngPosition = map.getProjection().fromPointToLatLng(worldCoordinateNewCenter);
+
+		  return latLngPosition;
 		},
 		_getCurrentLocation: function(){
 			console.log("getting current location.");
+		},
+		_setTitle: function(){
+			var title = this.getElem(this.ctrls.title);
+
+			if(title !== null){
+				this.geoji.title = title.value;
+			}
+		},
+		_setPrivate: function(){
+			var pToggle = this.getElem(this.ctrls.public);
+
+			if(pToggle !== null){
+				this.geoji.private = pToggle.checked;
+				this.getElem(this.ctrls.email).hidden = !pToggle.checked;
+			}
 		}
 
 	});
