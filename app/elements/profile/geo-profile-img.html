@@ -63,6 +63,8 @@ This is an element button used as a base for other buttons.
 					width="200"
 					height="200" 
 					hideButtons="true"
+					parentElement="{{getCtrlId('profileDialog')}}"
+					uploadBtn="{{getCtrlId('saveBtn')}}"
 					></j-img-process>
 					<!-- <paper-card heading="Change" image="{{url}}" class="white horizontal" on-tap"loadProfileImg"></paper-card> -->
 				</li>
@@ -150,6 +152,7 @@ This is an element button used as a base for other buttons.
 			var p = this.getElem(this.ctrls.ImgUpload);
 			var nameInput = this.getElem(this.ctrls.nameInput);
 			var imageProcess = this.getElem(this.ctrls.imgProcess);
+			var uploadBtn = imageProcess.uploadBtn;
 			var processInput = this.getElem(imageProcess.ctrls.imgInput);
 			var progress = this.getElem(this.ctrls.progressSpinner);
 			var self = this;
@@ -165,14 +168,15 @@ This is an element button used as a base for other buttons.
 	        });
 			document.addEventListener('imgur-upload-success', function(e) {
 				
-			  if(self.openEvents['imgur-upload-success']){
-				  console.log(e);
-			      self.url = e.detail.link;
-			      self.customUrl = e.detail.link;
-			      self.removeOpenEvent('imgur-upload-success');
-			      self.editProfileImg = false;
-			      progress.active = false;
-			      self.update = true;
+			  if((self.openEvents['imgur-upload-success'])&&(self.ctrls.saveBtn === uploadBtn)){
+			  	console.log("GEO_PROFILE");
+				console.log(e);
+			    self.url = e.detail.link;
+			    self.customUrl = e.detail.link;
+			    self.removeOpenEvent('imgur-upload-success');
+			    self.editProfileImg = false;
+			    progress.active = false;
+			    self.update = true;
 			  }
 
 	        });

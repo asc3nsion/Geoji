@@ -228,12 +228,22 @@ fixedSize = it the size of the cropped square in pixels.
         height: {
         	type: String,
         	value: null
+        },
+        parentElement: {
+          type: String
+        },
+        uploadBtn: {
+          type: String
+        },
+        progressSpinner: {
+          type: String
         }
       },
       behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId],
       attached: function() {
       	var input = this.getElem(this.ctrls.imgInput);
       	var self = this;
+        var cancel = this.getElem(this.ctrls.closeBtn);
         // console.log('ready')
         this.gap = 10;
         this.minWidth = 20;
@@ -249,25 +259,24 @@ fixedSize = it the size of the cropped square in pixels.
         	this.initialSize = this.fixedSize;
         }
 
-        document.addEventListener('imgur-upload-success', function(e) {
-
-        	if(self.openEvents['imgur-upload-success']){
-        		console.log("UPLOAD IMG PROCESS SUCCESS has open event");
-        		console.log(e);
-        		self.removeOpenEvent['imgur-upload-success'];
-        	}
+      document.addEventListener('imgur-upload-success', function(e) {
+          var canvas = self.getElem(self.ctrls.canvas);
+          if(canvas !== null && canvas !== undefined){
+            document.removeChild(canvas);
+          }
+          self.progressHandler();
+          cancel.disabled = false;
 	    });
 	    document.addEventListener('imgur-upload-failure', function(e) {
 	        console.log(e);
+          self.progressHandler();
+          cancel.disabled = false;
 	        alert(e.detail.data.error);
 	    });
 
         var self = this;
         setTimeout(function(){
           self._init();
-          console.log("this.dialog");
-          console.log(this.handleDialog);
-          console.log("this.dialog");
         },100);
         // this.imgNode = document.createElement('img')
       },
@@ -410,7 +419,10 @@ fixedSize = it the size of the cropped square in pixels.
       onUpload: function(){
 
       	if(this.imgur){
+          var cancel = this.getElem(this.ctrls.closeBtn);
+          cancel.disabled = true;
 
+          this.progressHandler();
       		this.imgurUpload();
 
       	}else if(authToken !== null){
@@ -475,6 +487,19 @@ fixedSize = it the size of the cropped square in pixels.
           this.rotate(90);
           this.render();
         });
+      },
+      progressHandler: function(){
+        if(this.progressSpinner !== null && this.progressSpinner !== undefined){
+          var progress = this.getElem(this.progressSpinner);
+          console.log("progress");
+          console.log(progress);
+          console.log("progress");
+          if(progress.active){
+            progress.active = false;
+          }else if(!progress.active){
+            progress.active = true;
+          }
+        }
       },
       _createImgFile: function(){
 

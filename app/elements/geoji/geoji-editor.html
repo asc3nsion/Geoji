@@ -47,6 +47,12 @@ paper-icon-button.createMarker #icon {
     height: 30vh;
  }
 
+ iron-image.createMarker{
+ 	margin: auto;
+    width: 80%;
+    height: 30vh;
+ }
+
  input.createMarker{
  	margin: 1% 0;
     bottom:10%;
@@ -92,11 +98,6 @@ paper-icon-button.createMarker #icon {
 
 <dom-module id= "geoji-editor">
 	<template>
-
-		<div>
-			<j-profile-img id="{{assignCtrl('imgProcess')}}" class="imgData" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
-			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange avatarSpinner"></paper-spinner-lite>
-		</div>
 
 		<firebase-collection
 	    	id="{{assignCtrl('geojiPublic')}}"
@@ -152,7 +153,6 @@ paper-icon-button.createMarker #icon {
 			<h2>Geoji Message</h2>
 			<paper-icon-button suffix class="closeDialog" icon="clear" on-tap=""></paper-icon-button>
 			<paper-input-container id="{{assignCtrl('txtContainer')}}" class="txtData" bind-value="">
-			  <label>Enter a Message</label>
 			  <textarea id="{{assignCtrl('txtInput')}}" class="txtData" rows="10" cols="30"></textarea> 
 			</paper-input-container>
 			<paper-button id="{{assignCtrl('cancelTxt')}}" class="txtData" raised on-tap="toggleTxtDialog">CANCEL</paper-button>
@@ -161,7 +161,11 @@ paper-icon-button.createMarker #icon {
 
 		<paper-dialog class="imgData" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
 			<h2>Geoji Image</h2>
-			<iron-icon id="{{assignCtrl('imgIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
+			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange createMarker"></paper-spinner-lite>
+			<div id="{{assignCtrl('tempImgs')}}" >
+				<iron-image id="{{assignCtrl('tempImg')}}" class="createMarker" hidden="true"></iron-image>
+				<iron-icon id="{{assignCtrl('imgIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
+			</div>
 			<j-img-process 
 			id="{{assignCtrl('imgProcess')}}" 
 			imgur="true" 
@@ -171,7 +175,9 @@ paper-icon-button.createMarker #icon {
 			height="200" 
 			hideButtons="false"
 			handleDialog="{{getCtrlId('imgDialog')}}"
-			handleElement="{{getCtrlId('imgIcon')}}"
+			handleElement="{{getCtrlId('tempImgs')}}"
+			parentElement="{{getCtrlId('imgDialog')}}"
+			progressSpinner="{{getCtrlId('progressSpinner')}}"
 			></j-img-process>
 		</paper-dialog>
 
@@ -261,8 +267,11 @@ paper-icon-button.createMarker #icon {
 			var imgDialog = this.getElem(this.ctrls.imgDialog);
 			var imgProcess = this.getElem(this.ctrls.imgProcess);
 			var imgIcon = this.getElem(this.ctrls.imgIcon);
+			var tempImg = this.getElem(this.ctrls.tempImg);
+			var spinner = this.getElem(this.ctrls.progressSpinner);
 			imgProcess.handleDialog = imgDialog.id;
 			imgProcess.handleElement = imgIcon.id;
+			imgProcess.progressSpinner = spinner.id;
 
 			this.geoji = {};
 			map.mapType="satellite";
@@ -289,6 +298,23 @@ paper-icon-button.createMarker #icon {
 
 				    console.log(self.geoji);
 				};
+
+			document.addEventListener('imgur-upload-success', function(e) {
+
+				
+
+			  if(imgDialog.id === imgProcess.parentElement.id){
+
+			  	self.geoji[self.selectedMarker].img = e.detail.link;
+
+			  	imgDialog.toggle();
+			  }
+
+	        });
+	        document.addEventListener('imgur-upload-failure', function(e) {
+	          console.log(e);
+	          alert(e.detail.data.error);
+	        });
 
 			map.resize();
 
@@ -343,10 +369,6 @@ paper-icon-button.createMarker #icon {
 			var type = this.geoji[id].type;
 			var message = this.geoji[id].message;
 
-			console.log("id------------------");
-			console.log(id);
-			console.log("id------------------");
-
 			if(type !== undefined && type !== null){
 
 				if(type === "img"){
@@ -375,11 +397,10 @@ paper-icon-button.createMarker #icon {
 
 			var onClick = function(e) {
 				    console.log(e);
-				    self.selectedMaker = e.target.id;
 				};
 			var dblClick = function(e) {
 					var message = self.geoji[e.target.id].message;
-				    self.selectedMaker = e.target.id;
+				    self.selectedMarker = e.target.id;
 
 				    if(message !== null && message !== undefined){
 
@@ -411,7 +432,7 @@ paper-icon-button.createMarker #icon {
 		},
 		saveTxt: function(){
 			var txt = this.getElem(this.ctrls.txtInput);
-			var marker = this.getElem(this.selectedMaker);
+			var marker = this.getElem(this.selectedMarker);
 			var type = this.geoji[marker.id].type;
 
 			if(type == "txt"){
@@ -430,11 +451,21 @@ paper-icon-button.createMarker #icon {
 
 			var onClick = function(e) {
 				    console.log(e);
-				    self.selectedMaker = e.target.id;
 				};
 			var dblClick = function(e) {
-				    self.toggleDialog(e);
-				    self.selectedMaker = e.target.id;
+					var imgUrl = self.geoji[e.target.id].img;
+					var imgIcon = self.getElem(self.ctrls.imgIcon);
+					var tempImg = self.getElem(self.ctrls.tempImg);
+				    
+
+				    if(imgUrl !== null && imgUrl !== undefined){
+				    	tempImg.src = imgUrl;
+				    	imgIcon.hidden = true;
+				    	tempImg.hidden = false;
+					}
+
+					self.toggleDialog(e);
+				    self.selectedMarker = e.target.id;
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
@@ -451,6 +482,16 @@ paper-icon-button.createMarker #icon {
 			this.updateMarker(marker);
 
 		},
+		saveImg: function(){
+
+			var marker = this.getElem(this.selectedMarker);
+			var type = this.geoji[marker.id].type;
+
+			if(type == "img"){
+
+			}
+
+		},
 		vidMarker: function(){
 			var self = this;
 			var map = this.getElem(this.ctrls.map);
@@ -460,11 +501,10 @@ paper-icon-button.createMarker #icon {
 
 			var onClick = function(e) {
 				    console.log(e);
-				    self.selectedMaker = e.target.id;
 				};
 			var dblClick = function(e) {
 				    self.toggleDialog(e);
-				    self.selectedMaker = e.target.id;
+				    self.selectedMarker = e.target.id;
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
