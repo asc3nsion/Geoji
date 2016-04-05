@@ -34,6 +34,14 @@ within the element using it.
 			parameters:{
 				type: Array,
 				value: []
+			},
+			handleDialog: {
+				type: String,
+				value: null
+			},
+			handleElement: {
+				type: String,
+				value: null
 			}
  		},
  		setParams: function(arr){
@@ -90,6 +98,35 @@ within the element using it.
 						break;
 				}
 
+			}
+
+		},
+		handleDialogToggle: function(){
+
+			if(this.handleDialog !== null && this.handleDialog !== undefined){
+				var dialog = document.querySelector("#"+this.handleDialog);
+				dialog.toggle();
+
+			}else{
+				console.log("no dialog defined.");
+			}
+
+		},
+		handleHideElement: function(){
+
+			console.log("handleElement");
+
+			if(this.handleElement !== null && this.handleElement !== undefined){
+				var elem = document.querySelector("#"+this.handleElement);
+
+				if(elem.hidden){
+					elem.hidden = false;
+				}else{
+					elem.hidden = true;
+				}
+
+			}else{
+				console.log("no dialog defined.");
 			}
 
 		}

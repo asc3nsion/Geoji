@@ -193,6 +193,18 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 			return this.ctrls[key];
 			
 		},
+		getCtrlId: function(key){
+			var sel = this;
+			var ctrls = this.ctrls;
+
+			setTimeout(function(){
+				console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	          	console.log(ctrls[key]);
+	          	console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	          	return ctrls[key];
+	        },10);
+			
+		},
 		idHandler: function(){
 			if(this.store !== ""){
 				console.log("jjjjj");

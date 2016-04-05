@@ -41,6 +41,12 @@ paper-icon-button.createMarker #icon {
     height: 8vh;
  }
 
+ iron-icon.createMarker{
+ 	margin: auto;
+    width: 80%;
+    height: 30vh;
+ }
+
  input.createMarker{
  	margin: 1% 0;
     bottom:10%;
@@ -57,11 +63,26 @@ paper-icon-button.createMarker #icon {
  	color:red;
  }
 
- paper-input-container{
- 	--paper-input-container-color: black;
- 	--paper-input-container-invalid-color: red;
- 	--paper-input-container-valid-color: green;
+ paper-input-container.createMarker{
+
  	width: 50%;
+ }
+ paper-input-container.txtData{
+ 	margin: auto;
+	background-color: #EBF0B1;
+ 	width: 80%;
+ }
+ paper-dialog.txtData{
+
+ 	width: 50vw;
+ }
+ paper-button.txtData{
+ 	float: right;
+ 	margin: 50px 10px 10px 10px;
+ }
+
+ paper-icon-button.closeDialog{
+
  }
  paper-card.emailList{
  	display: inline-block;
@@ -71,6 +92,19 @@ paper-icon-button.createMarker #icon {
 
 <dom-module id= "geoji-editor">
 	<template>
+
+		<div>
+			<j-profile-img id="{{assignCtrl('imgProcess')}}" class="imgData" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
+			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange avatarSpinner"></paper-spinner-lite>
+		</div>
+
+		<firebase-collection
+	    	id="{{assignCtrl('geojiPublic')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/public/"
+		    data="{{geoji}}">
+		</firebase-collection>
+
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
 		  <div class="card-content">
@@ -83,6 +117,7 @@ paper-icon-button.createMarker #icon {
 			<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
 			  <label>Add Email</label>
 			  <input id="{{assignCtrl('emailInput')}}" is="iron-input" bind-value="">
+			  <paper-input-error>Enter a valid email!</paper-input-error>
 			  <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
 			</paper-input-container>
 			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
@@ -99,8 +134,8 @@ paper-icon-button.createMarker #icon {
           clickEvents="true" 
           google-map-dblclick="placeMarker"
           fitToMarkers="true"
-          zoom="21"
-          mapType="satellite" >
+          zoom="20"
+          drag-events="true">
 		  <google-map-marker id="{{assignCtrl('targetMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
 		                     draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker></google-map>
 
@@ -108,9 +143,37 @@ paper-icon-button.createMarker #icon {
 		    <paper-icon-button on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker"></paper-icon-button>
 		    <paper-icon-button on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker"></paper-icon-button>
 		    <paper-icon-button on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker"></paper-icon-button>
-		    <paper-button id="{{assignCtrl('save')}}" class="saveGeoji" raised on-tap="">SAVE</paper-button>
+		    <paper-button id="{{assignCtrl('add')}}" class="saveGeoji" raised on-tap="addGeoji">ADD</paper-button>
+		    <paper-button id="{{assignCtrl('save')}}" class="saveGeoji" raised on-tap="saveGeoji" hidden="true">SAVE</paper-button>
 		  </div>
 		</paper-card>
+
+		<paper-dialog class="txtData" id="{{assignCtrl('txtDialog')}}" modal role="alertdialog">
+			<h2>Geoji Message</h2>
+			<paper-icon-button suffix class="closeDialog" icon="clear" on-tap=""></paper-icon-button>
+			<paper-input-container id="{{assignCtrl('txtContainer')}}" class="txtData" bind-value="">
+			  <label>Enter a Message</label>
+			  <textarea id="{{assignCtrl('txtInput')}}" class="txtData" rows="10" cols="30"></textarea> 
+			</paper-input-container>
+			<paper-button id="{{assignCtrl('cancelTxt')}}" class="txtData" raised on-tap="toggleTxtDialog">CANCEL</paper-button>
+			<paper-button id="{{assignCtrl('saveTxt')}}" class="txtData" raised on-tap="saveTxt">SAVE</paper-button>
+		</paper-dialog>
+
+		<paper-dialog class="imgData" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
+			<h2>Geoji Image</h2>
+			<iron-icon id="{{assignCtrl('imgIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
+			<j-img-process 
+			id="{{assignCtrl('imgProcess')}}" 
+			imgur="true" 
+			fixed="true" 
+			fixedSize="200"
+			width="200"
+			height="200" 
+			hideButtons="false"
+			handleDialog="{{getCtrlId('imgDialog')}}"
+			handleElement="{{getCtrlId('imgIcon')}}"
+			></j-img-process>
+		</paper-dialog>
 
 	</template>
 </dom-module>
@@ -165,7 +228,9 @@ paper-icon-button.createMarker #icon {
 			},
 			emailValue: {
 				type: String,
-				value: ""
+				value: "",
+				observer: "_storeEmails",
+				notify: true
 			},
 			emailList: {
 				type: Array,
@@ -176,6 +241,9 @@ paper-icon-button.createMarker #icon {
 				value: "",
 				observer: "_updateEmails",
 				notify: true
+			},
+			selectedMarker: {
+				type: String
 			}
 			
 		},
@@ -186,26 +254,57 @@ paper-icon-button.createMarker #icon {
 
 		},
 		attached: function(){
+			var self = this;
 			var map = this.getElem(this.ctrls.map);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var targetObj = {};
+			var imgDialog = this.getElem(this.ctrls.imgDialog);
+			var imgProcess = this.getElem(this.ctrls.imgProcess);
+			var imgIcon = this.getElem(this.ctrls.imgIcon);
+			imgProcess.handleDialog = imgDialog.id;
+			imgProcess.handleElement = imgIcon.id;
+
+			this.geoji = {};
+			map.mapType="satellite";
+
+			targetObj.longitude = target.longitude;
+			targetObj.latitude = target.latitude;
+			this.geoji.target = targetObj;
+
+			var onClick = function(e) {
+				    console.log(e);
+				};
+			var mapDragEnd = function(e) {
+
+				    self.geoji.target.longitude = target.longitude;
+				    self.geoji.target.latitude = target.latitude;
+
+				    console.log(self.geoji);
+				};
+			var targetDragEnd = function(e) {
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+
+				    self.geoji.target.longitude = latLng.lng();
+				    self.geoji.target.latitude = latLng.lat();
+
+				    console.log(self.geoji);
+				};
+
 			map.resize();
 
-			// var e = this.getElem(this.ctrls.profileImgInput);
-			// var p = this.getElem(this.ctrls.profileImgUpload);
-			// var self = this;
+			target.addEventListener('google-map-marker-dragend', targetDragEnd);
+			map.addEventListener('google-map-dragend', mapDragEnd);
+		},
+		addGeoji: function(){
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
 
-			// e.addEventListener('change', function() {
-   //          	p.file = this.files[0];
-	  //           console.log(e.file);
-	  //       });
-			// document.addEventListener('imgur-upload-success', function(e) {
-	  //         console.log(e);
-	  //         self.url = e.detail.link;
-	  //         self.customUrl = e.detail.link;
-	  //       });
-	  //       document.addEventListener('imgur-upload-failure', function(e) {
-	  //         console.log(e);
-	  //         alert(e.detail.data.error);
-	  //       });
+			add.hidden = true;
+			save.hidden = false;
+
+		},
+		saveGeoji: function(){
+
 		},
 		createMarker: function(){
 			var map = this.getElem(this.ctrls.map);
@@ -221,7 +320,7 @@ paper-icon-button.createMarker #icon {
 
 			return marker;
 		},
-		setMarkerListeners: function(id, click, dragend){
+		setMarkerListeners: function(id, click, dblclick, dragend){
 
 			var self = this;
 
@@ -230,21 +329,68 @@ paper-icon-button.createMarker #icon {
 		        self.markerArray.push(id);
 
 				elem.addEventListener('google-map-marker-click', click);
-				elem.addEventListener('google-map-marker-dragend',dragend);
+				elem.addEventListener('google-map-marker-click', dblclick);
+				elem.addEventListener('google-map-marker-dragend', dragend);
 		    }, 50);
 		},
 		storeMarker: function(id, obj){
 			this.geoji[id] = obj;
 		},
+		toggleDialog: function(event){
+			console.log("event");
+			console.log(event);
+			var id = event.target.id;
+			var type = this.geoji[id].type;
+			var message = this.geoji[id].message;
+
+			console.log("id------------------");
+			console.log(id);
+			console.log("id------------------");
+
+			if(type !== undefined && type !== null){
+
+				if(type === "img"){
+					this.getElem(this.ctrls.imgProcess).hideButtons = false;
+				}
+
+				var e = this.getElem(this.ctrls[type+"Dialog"]);
+				e.toggle();
+
+			}
+
+			console.log(event);
+		},
+		toggleTxtDialog: function(){
+
+			var e = this.getElem(this.ctrls.txtDialog);
+			e.toggle();
+		},
 		txtMarker: function(){
 			var self = this;
 			var map = this.getElem(this.ctrls.map);
 			var marker = this.createMarker();
+			var txt = this.getElem(this.ctrls.txtInput);
 			var geoji = this.geoji;
 			marker.icon = "/images/mascot-txt.png";
 
 			var onClick = function(e) {
 				    console.log(e);
+				    self.selectedMaker = e.target.id;
+				};
+			var dblClick = function(e) {
+					var message = self.geoji[e.target.id].message;
+				    self.selectedMaker = e.target.id;
+
+				    if(message !== null && message !== undefined){
+
+						txt.value = message;
+					}else if(message === null || message === undefined){
+
+						txt.value = "";
+					}
+
+					self.toggleDialog(e);
+
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
@@ -259,8 +405,20 @@ paper-icon-button.createMarker #icon {
 				};
 
 			Polymer.dom(map).appendChild(marker);
-			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
 			self.updateMarker(marker);
+
+		},
+		saveTxt: function(){
+			var txt = this.getElem(this.ctrls.txtInput);
+			var marker = this.getElem(this.selectedMaker);
+			var type = this.geoji[marker.id].type;
+
+			if(type == "txt"){
+				this.geoji[marker.id].message = txt.value;
+				this.toggleTxtDialog();
+				txt.value = "";
+			}
 
 		},
 		imgMarker: function(){
@@ -272,6 +430,11 @@ paper-icon-button.createMarker #icon {
 
 			var onClick = function(e) {
 				    console.log(e);
+				    self.selectedMaker = e.target.id;
+				};
+			var dblClick = function(e) {
+				    self.toggleDialog(e);
+				    self.selectedMaker = e.target.id;
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
@@ -284,7 +447,7 @@ paper-icon-button.createMarker #icon {
 				};
 				
 			Polymer.dom(map).appendChild(marker);
-			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
 			this.updateMarker(marker);
 
 		},
@@ -297,6 +460,11 @@ paper-icon-button.createMarker #icon {
 
 			var onClick = function(e) {
 				    console.log(e);
+				    self.selectedMaker = e.target.id;
+				};
+			var dblClick = function(e) {
+				    self.toggleDialog(e);
+				    self.selectedMaker = e.target.id;
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
@@ -309,7 +477,7 @@ paper-icon-button.createMarker #icon {
 				};
 				
 			Polymer.dom(map).appendChild(marker);
-			this.setMarkerListeners(marker.id, onClick, onDragEnd);
+			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
 			this.updateMarker(marker);
 
 		},
@@ -320,19 +488,19 @@ paper-icon-button.createMarker #icon {
 			var icon = marker.icon;
 			var obj = {};
 
-			if(icon === null){
-				if(icon.search("txt")>0){
+
+			if(icon !== null){
+				if(icon.includes("txt")>0){
 					obj.type = "txt";
-				}else if(icon.search("img")>0){
+				}else if(icon.includes("img")>0){
 					obj.type = "img";
-				}else if(icon.search("vid")>0){
+				}else if(icon.includes("vid")>0){
 					obj.type = "vid";
 				}
 			}
 			targetObj.longitude = target.longitude;
 			targetObj.latitude = target.latitude;
 			this.geoji.target = targetObj;
-			obj.private = this.private;
 			obj.latitude = marker.latitude;
 			obj.longitude = marker.longitude;
 			this.geoji[marker.id] = obj;
@@ -359,28 +527,34 @@ paper-icon-button.createMarker #icon {
 		  return latLngPosition;
 		},
 		addEmail: function(){
-			var email = this.getElem(this.ctrls.emailInput);
-			console.log(email.value);
+			var input = this.getElem(this.ctrls.emailInput);
+			var email = this.getElem(this.ctrls.email);
+			console.log(this.emailValue);
 			//this.emailList.push(email.value);
 			if(this.emailValidate()){
-				email.valid = true;
-				this.emailString += "  " + email.value + ",";
-				email.value = "";
+				input.invalid = false;
+				this.emailString += "  " + this.emailValue + ",";
+				this.emailList.push(this.emailValue)
+				input.value = "";
 			}else{
 				email.invalid = true;
+				input.value = "";
 			}
 			
 
 		},
 		emailValidate: function(){
-			var email = this.getElem(this.ctrls.emailInput);
-			console.log("validate");
-			if(email.value.includes('@')&&email.value.includes('.')){
-				return true;
-			}else{
-				return false;
+			var input = this.getElem(this.ctrls.emailInput);
+			var email = this.getElem(this.ctrls.email);
+			if(email !== null&& input !== null){
+				if(input.value.includes('@')&&input.value.includes('.')){
+					email.invalid = false;
+					return true;
+				}else{
+					return false;
+				}
 			}
-
+			console.log("validate");
 		},
 		_getCurrentLocation: function(){
 			console.log("getting current location.");
@@ -406,6 +580,9 @@ paper-icon-button.createMarker #icon {
 			// 	console.log(str);
 			// 	this.emailString += " " + str;
 			// }
+		},
+		_storeEmails: function(){
+			this.geoji.emailList = this.emailList;
 		}
 
 	});
