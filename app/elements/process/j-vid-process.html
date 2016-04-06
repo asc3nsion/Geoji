@@ -1,0 +1,233 @@
+<!-- 
+This is an element button for login button using firebase api.  
+This depends on j-button element which is a generic button.
+
+ style of the button is passed into j-button via j-styles behavior.
+ interaction is passed into j-button via j-handler.
+ if the button doesn't have an explicit id, one is assigned via auto-id.
+-->
+<!-- components: -->
+<link rel="import" href="../../elements/j-ui/j-button.html">
+<link rel="import" href="../../elements/j-ui/j-social-button.html">
+<link rel="import" href="../../elements/j-ui/j-icon-button.html">
+<!-- behaviors: -->
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/selection/auto-id.html">
+<style>
+
+</style>
+<dom-module id= "j-vid-process">
+	<template>
+
+		<div id="{{assignCtrl('container')}}">
+			<paper-dropdown-menu id="{{assignCtrl('videoSelect')}}" label="Camera">
+			  <paper-listbox id="{{assignCtrl('videoList')}}" class="dropdown-content" selected="{{selectedCamera}}">
+			  </paper-listbox>
+			</paper-dropdown-menu>	
+		</div>
+
+		 <section id="{{assignCtrl('uploadSection')}}">
+          <google-youtube-upload id="{{assignCtrl('upload')}}" client-id="965199397731-v1r9rkmih5f2ss8qdo3vnpa6g06nj676.apps.googleusercontent.com"
+                                 video-title="[[videoTitle]]"
+                                 description="[[description]]"
+                                 privacy-status="[[privacyStatus]]"
+                                 video-id="{{videoId}}"
+                                 on-youtube-upload-start="handleYouTubeUploadStart"
+                                 on-youtube-upload-progress="handleYouTubeUploadProgress"
+                                 on-youtube-upload-complete="handleYouTubeUploadComplete"
+                                 on-youtube-upload-fail="handleYouTubeUploadFail"
+                                 on-youtube-processing-poll="handleYouTubeProcessingPoll"
+                                 on-youtube-processing-complete="handleYouTubeProcessingComplete"
+                                 on-youtube-processing-fail="handleYouTubeProcessingFail">
+          </google-youtube-upload>
+          <google-signin client-id="965199397731-v1r9rkmih5f2ss8qdo3vnpa6g06nj676.apps.googleusercontent.com" ></google-signin>
+        </section>
+
+        <section id="{{assignCtrl('progressSection')}}">
+          Upload Progress:
+          <progress max="1" value="[[fractionComplete]]"></progress>
+          {{computeProgressText(megabytesPerSecond, minutesRemaining, secondsRemaining)}}
+        </section>
+
+        <div class="upload layout horizontal">
+        	<input type="file" id="{{assignCtrl('vidInput')}}" on-change="fileChange" hidden accept="video/*;capture=camcorder">
+	        <paper-button id="{{assignCtrl('chooseBtn')}}" raised class="blue center" on-tap="onChoose" hidden="{{hideButtons}}">
+	          Choose file
+	        </paper-button>
+	        <paper-button id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class='' disabled$='{{!file}}' hidden="{{hideButtons}}">
+	          <iron-icon icon='file-upload'></iron-icon>
+	        Upload
+	        </paper-button>
+	        <paper-button id="{{assignCtrl('closeBtn')}}" raised class="red center" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
+	          Cancel
+	        </paper-button>
+	        <!-- <span id='previewThumb' class='previews'></span> -->
+	    </div>
+
+	</template>
+</dom-module>
+
+<script>
+	// I pass the button handler property from the base element, defined as the input
+	// The call back is made via document.querySelector on the input element name.
+	addEventListener('WebComponentsReady', function() {
+		Polymer({
+
+			is: "j-vid-process",
+			properties: {
+				cameras: {
+					type: Object,
+					value: {}
+				},
+				selectedCamera: {
+					type: String,
+					value: "",
+					observer: "_selectCamera",
+					notify: true
+				},
+				process: {
+					type: Object,
+					value: {}
+				}
+			},
+
+			behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+			attached: function(){
+				var self = this;
+				var videoList = this.getElem(this.ctrls.videoList);
+				var uploadSection = this.getElem(this.ctrls.uploadSection);
+				uploadSection.hidden = false;
+
+
+				function hasGetUserMedia() {
+				  return !!(navigator.getUserMedia = ( navigator.getUserMedia ||
+		                       navigator.webkitGetUserMedia ||
+		                       navigator.mozGetUserMedia ||
+		                       navigator.msGetUserMedia));
+				}
+
+				function onUserMediaSuccess() {
+				  
+				}
+
+				function onUserMediaError() {
+				  alert("no camera available.");
+				}
+
+				if (hasGetUserMedia()) {
+				  // Good to go!
+				  console.log("has media!");
+				} else {
+				  alert('getUserMedia() is not supported in your browser');
+				}
+
+				MediaStreamTrack.getSources(function(sourceInfos) {
+				  var audioSource = null;
+				  var videoSource = null;
+
+				  for (var i = 0; i != sourceInfos.length; ++i) {
+				    var sourceInfo = sourceInfos[i];
+				    if (sourceInfo.kind === 'audio') {
+				      console.log(sourceInfo.id, sourceInfo.label || 'microphone');
+
+				      audioSource = sourceInfo.id;
+				    } else if (sourceInfo.kind === 'video') {
+				      console.log(sourceInfo.id, sourceInfo.label || 'camera');
+				      var item = document.createElement('paper-item');
+				      Polymer.dom(videoList).appendChild(item);
+				      item.innerHTML = sourceInfo.label;
+				      self.cameras[sourceInfo.label] = sourceInfo.id;
+				      videoSource = sourceInfo.id;
+				    } else {
+				      console.log('Some other kind of source: ', sourceInfo);
+				    }
+				  }
+
+				  sourceSelected(audioSource, videoSource);
+				});
+
+
+				function sourceSelected(audioSource, videoSource) {
+				  var constraints = {
+				    audio: {
+				      optional: [{sourceId: audioSource}]
+				    },
+				    video: {
+				      optional: [{sourceId: videoSource}]
+				    }
+				  };
+
+				  navigator.getUserMedia(constraints, onUserMediaSuccess, onUserMediaError);
+				}	
+			},
+			_selectCamera: function(){
+				var videoList = this.getElem(this.ctrls.videoList);
+				console.log("camera selected. : "+ videoList.selected);
+			},
+			onChoose: function () {
+		        var elem = this.getElem(this.ctrls.vidInput);
+		        
+		        if(elem && document.createEvent) { 
+		          var evt = document.createEvent('MouseEvents');
+		          evt.initEvent('click', true, false);
+		          elem.dispatchEvent(evt);
+		        }
+		    },
+			fileChange: function(e) {
+		        var file = e.target.files[0];
+		        var upload = this.getElem(this.ctrls.upload);
+		        console.log("user authenticated: " + upload.authenticated);
+		        //upload.uploadFile(file);
+		    },
+			computeProgressTxt: function(megabytesPerSecond, minutesRemaining, secondsRemainin){
+				return megabytesPerSecond + 'MB/s, ' + minutesRemaining + 'm' + secondsRemaining + 's remaining';
+			},
+			computeVidUrl: function(vidId){
+				return 'https://youtu.be/' + vidId;
+			},
+			handleYouTubeUploadStart: function() {
+		        //this.process.state = 'upload';
+		        var upload = this.getElem(this.ctrls.uploadSection);
+		        var progress = this.getElem(this.ctrls.progressSection);
+				upload.hidden = true;
+		        this.process.fractionComplete = 0;
+		    },
+		    handleYouTubeUploadProgress: function(e) {
+		        this.process.megabytesPerSecond = (e.detail.bytesPerSecond / (1024 * 1024)).toFixed(2);
+		        this.process.minutesRemaining = Math.floor(e.detail.estimatedSecondsRemaining / 60);
+		        this.process.secondsRemaining = Math.round(e.detail.estimatedSecondsRemaining % 60);
+		        this.process.fractionComplete = e.detail.fractionComplete;
+		    },
+		    handleYouTubeUploadComplete: function() {
+		        this.process.state = 'upload-complete';
+		    },
+		    handleYouTubeUploadFail: function(e) {
+		        this.process.error = e.detail;
+		        this.process.state = 'error';
+		    },
+		    handleYouTubeProcessingPoll: function() {
+		        this.process.processingEllipses += '.';
+		    },
+		    handleYouTubeProcessingComplete: function() {
+		        this.process.state = 'processing-complete';
+		        this.process.processingComplete = true;
+		    },
+		    handleYouTubeProcessingFail: function(e) {
+		        var error;
+		        switch(e.detail.uploadStatus) {
+		          case 'failed':
+		            error = e.detail.failureReason || 'unknown error';
+		            break;
+		          case 'rejected':
+		            error = e.detail.rejectionReason || 'unknown error';
+		            break;
+		          default:
+		            error = 'unknown error';
+		        }
+		        this.process.error = 'YouTube processing failed (' + error + ').';
+		        this.process.state = 'error';
+		    }
+		});
+	});
+</script>

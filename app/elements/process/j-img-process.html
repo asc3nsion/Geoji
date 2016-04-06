@@ -141,13 +141,12 @@ fixedSize = it the size of the cropped square in pixels.
     </style>
 
     <imgur-upload id="{{assignCtrl('imgurUpload')}}" client-id="c16e7a9d7583546" auto="true"></imgur-upload>
-
-    <input type="file" id="{{assignCtrl('imgInput')}}" on-change="fileChange" hidden accept="image/x-png, image/gif, image/jpeg" >
+    <input type="file" id="{{assignCtrl('imgInput')}}" on-change="fileChange" hidden accept="image/*" >
 	<img id="{{assignCtrl('imgResize')}}" hidden="true">
 
     <div hidden$='{{!file}}'>
 
-      <div class='layout_ horizontal_'>
+      <div class='layout_ horizontal_' id="{{assignCtrl('cropperParent')}}">
         <div class='flex_ cropperContainer cropperDiv' id="{{assignCtrl('cropperContainer')}}"> </div>
         &nbsp;
         <!-- <div class="layout_ vertical_ center-justified_"> -->
@@ -259,26 +258,71 @@ fixedSize = it the size of the cropped square in pixels.
         	this.initialSize = this.fixedSize;
         }
 
-      document.addEventListener('imgur-upload-success', function(e) {
-          var canvas = self.getElem(self.ctrls.canvas);
-          if(canvas !== null && canvas !== undefined){
-            document.removeChild(canvas);
-          }
-          self.progressHandler();
-          cancel.disabled = false;
-	    });
-	    document.addEventListener('imgur-upload-failure', function(e) {
-	        console.log(e);
-          self.progressHandler();
-          cancel.disabled = false;
-	        alert(e.detail.data.error);
-	    });
+        document.addEventListener('imgur-upload-success', function(e) {
+            var canvas = self.getElem(self.ctrls.canvas);
+            var imgPreview = self.getElem(self.ctrls.imgPreview);
+            var cropperParent = self.getElem(self.ctrls.cropperParent);
+
+            if(canvas !== null && canvas !== undefined){
+              console.log("should remove canvas!!!!");
+              //cropperParent.removeChild(canvas);
+            }
+            if(imgPreview !== null && imgPreview !== undefined){
+              console.log("should remove imgPreview!!!!");
+              //self.domNode.removeChild(imgPreview);
+              //self.domNode.parentNode.removeChild(self.domNode);
+            }
+            self.progressHandler();
+            cancel.disabled = false;
+  	    });
+
+  	    document.addEventListener('imgur-upload-failure', function(e) {
+  	        console.log(e);
+            self.progressHandler();
+            cancel.disabled = false;
+  	        alert(e.detail.data.error);
+  	    });
 
         var self = this;
         setTimeout(function(){
           self._init();
         },100);
         // this.imgNode = document.createElement('img')
+      },
+      setImgPreview: function(url){
+
+        var imgPreview = this.getElem(this.ctrls.imgPreview);
+
+        if(imgPreview !== null && imgPreview !== undefined){
+          console.log("set img preview to: "+url);
+          imgPreview.src = url;
+        }
+
+      },
+      getImgPreview: function(url){
+
+        var imgPreview = this.getElem(this.ctrls.imgPreview);
+
+        if(imgPreview !== null && imgPreview !== undefined){
+          console.log("return true image preview");
+          return true;
+        }else{
+          console.log("return false image preview");
+          return false;
+        }
+
+      },
+      hideCropper: function(url){
+
+        var cropper = this.getElem(this.ctrls.cropperContainer);
+
+        cropper.hidden = true;
+      },
+      showCropper: function(url){
+
+        var cropper = this.getElem(this.ctrls.cropperContainer);
+
+        cropper.hidden = false;
       },
       on_upload_dialog: function () {
         var elem = this.getElem(this.ctrls.imgInput);
@@ -291,9 +335,13 @@ fixedSize = it the size of the cropped square in pixels.
       },
       fileChange: function(e) {
         var file = e.target.files[0];
+        var cropper = this.getElem(this.ctrls.cropperContainer);
 
         if(this.handleElement !== null && this.handleElement !== undefined){
             this.handleHideElement();
+        }
+        if(cropper.hidden){
+          cropper.hidden = false;
         }
         this.file = file;
         // img = URL.createObjectURL(event.target.files[0])
@@ -329,6 +377,7 @@ fixedSize = it the size of the cropped square in pixels.
             var self = this;
             if (!this.imageNode) {
               var imgNode = util.create('img');
+              imgNode.id = this.assignCtrl('imgPreview');
               this.imageNode = imgNode;
               this.domNode.appendChild(this.imageNode);
               this.imageNode.onload = function(){
@@ -357,6 +406,7 @@ fixedSize = it the size of the cropped square in pixels.
             this.image = url;
             if (!this.imageNode) {
                 this.imageNode = util.create('img');
+                imgNode.id = this.assignCtrl('imgPreview');
                 this.domNode.appendChild(this.imageNode);
                 var self = this;
                 //TODO: onerror?
@@ -508,6 +558,7 @@ fixedSize = it the size of the cropped square in pixels.
         var info = this.getInfo();
         var canvas = document.createElement('canvas');
         canvas.id = this.assignCtrl("canvas");
+        console.log(canvas);
         var img = this.imageNode;
         // var width = parseInt(util.style(img, 'width'));
         // var height = parseInt(util.style(img, 'height'));

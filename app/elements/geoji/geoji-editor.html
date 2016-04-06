@@ -49,8 +49,8 @@ paper-icon-button.createMarker #icon {
 
  iron-image.createMarker{
  	margin: auto;
-    width: 80%;
-    height: 30vh;
+    max-width:100%;
+	max-height:100%
  }
 
  input.createMarker{
@@ -86,7 +86,11 @@ paper-icon-button.createMarker #icon {
  	float: right;
  	margin: 50px 10px 10px 10px;
  }
+ paper-dialog.imgData{
 
+ 	width: 50vw;
+
+ }
  paper-icon-button.closeDialog{
 
  }
@@ -107,7 +111,9 @@ paper-icon-button.createMarker #icon {
 		</firebase-collection>
 
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
+
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
+		<j-vid-process>hello</j-vid-process>
 		  <div class="card-content">
 		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}">Private</paper-toggle-button>
 		  	<paper-input-container class="createMarker">
@@ -163,7 +169,6 @@ paper-icon-button.createMarker #icon {
 			<h2>Geoji Image</h2>
 			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange createMarker"></paper-spinner-lite>
 			<div id="{{assignCtrl('tempImgs')}}" >
-				<iron-image id="{{assignCtrl('tempImg')}}" class="createMarker" hidden="true"></iron-image>
 				<iron-icon id="{{assignCtrl('imgIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
 			</div>
 			<j-img-process 
@@ -175,7 +180,6 @@ paper-icon-button.createMarker #icon {
 			height="200" 
 			hideButtons="false"
 			handleDialog="{{getCtrlId('imgDialog')}}"
-			handleElement="{{getCtrlId('tempImgs')}}"
 			parentElement="{{getCtrlId('imgDialog')}}"
 			progressSpinner="{{getCtrlId('progressSpinner')}}"
 			></j-img-process>
@@ -267,7 +271,6 @@ paper-icon-button.createMarker #icon {
 			var imgDialog = this.getElem(this.ctrls.imgDialog);
 			var imgProcess = this.getElem(this.ctrls.imgProcess);
 			var imgIcon = this.getElem(this.ctrls.imgIcon);
-			var tempImg = this.getElem(this.ctrls.tempImg);
 			var spinner = this.getElem(this.ctrls.progressSpinner);
 			imgProcess.handleDialog = imgDialog.id;
 			imgProcess.handleElement = imgIcon.id;
@@ -454,14 +457,40 @@ paper-icon-button.createMarker #icon {
 				};
 			var dblClick = function(e) {
 					var imgUrl = self.geoji[e.target.id].img;
+					var imgProcess = self.getElem(self.ctrls.imgProcess);
 					var imgIcon = self.getElem(self.ctrls.imgIcon);
-					var tempImg = self.getElem(self.ctrls.tempImg);
+					console.log("imgUrl");
+					console.log(imgUrl);
+					console.log("imgUrl");
 				    
 
 				    if(imgUrl !== null && imgUrl !== undefined){
-				    	tempImg.src = imgUrl;
+
 				    	imgIcon.hidden = true;
-				    	tempImg.hidden = false;
+				    	
+				    	if(imgProcess !== null && imgProcess !== undefined){
+
+				    		imgProcess.setImgPreview(imgUrl);
+
+				    	}
+
+					}else if(imgUrl === null || imgUrl === undefined){
+
+				    	if(imgProcess !== null && imgProcess !== undefined){
+	
+				    		if(imgProcess.getImgPreview){
+	
+				    			if(imgProcess.getImgPreview()){
+				    				imgProcess.hideCropper();
+				    				imgIcon.hidden = false;
+				    			}else if(!imgProcess.getImgPreview()){
+				    				
+				    			}
+				    			
+
+				    		}
+				    	}
+
 					}
 
 					self.toggleDialog(e);
