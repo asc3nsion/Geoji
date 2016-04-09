@@ -23,7 +23,8 @@ for some reason.
 			this.setStyles();
 			
 
-		}, setStyles: function(){
+		}, 
+		setStyles: function(){
 			var id = this.id;
 			if(this.styles !== null && (id !== undefined || id !== null || id != "")){
 				var e = document.querySelector("#"+id);
@@ -33,6 +34,11 @@ for some reason.
 						e.style[style] = styles[style];
 					}
 				}
+			}
+		},
+		assignStyles: function(elem, styles){
+			for(style in styles){
+				elem.style[style] = styles[style];
 			}
 		}
  	};

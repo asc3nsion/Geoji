@@ -15,13 +15,33 @@ This depends on j-button element which is a generic button.
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 <style>
+	paper-button.vidProcess {
+		float: right;
+    	margin: 10px 20px 10px 10px;
+    }
+    paper-dropdown-menu.vidProcess {
+    	margin: 10%;
+	 	width: 80%;
+    }
+    div.vidProcess {
+    	margin: auto;
+	 	width: 80%;
+    }
+    .vidBtns {
+       margin: auto;
+       display: block;
+    }
 
 </style>
 <dom-module id= "j-vid-process">
 	<template>
 
+	    <div class="vidProcess" hidden="_checkAuth">Authorize Youtube upload: 
+        	<google-signin client-id="965199397731-v1r9rkmih5f2ss8qdo3vnpa6g06nj676.apps.googleusercontent.com" theme="dark" width="iconOnly"></google-signin>
+        </div>
+
 		<div id="{{assignCtrl('container')}}">
-			<paper-dropdown-menu id="{{assignCtrl('videoSelect')}}" label="Camera">
+			<paper-dropdown-menu id="{{assignCtrl('videoSelect')}}" label="Camera" class="vidProcess">
 			  <paper-listbox id="{{assignCtrl('videoList')}}" class="dropdown-content" selected="{{selectedCamera}}">
 			  </paper-listbox>
 			</paper-dropdown-menu>	
@@ -29,9 +49,10 @@ This depends on j-button element which is a generic button.
 
 		 <section id="{{assignCtrl('uploadSection')}}">
           <google-youtube-upload id="{{assignCtrl('upload')}}" client-id="965199397731-v1r9rkmih5f2ss8qdo3vnpa6g06nj676.apps.googleusercontent.com"
-                                 video-title="[[videoTitle]]"
-                                 description="[[description]]"
-                                 privacy-status="[[privacyStatus]]"
+          						 auto="{{auto}}"
+                                 video-title="{{title}}"
+                                 description="{{description}}"
+                                 privacy-status="{{privacyStatus}}"
                                  video-id="{{videoId}}"
                                  on-youtube-upload-start="handleYouTubeUploadStart"
                                  on-youtube-upload-progress="handleYouTubeUploadProgress"
@@ -40,30 +61,25 @@ This depends on j-button element which is a generic button.
                                  on-youtube-processing-poll="handleYouTubeProcessingPoll"
                                  on-youtube-processing-complete="handleYouTubeProcessingComplete"
                                  on-youtube-processing-fail="handleYouTubeProcessingFail">
-          </google-youtube-upload>
-          <google-signin client-id="965199397731-v1r9rkmih5f2ss8qdo3vnpa6g06nj676.apps.googleusercontent.com" ></google-signin>
+          </google-youtube-upload>          
         </section>
 
         <section id="{{assignCtrl('progressSection')}}">
-          Upload Progress:
-          <progress max="1" value="[[fractionComplete]]"></progress>
-          {{computeProgressText(megabytesPerSecond, minutesRemaining, secondsRemaining)}}
+          
         </section>
 
         <div class="upload layout horizontal">
         	<input type="file" id="{{assignCtrl('vidInput')}}" on-change="fileChange" hidden accept="video/*;capture=camcorder">
-	        <paper-button id="{{assignCtrl('chooseBtn')}}" raised class="blue center" on-tap="onChoose" hidden="{{hideButtons}}">
-	          Choose file
-	        </paper-button>
-	        <paper-button id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class='' disabled$='{{!file}}' hidden="{{hideButtons}}">
-	          <iron-icon icon='file-upload'></iron-icon>
-	        Upload
-	        </paper-button>
-	        <paper-button id="{{assignCtrl('closeBtn')}}" raised class="red center" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
+        	<paper-button class="vidProcess theme" id="{{assignCtrl('closeBtn')}}" raised class="red center" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
 	          Cancel
+	        </paper-button>
+	        <paper-button class="vidProcess theme" id="{{assignCtrl('chooseBtn')}}" raised class="blue center" on-tap="onChoose" hidden="{{hideButtons}}">
+	          Upload Video
 	        </paper-button>
 	        <!-- <span id='previewThumb' class='previews'></span> -->
 	    </div>
+
+	    <span class="space"></span>
 
 	</template>
 </dom-module>
@@ -79,6 +95,26 @@ This depends on j-button element which is a generic button.
 				cameras: {
 					type: Object,
 					value: {}
+				},
+				auto: {
+					type: Boolean,
+					value: false
+				},
+				title: {
+					type: String,
+					value: ""
+				},
+				description: {
+					type: String,
+					value: ""
+				},
+				privacyStatus: {
+					type: String,
+					value: ""
+				},
+				videoId: {
+					type: String,
+					value: null
 				},
 				selectedCamera: {
 					type: String,
@@ -97,6 +133,7 @@ This depends on j-button element which is a generic button.
 				var self = this;
 				var videoList = this.getElem(this.ctrls.videoList);
 				var uploadSection = this.getElem(this.ctrls.uploadSection);
+				this.cameras = {};
 				uploadSection.hidden = false;
 
 
@@ -108,7 +145,13 @@ This depends on j-button element which is a generic button.
 				}
 
 				function onUserMediaSuccess() {
-				  
+					var cams = Object.keys(self.cameras).length;
+					var videoSelect = self.getElem(self.ctrls.videoSelect);
+				  if(cams > 1){
+				  	videoSelect.hidden = false;
+				  }else{
+				  	videoSelect.hidden = true;
+				  }
 				}
 
 				function onUserMediaError() {
@@ -178,7 +221,7 @@ This depends on j-button element which is a generic button.
 		        var file = e.target.files[0];
 		        var upload = this.getElem(this.ctrls.upload);
 		        console.log("user authenticated: " + upload.authenticated);
-		        //upload.uploadFile(file);
+		        upload.uploadFile(file);
 		    },
 			computeProgressTxt: function(megabytesPerSecond, minutesRemaining, secondsRemainin){
 				return megabytesPerSecond + 'MB/s, ' + minutesRemaining + 'm' + secondsRemaining + 's remaining';
@@ -227,6 +270,15 @@ This depends on j-button element which is a generic button.
 		        }
 		        this.process.error = 'YouTube processing failed (' + error + ').';
 		        this.process.state = 'error';
+		    },
+		    _checkAuth: function(){
+		    	var upload = this.getElem(this.ctrls.upload);
+
+		    	if(upload.authenticated){
+		    		return true;
+		    	}else{
+		    		return false;
+		    	}
 		    }
 		});
 	});

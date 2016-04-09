@@ -68,6 +68,21 @@ li.userDataInput{
   height: 25%;
 }
 
+.halfWidth {
+  width: 48.6%;
+}
+
+.floatLeft {
+  float: left;
+}
+
+.floatRight {
+  float: right;
+}
+.inlineBlock {
+  display: inline-block;
+}
+
 .inlineOneEighth {
   display: inline-block;
   width: 22.5%;

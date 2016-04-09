@@ -100,6 +100,9 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 		getId: function(){
 			return this.id;
 		},
+		getIdHash: function(){
+			return "#"+this.id;
+		},
 		getSelf: function(){
 			var e = document.querySelector("#"+this.id);
 			return e;
@@ -126,7 +129,8 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 			}	
 		},
 		assignClass: function(elem, cl){
-
+			//console.log("adding class "+ cl + " to: ");
+			//console.log(elem);
 			if(elem !== null){
 				elem.className += ' ' + cl;
 			}	
@@ -199,6 +203,15 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 
 			setTimeout(function(){
 	          	return ctrls[key];
+	        },10);
+			
+		},
+		getCtrlIdHash: function(key){
+			var sel = this;
+			var ctrls = this.ctrls;
+
+			setTimeout(function(){
+	          	return "#"+ctrls[key];
 	        },10);
 			
 		},

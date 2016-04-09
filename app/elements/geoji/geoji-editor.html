@@ -42,9 +42,9 @@ paper-icon-button.createMarker #icon {
  }
 
  iron-icon.createMarker{
- 	margin: auto;
+ 	margin: 0px 0px 0px 8%;
     width: 80%;
-    height: 30vh;
+    height: 20%;
  }
 
  iron-image.createMarker{
@@ -71,7 +71,8 @@ paper-icon-button.createMarker #icon {
 
  paper-input-container.createMarker{
 
- 	width: 50%;
+ 	width: 95%;
+ 	margin: 10px 10px 10px 10px;
  }
  paper-input-container.txtData{
  	margin: auto;
@@ -80,7 +81,8 @@ paper-icon-button.createMarker #icon {
  }
  paper-dialog.txtData{
 
- 	width: 50vw;
+ 	width: 35vw;
+ 	height: 55%;
  }
  paper-button.txtData{
  	float: right;
@@ -88,7 +90,14 @@ paper-icon-button.createMarker #icon {
  }
  paper-dialog.imgData{
 
- 	width: 50vw;
+ 	width: 35vw;
+ 	height: 60%;
+
+ }
+ paper-dialog.vidData{
+
+ 	width: 35vw;
+ 	height: 55%;
 
  }
  paper-icon-button.closeDialog{
@@ -112,21 +121,34 @@ paper-icon-button.createMarker #icon {
 
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
 
-		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
-		<j-vid-process>hello</j-vid-process>
-		  <div class="card-content">
-		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}">Private</paper-toggle-button>
-		  	<paper-input-container class="createMarker">
+		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}">
+			<paper-input-container class="createMarker">
 			  <label>Title</label>
 			  <input id="{{assignCtrl('title')}}" class="createMarker" is="iron-input" bind-value="{{title}}">
 			  <paper-icon-button suffix icon="clear"></paper-icon-button>
 			</paper-input-container>
-			<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
+		  <div class="card-content">
+		  <div id="{{assignCtrl('containerPrivate')}}">
+		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}">Private</paper-toggle-button>
+		  	<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
 			  <label>Add Email</label>
 			  <input id="{{assignCtrl('emailInput')}}" is="iron-input" bind-value="">
 			  <paper-input-error>Enter a valid email!</paper-input-error>
 			  <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
 			</paper-input-container>
+		  </div>
+		  <div id="{{assignCtrl('containerEncrypt')}}">
+		  	<paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}">Encrypt</paper-toggle-button>
+		  	<paper-input-container id="{{assignCtrl('cipher')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
+			  <label>Cipher Key</label>
+			  <input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="{{cipherText}}">
+			  <input id="cipherHidden" is="iron-input" bind-value="{{cipherText}}" hidden="true">
+			  <paper-input-error>Enter or Generate cipher</paper-input-error>
+			  <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
+			  <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button>
+			</paper-input-container>
+		  </div>
+		  			
 			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
 			<!-- <gold-email-input id="{{assignCtrl('email')}}" class="createMarker" label="add email" hidden="true"></gold-email-input> -->
 		  </div>
@@ -161,8 +183,8 @@ paper-icon-button.createMarker #icon {
 			<paper-input-container id="{{assignCtrl('txtContainer')}}" class="txtData" bind-value="">
 			  <textarea id="{{assignCtrl('txtInput')}}" class="txtData" rows="10" cols="30"></textarea> 
 			</paper-input-container>
-			<paper-button id="{{assignCtrl('cancelTxt')}}" class="txtData" raised on-tap="toggleTxtDialog">CANCEL</paper-button>
-			<paper-button id="{{assignCtrl('saveTxt')}}" class="txtData" raised on-tap="saveTxt">SAVE</paper-button>
+			<paper-button id="{{assignCtrl('cancelTxt')}}" class="txtData theme" raised on-tap="toggleTxtDialog">CANCEL</paper-button>
+			<paper-button id="{{assignCtrl('saveTxt')}}" class="txtData theme" raised on-tap="saveTxt">SAVE</paper-button>
 		</paper-dialog>
 
 		<paper-dialog class="imgData" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
@@ -185,12 +207,24 @@ paper-icon-button.createMarker #icon {
 			></j-img-process>
 		</paper-dialog>
 
+		<paper-dialog class="vidData" id="{{assignCtrl('vidDialog')}}" modal role="alertdialog">
+			<h2>Geoji Video</h2>
+			<div id="{{assignCtrl('vidImgs')}}" >
+				<iron-icon id="{{assignCtrl('vidIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
+			</div>
+			<j-vid-process
+			 id="{{assignCtrl('vidProcess')}}"
+			 auto="true"
+			 ></j-vid-process>
+		</paper-dialog>
+
 	</template>
 </dom-module>
 
 <script>
 	// I pass the button handler property from the base element, defined as the input
 	// The call back is made via document.querySelector on the input element name.
+
 	Polymer({		
 		is: "geoji-editor",
 		properties: {
@@ -204,6 +238,12 @@ paper-icon-button.createMarker #icon {
 				type: Boolean,
 				value: false,
 				observer: "_setPrivate",
+				notify: true
+			},
+			encrypted: {
+				type: Boolean,
+				value: false,
+				observer: "_setEncrypted",
 				notify: true
 			},
 			cardImg: {
@@ -254,6 +294,9 @@ paper-icon-button.createMarker #icon {
 			},
 			selectedMarker: {
 				type: String
+			},
+			cipherText: {
+				type: String
 			}
 			
 		},
@@ -268,13 +311,58 @@ paper-icon-button.createMarker #icon {
 			var map = this.getElem(this.ctrls.map);
 			var target = this.getElem(this.ctrls.targetMarker);
 			var targetObj = {};
+			var title = this.getElem(this.ctrls.title);
+			var email = this.getElem(this.ctrls.email);
+			var public = this.getElem(this.ctrls.public);
+			var email = this.getElem(this.ctrls.email);
+			var emailInput = this.getElem(this.ctrls.emailInput);
+			var encrypt = this.getElem(this.ctrls.encrypt);
+			var cipher = this.getElem(this.ctrls.cipher);
+			var cipherInput = this.getElem(this.ctrls.cipherInput);
+			var cipherCopy = this.getElem(this.ctrls.cipherCopy);
 			var imgDialog = this.getElem(this.ctrls.imgDialog);
 			var imgProcess = this.getElem(this.ctrls.imgProcess);
 			var imgIcon = this.getElem(this.ctrls.imgIcon);
 			var spinner = this.getElem(this.ctrls.progressSpinner);
+			var vidDialog = this.getElem(this.ctrls.vidDialog);
+			var vidProcess = this.getElem(this.ctrls.vidProcess);
+			var containerPrivate = this.getElem(this.ctrls.containerPrivate);
+			var containerEncrypt = this.getElem(this.ctrls.containerEncrypt);
+
+			title.focus();
+			title.value = " ";
+			title.blur();
+			
 			imgProcess.handleDialog = imgDialog.id;
 			imgProcess.handleElement = imgIcon.id;
 			imgProcess.progressSpinner = spinner.id;
+			vidProcess.handleDialog = vidDialog.id;
+
+			this.clipboard = new Clipboard(cipherCopy);
+
+			var inlines = [containerPrivate, containerEncrypt];
+			var containers = [containerPrivate, containerEncrypt];
+
+			var topStyle = {
+				"vertical-align":"top"
+			}
+			var halfStyle = {
+				"width": "2vw"
+			}
+			var containerStyle = {
+				"top": "1vh",
+				"bottom": "1vh",
+				"height": "11vh",
+				"vertical-align":"top"
+			}
+
+			for(i in inlines){
+				this.assignClass(inlines[i], "inlineHalf");
+			}
+
+			for(i in containers){
+				this.assignStyles(containers[i], containerStyle);
+			}
 
 			this.geoji = {};
 			map.mapType="satellite";
@@ -282,6 +370,15 @@ paper-icon-button.createMarker #icon {
 			targetObj.longitude = target.longitude;
 			targetObj.latitude = target.latitude;
 			this.geoji.target = targetObj;
+
+			this.clipboard.on('success', function(e) {
+			    console.log(e);
+			    document.execCommand("copy", true, e.text);
+			});
+			this.clipboard.on('error', function(e) {
+				console.log("ERROR!");
+			    console.log(e);
+			});
 
 			var onClick = function(e) {
 				    console.log(e);
@@ -456,42 +553,39 @@ paper-icon-button.createMarker #icon {
 				    console.log(e);
 				};
 			var dblClick = function(e) {
-					var imgUrl = self.geoji[e.target.id].img;
-					var imgProcess = self.getElem(self.ctrls.imgProcess);
-					var imgIcon = self.getElem(self.ctrls.imgIcon);
-					console.log("imgUrl");
-					console.log(imgUrl);
-					console.log("imgUrl");
+					var vidUrl = self.geoji[e.target.id].vid;
+					var vidProcess = self.getElem(self.ctrls.vidProcess);
+					var vidIcon = self.getElem(self.ctrls.vidIcon);
 				    
 
-				    if(imgUrl !== null && imgUrl !== undefined){
+				 //    if(imgUrl !== null && imgUrl !== undefined){
 
-				    	imgIcon.hidden = true;
+				 //    	imgIcon.hidden = true;
 				    	
-				    	if(imgProcess !== null && imgProcess !== undefined){
+				 //    	if(imgProcess !== null && imgProcess !== undefined){
 
-				    		imgProcess.setImgPreview(imgUrl);
+				 //    		imgProcess.setImgPreview(imgUrl);
 
-				    	}
+				 //    	}
 
-					}else if(imgUrl === null || imgUrl === undefined){
+					// }else if(imgUrl === null || imgUrl === undefined){
 
-				    	if(imgProcess !== null && imgProcess !== undefined){
+				 //    	if(imgProcess !== null && imgProcess !== undefined){
 	
-				    		if(imgProcess.getImgPreview){
+				 //    		if(imgProcess.getImgPreview){
 	
-				    			if(imgProcess.getImgPreview()){
-				    				imgProcess.hideCropper();
-				    				imgIcon.hidden = false;
-				    			}else if(!imgProcess.getImgPreview()){
+				 //    			if(imgProcess.getImgPreview()){
+				 //    				imgProcess.hideCropper();
+				 //    				imgIcon.hidden = false;
+				 //    			}else if(!imgProcess.getImgPreview()){
 				    				
-				    			}
+				 //    			}
 				    			
 
-				    		}
-				    	}
+				 //    		}
+				 //    	}
 
-					}
+					// }
 
 					self.toggleDialog(e);
 				    self.selectedMarker = e.target.id;
@@ -600,10 +694,11 @@ paper-icon-button.createMarker #icon {
 			var email = this.getElem(this.ctrls.email);
 			console.log(this.emailValue);
 			//this.emailList.push(email.value);
-			if(this.emailValidate()){
+			if(this.emailValidate()&&(!this.emailString.includes(this.emailValue))){
 				input.invalid = false;
 				this.emailString += "  " + this.emailValue + ",";
-				this.emailList.push(this.emailValue)
+				this.emailList.push(this.emailValue);
+				this.geoji.emailList.push(userEmail);
 				input.value = "";
 			}else{
 				email.invalid = true;
@@ -625,6 +720,79 @@ paper-icon-button.createMarker #icon {
 			}
 			console.log("validate");
 		},
+		createcipher: function(){
+			var randomString = Math.random().toString(36).slice(-8);
+			var cipherInput = this.getElem(this.ctrls.cipherInput);
+
+			cipherInput.value = randomString;
+		},
+		copycipher: function(){
+			var cipherInput = this.getElem(this.ctrls.cipherInput);
+			var cipherCopy = this.getElem(this.ctrls.cipherCopy);
+			var hidden = document.querySelector("#cipherHidden");
+			var cipher = cipherInput.value;
+			hidden.value = cipher;
+
+			cipherCopy["data-clipboard-text"] = cipher;
+			//console.log(this.clipboard);
+			
+			//window.prompt("Copy to clipboard: Ctrl+C, Enter", cipherInput.value);
+		},
+		encryptData: function(string, cipher){
+
+			triplesec.encrypt ({
+
+			    data:          new triplesec.Buffer(string),
+			    key:           new triplesec.Buffer(cipher),
+			    progress_hook: function (obj) { /* ... */ }
+
+			}, function(err, buff) {
+
+			    if (! err) {
+			        var ciphertext = buff.toString('hex');
+			        return ciphertext;
+			    }
+
+			});
+
+		},
+		_encryptGeoji: function(){
+			var geoji = {};
+			var cipher = this.getElem(this.ctrls.cipherInput);
+
+			for(key in this.geoji){
+
+				switch(this.geoji[key]){
+					case "title":
+						geoji.title = this.encryptData(this.geoji.title, cipher);
+						break;
+					case "private":
+						geoji.private = this.encryptData(this.geoji.private, cipher);
+						break;
+					case "encrypted":
+						geoji.encrypted = this.encryptData(this.geoji.encrypted, cipher);
+						break;
+					case "emailList":
+						for(i in this.geoji.emailList){
+							geoji.emailList = this.encryptData(this.geoji.emailList[i], cipher);
+						}
+						break;
+					default:
+						if(typeof this.geoji[key]==="object"){
+							var obj = this.geoji[key];
+							var o = {};
+							for(k in obj){
+								o[k] = this.encryptData(obj[k], cipher);
+							}
+							geoji[key] = o;
+						}
+						
+						break;
+
+				}
+			}
+
+		},
 		_getCurrentLocation: function(){
 			console.log("getting current location.");
 		},
@@ -636,11 +804,52 @@ paper-icon-button.createMarker #icon {
 			}
 		},
 		_setPrivate: function(){
+			var userEmail = app.data.email;
+			var emailInput = this.getElem(this.ctrls.emailInput);
+			var geojiEmails;
 			var pToggle = this.getElem(this.ctrls.public);
+
+			if((this.geoji !== null && this.geoji !== undefined)){
+				var geojiEmails = this.geoji.emailList;
+				if(geojiEmails === null || geojiEmails === undefined){
+					this.geoji.emailList = [];
+				}
+			}
 
 			if(pToggle !== null){
 				this.geoji.private = pToggle.checked;
 				this.getElem(this.ctrls.email).hidden = !pToggle.checked;
+
+				if(this.getElem(this.ctrls.email).hidden === false){
+					emailInput.focus();
+					emailInput.value = " ";
+					emailInput.blur();
+					if(!this.emailString.includes(userEmail)){
+						this.emailString += "  " + userEmail + ",";
+						this.emailList.push(userEmail);
+						this.geoji.emailList.push(userEmail);
+					}
+				}else if(this.getElem(this.ctrls.email).hidden === true){
+					console.log("clear emails");
+					this.emailString = " ";
+					this.emailList=[];
+					this.geoji.emailList = [];
+				}
+
+			}
+		},
+		_setEncrypted: function(){
+			var cipherInput = this.getElem(this.ctrls.cipherInput);
+			var pToggle = this.getElem(this.ctrls.encrypt);
+
+			if(pToggle !== null){
+				this.geoji.encrypted = pToggle.checked;
+				this.getElem(this.ctrls.cipher).hidden = !pToggle.checked;
+				if(this.getElem(this.ctrls.cipher).hidden === false){
+					cipherInput.focus();
+					cipherInput.value = " ";
+					cipherInput.blur();
+				}
 			}
 		},
 		_updateEmails: function(){
