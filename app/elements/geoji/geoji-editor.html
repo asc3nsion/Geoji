@@ -106,6 +106,11 @@ paper-icon-button.createMarker #icon {
  paper-card.emailList{
  	display: inline-block;
  }
+ paper-spinner-lite.saveSpinner {
+ 	width:300px;
+ 	height:300px;
+ 	--paper-spinner-stroke-width:10px;
+ }
 
 </style>	
 
@@ -118,6 +123,13 @@ paper-icon-button.createMarker #icon {
 		    location="https://geoji.firebaseio.com/public/"
 		    data="{{geoji}}">
 		</firebase-collection>
+
+		<!-- <firebase-collection
+	    	id="{{assignCtrl('geojiPrivate')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/private/"
+		    data="{{geoji}}">
+		</firebase-collection> -->
 
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
 
@@ -218,6 +230,11 @@ paper-icon-button.createMarker #icon {
 			 ></j-vid-process>
 		</paper-dialog>
 
+		<paper-dialog class="vidData" id="{{assignCtrl('saveDialog')}}" modal role="alertdialog">
+			<h2>Saving Geoji</h2>
+			<paper-spinner-lite id="{{assignCtrl('saveSpinner')}}"  class="orange createMarker saveSpinner center"></paper-spinner-lite>
+		</paper-dialog>
+
 	</template>
 </dom-module>
 
@@ -263,10 +280,14 @@ paper-icon-button.createMarker #icon {
 				value: ""
 			},
 			currentLongitude: {
-				type: String
+				type: String,
+				observer: "locationChange",
+				notify: true
 			},
 			currentLatitude: {
-				type: String
+				type: String,
+				observer: "locationChange",
+				notify: true
 			},
 			markerArray: {
 				type: Array,
@@ -275,6 +296,12 @@ paper-icon-button.createMarker #icon {
 			geoji: {
 				type: Object,
 				value: {}
+			},
+			geojiEncrypted: {
+				type: Object,
+				value: {},
+				observer: "_checkEncrypted",
+				notify: true
 			},
 			emailValue: {
 				type: String,
@@ -367,9 +394,18 @@ paper-icon-button.createMarker #icon {
 			this.geoji = {};
 			map.mapType="satellite";
 
-			targetObj.longitude = target.longitude;
-			targetObj.latitude = target.latitude;
+			targetObj.longitude = this.currentLongitude;
+			targetObj.latitude = this.currentLatitude;
 			this.geoji.target = targetObj;
+
+			setTimeout(function(){
+
+		        self.geoji.target.longitude = self.currentLongitude;
+		        self.geoji.target.latitude = self.currentLatitude;
+		        targetObj.longitude = self.currentLongitude;
+				targetObj.latitude = self.currentLatitude;
+
+		    }, 1000);
 
 			this.clipboard.on('success', function(e) {
 			    console.log(e);
@@ -430,7 +466,29 @@ paper-icon-button.createMarker #icon {
 
 		},
 		saveGeoji: function(){
+			var geoji = this.geoji;
+			var cipher = this.getElem(this.ctrls.cipherInput).value;
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var saveGeoji = {};
 
+			saveDialog.open();
+			saveSpinner.active = true;
+
+			if(this.geoji!==null && this.geoji!==undefined){
+
+				if((geoji.encrypted)&&(cipher !== null || cipher !== undefined || cipher !== "")){
+					saveGeoji = this._encryptGeoji();
+				}else{
+
+				}
+			}
+
+			if(publicDB !== null && publicDB !== undefined){
+				//publicDB.add(saveGeoji);
+			}
+			//this.$.firebasePublicData.add(mainObj);
 		},
 		createMarker: function(){
 			var map = this.getElem(this.ctrls.map);
@@ -698,7 +756,7 @@ paper-icon-button.createMarker #icon {
 				input.invalid = false;
 				this.emailString += "  " + this.emailValue + ",";
 				this.emailList.push(this.emailValue);
-				this.geoji.emailList.push(userEmail);
+				this.geoji.emailList.push(this.emailValue);
 				input.value = "";
 			}else{
 				email.invalid = true;
@@ -738,58 +796,193 @@ paper-icon-button.createMarker #icon {
 			
 			//window.prompt("Copy to clipboard: Ctrl+C, Enter", cipherInput.value);
 		},
-		encryptData: function(string, cipher){
+		encryptData: function(key, data, cipher){
+			var self = this;
+			console.log(data + " " + cipher + "  encrypting...");
+
 
 			triplesec.encrypt ({
 
-			    data:          new triplesec.Buffer(string),
-			    key:           new triplesec.Buffer(cipher),
-			    progress_hook: function (obj) { /* ... */ }
+				data:          new triplesec.Buffer(data),
+				key:           new triplesec.Buffer(cipher),
+				progress_hook: function (obj) { /* ... */ }
 
 			}, function(err, buff) {
 
-			    if (! err) {
-			        var ciphertext = buff.toString('hex');
-			        return ciphertext;
-			    }
+				if (! err) {
+						var ciphertext = buff.toString('hex');
+						console.log(ciphertext);
+						self.geojiEncrypted[key] = ciphertext;
+						self._checkEncrypted();
+					}
 
 			});
 
 		},
+		encryptInnerData: function(key, innerKey, data, cipher){
+			console.log(data + " " + cipher + "  encrypting...");
+			var obj = this.geoji;
+			var keys = Object.keys(obj);
+			var self = this;
+
+			triplesec.encrypt ({
+
+				data:          new triplesec.Buffer(data),
+				key:           new triplesec.Buffer(cipher),
+				progress_hook: function (obj) { /* ... */ }
+
+			}, function(err, buff) {
+
+				if (! err) {
+						var ciphertext = buff.toString('hex');
+						console.log(key);
+						console.log(innerKey);
+						console.log(ciphertext);
+
+
+
+						if(self.geojiEncrypted[key]===null || self.geojiEncrypted[key]===undefined){
+							self.geojiEncrypted[key] = {};
+						}
+
+						self.geojiEncrypted[key][innerKey] = ciphertext;
+						self._checkEncrypted();
+
+						console.log(self.geojiEncrypted);
+					}
+
+			});
+
+		},
+		encryptArrayData: function(key, cipher){
+			var self = this;
+
+			triplesec.encrypt ({
+
+				data:          new triplesec.Buffer(data),
+				key:           new triplesec.Buffer(cipher),
+				progress_hook: function (obj) { /* ... */ }
+
+			}, function(err, buff) {
+
+				if (! err) {
+						var ciphertext = buff.toString('hex');
+						console.log(ciphertext);
+						self.geojiEncrypted[key] = ciphertext;
+						self._checkEncrypted();
+					}
+
+			});
+
+		},
+		encryptObj: function(key, obj, cipher){
+
+			console.log("start encrypt object.");
+
+			for(k in obj){
+				console.log("k");
+				console.log(k);
+				this.encryptInnerData(key, k, obj[k], cipher);
+			}
+
+		},
+		encryptArray: function(key, cipher){
+			var self = this;
+			var array = this.geoji[key];
+
+			if(array.constructor === Array){
+				for(i in array){
+					triplesec.encrypt ({
+
+						data:          new triplesec.Buffer(data),
+						key:           new triplesec.Buffer(cipher),
+						progress_hook: function (obj) { /* ... */ }
+
+					}, function(err, buff) {
+
+						if (! err) {
+								var ciphertext = buff.toString('hex');
+								console.log(ciphertext);
+								console.log("self.geojiEncrypted[key]");
+								console.log(self.geojiEncrypted[key]);
+								self.geojiEncrypted[key].push(ciphertext);
+								self._checkEncrypted();
+							}
+					});
+				}
+			}else{
+				console.log("Must be type of array to encrypt.")
+			}
+
+			console.log("start encrypt object.");
+
+		},
+		locationChange: function(){
+			var geoji = this.geoji;
+			// if(geoji !== null && geoji !== undefined){
+			// 	var target = this.geoji.target;
+			// 	var lat = this.currentLatitude;
+			// 	var long = this.currentLongitude;
+
+			// 	console.log("location change: " + this.currentLatitude);
+			// 	//console.log(this.geoji.target);
+			// 	//geoji.target.longitude = long;
+			// 	// geoji.target.latitude = this.currentLatitude;
+			// }
+		},
 		_encryptGeoji: function(){
 			var geoji = {};
-			var cipher = this.getElem(this.ctrls.cipherInput);
+			var cipher = this.getElem(this.ctrls.cipherInput).value;
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var obj = this.geoji;
+			var keys = Object.keys(obj);
+			var length = Object.keys(obj).length;
+			var self = this;
+			var i = 0;
 
-			for(key in this.geoji){
+			for (var member in this.geojiEncrypted) delete this.geojiEncrypted[member];
 
-				switch(this.geoji[key]){
+			console.log("processObj---> "+keys[i]);
+
+			for(key in obj){
+				switch(key){
 					case "title":
-						geoji.title = this.encryptData(this.geoji.title, cipher);
+						console.log("encrypt title");
+						self.encryptData(key, self.geoji.title, cipher);
 						break;
 					case "private":
-						geoji.private = this.encryptData(this.geoji.private, cipher);
+						console.log("encrypt private")
+						if(self.geoji.private !== null && self.geoji.private !== undefined){
+							self.geojiEncrypted.private = self.geoji.private;
+						}
 						break;
 					case "encrypted":
-						geoji.encrypted = this.encryptData(this.geoji.encrypted, cipher);
+						console.log("encrypt encrypted")
+						if(self.geoji.encrypted !== null && self.geoji.encrypted !== undefined){
+							self.geojiEncrypted.encrypted = true;
+						}
 						break;
 					case "emailList":
-						for(i in this.geoji.emailList){
-							geoji.emailList = this.encryptData(this.geoji.emailList[i], cipher);
+						console.log("encrypt email list")
+						if(self.geoji.emailList !== null && self.geoji.emailList !== undefined){
+							self.geojiEncrypted.emailList = [];
+							self.encryptArray(key, cipher);
 						}
-						break;
+							
+							break;
 					default:
-						if(typeof this.geoji[key]==="object"){
-							var obj = this.geoji[key];
-							var o = {};
-							for(k in obj){
-								o[k] = this.encryptData(obj[k], cipher);
-							}
-							geoji[key] = o;
-						}
-						
-						break;
+						console.log("default");
 
+						if(typeof self.geoji[key]==="object"){
+							console.log("encrypt object");
+							console.log("the key is: "+key);
+							console.log(self.geoji[key]);
+							geoji[key]=self.encryptObj(key, self.geoji[key], cipher);
+						}
+							
+						break;
 				}
+				i++;
 			}
 
 		},
@@ -851,6 +1044,43 @@ paper-icon-button.createMarker #icon {
 					cipherInput.blur();
 				}
 			}
+		},
+		_checkEncrypted: function(){
+			var keys = Object.keys(this.geoji);
+			var eKeys = Object.keys(this.geojiEncrypted);
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
+			var limit = eKeys.length;
+			var objsEncrypted = false;
+			var i = 1;
+
+			console.log("keys length: "+keys.length+" <---> eKeys length: "+eKeys.length);
+			for(item in eKeys){
+				if(typeof this.geojiEncrypted[eKeys[item]]==="object"){
+					var obj = this.geojiEncrypted[eKeys[item]];
+					var max = Object.keys(obj).length;
+					var j = 1;
+
+					for(k in obj){
+
+						if((obj[k]!==null && obj[k]!==undefined)&&(j===max)){
+							if(keys.length === eKeys.length){
+								objsEncrypted = true;
+							}
+						}
+
+						j++;
+					}
+				}
+				i++;
+				if(i===limit && objsEncrypted){
+					console.log("ALL DATA SHOULD BE ENCRYPTED.");
+
+					saveSpinner.active = false;
+					saveDialog.close();
+				}
+			}
+
 		},
 		_updateEmails: function(){
 			console.log("helleo");
