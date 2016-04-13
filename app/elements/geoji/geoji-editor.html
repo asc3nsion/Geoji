@@ -121,15 +121,15 @@ paper-icon-button.createMarker #icon {
 	    	id="{{assignCtrl('geojiPublic')}}"
 			limit-to-first="3"
 		    location="https://geoji.firebaseio.com/public/"
-		    data="{{geoji}}">
+		    data="{{publicData}}">
 		</firebase-collection>
 
-		<!-- <firebase-collection
+		<firebase-collection
 	    	id="{{assignCtrl('geojiPrivate')}}"
 			limit-to-first="3"
 		    location="https://geoji.firebaseio.com/private/"
-		    data="{{geoji}}">
-		</firebase-collection> -->
+		    data="{{privateData}}">
+		</firebase-collection>
 
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
 
@@ -290,6 +290,10 @@ paper-icon-button.createMarker #icon {
 				notify: true
 			},
 			markerArray: {
+				type: Array,
+				value:[]
+			},
+			publicData: {
 				type: Array,
 				value:[]
 			},
@@ -460,9 +464,40 @@ paper-icon-button.createMarker #icon {
 		addGeoji: function(){
 			var add = this.getElem(this.ctrls.add);
 			var save = this.getElem(this.ctrls.save);
+			var geoji = this.geoji;
+			var cipher = this.getElem(this.ctrls.cipherInput).value;
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var saveGeoji = {};
 
-			add.hidden = true;
-			save.hidden = false;
+			saveDialog.open();
+			saveSpinner.active = true;
+
+			if(this.geoji!==null && this.geoji!==undefined){
+
+				if((this.geoji.encrypted)&&(cipher !== null || cipher !== undefined || cipher !== "")){
+					this._encryptGeoji();
+				}else{
+					if(!this.geoji.private){
+						if(publicDB !== null && publicDB !== undefined){
+							publicDB.add(this.geoji);
+							add.hidden = true;
+							save.hidden = false;
+							saveDialog.close();
+						}
+					}else{
+						if(privateDB !== null && privateDB !== undefined){
+							privateDB.add(this.geoji);
+							add.hidden = true;
+							save.hidden = false;
+							saveDialog.close();
+						}
+					}
+				}
+			}
+
 
 		},
 		saveGeoji: function(){
@@ -614,36 +649,6 @@ paper-icon-button.createMarker #icon {
 					var vidUrl = self.geoji[e.target.id].vid;
 					var vidProcess = self.getElem(self.ctrls.vidProcess);
 					var vidIcon = self.getElem(self.ctrls.vidIcon);
-				    
-
-				 //    if(imgUrl !== null && imgUrl !== undefined){
-
-				 //    	imgIcon.hidden = true;
-				    	
-				 //    	if(imgProcess !== null && imgProcess !== undefined){
-
-				 //    		imgProcess.setImgPreview(imgUrl);
-
-				 //    	}
-
-					// }else if(imgUrl === null || imgUrl === undefined){
-
-				 //    	if(imgProcess !== null && imgProcess !== undefined){
-	
-				 //    		if(imgProcess.getImgPreview){
-	
-				 //    			if(imgProcess.getImgPreview()){
-				 //    				imgProcess.hideCropper();
-				 //    				imgIcon.hidden = false;
-				 //    			}else if(!imgProcess.getImgPreview()){
-				    				
-				 //    			}
-				    			
-
-				 //    		}
-				 //    	}
-
-					// }
 
 					self.toggleDialog(e);
 				    self.selectedMarker = e.target.id;
@@ -1046,6 +1051,8 @@ paper-icon-button.createMarker #icon {
 			}
 		},
 		_checkEncrypted: function(){
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
 			var keys = Object.keys(this.geoji);
 			var eKeys = Object.keys(this.geojiEncrypted);
 			var saveDialog = this.getElem(this.ctrls.saveDialog);
@@ -1074,7 +1081,23 @@ paper-icon-button.createMarker #icon {
 				}
 				i++;
 				if(i===limit && objsEncrypted){
+					var publicDB = this.getElem(this.ctrls.geojiPublic);
+					var privateDB = this.getElem(this.ctrls.geojiPrivate);
 					console.log("ALL DATA SHOULD BE ENCRYPTED.");
+
+					if(!add.hidden){
+						if(this.geojiEncrypted.private){
+							privateDB.add(this.geojiEncrypted);
+							console.log(this.privateData);
+						}else if(!this.geojiEncrypted.private){
+							publicDB.add(this.geojiEncrypted);
+							console.log(this.publicData);
+						}
+						add.hidden = true;
+						save.hidden = false;
+					}else{
+
+					}
 
 					saveSpinner.active = false;
 					saveDialog.close();
