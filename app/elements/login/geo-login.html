@@ -237,7 +237,7 @@ addEventListener('WebComponentsReady', function() {
         case "google":
           console.log("do a google log in.");
           params = params || {};
-          params.scope = "email";
+          params.scope = "email https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload";
 
           this.$.firebaseLogin.login(params);
 
@@ -263,7 +263,6 @@ addEventListener('WebComponentsReady', function() {
     },
     dataCallBack: function(){
       if(this.userData !== null){
-        console.log("ggggggg");
         console.log(this.userData);
         if(this.userData.customName !== undefined){
           console.log("has a custom name.");

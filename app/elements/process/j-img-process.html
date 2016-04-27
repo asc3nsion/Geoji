@@ -313,6 +313,20 @@ fixedSize = it the size of the cropped square in pixels.
         }
 
       },
+      getPreviewSrc: function(url){
+
+        var imgPreview = this.getElem(this.ctrls.imgPreview);
+
+        if(imgPreview !== null && imgPreview !== undefined){
+          console.log("getPreviewSrc-----");
+          console.log(this.imageNode);
+          console.log("getPreviewSrc-----");
+          return imgPreview.src;
+        }else{
+          return null;
+        }
+
+      },
       hideCropper: function(url){
 
         var cropper = this.getElem(this.ctrls.cropperContainer);

@@ -20,6 +20,7 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
+<link rel="import" href="../../behaviors/util/j-util.html">
 
 <style>
 
@@ -201,6 +202,7 @@ paper-icon-button.createMarker #icon {
 
 		<paper-dialog class="imgData" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
 			<h2>Geoji Image</h2>
+			<paper-toggle-button id="{{assignCtrl('coverImg')}}"  checked="{{coverSet}}" class="inlineBlock">Cover Image</paper-toggle-button>
 			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange createMarker"></paper-spinner-lite>
 			<div id="{{assignCtrl('tempImgs')}}" >
 				<iron-icon id="{{assignCtrl('imgIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
@@ -227,6 +229,8 @@ paper-icon-button.createMarker #icon {
 			<j-vid-process
 			 id="{{assignCtrl('vidProcess')}}"
 			 auto="true"
+			 privacy-status="private"
+			 categoryId = "22"
 			 ></j-vid-process>
 		</paper-dialog>
 
@@ -274,6 +278,14 @@ paper-icon-button.createMarker #icon {
 			detail: {
 				type: String,
 				value: ""
+			},
+			coverSet: {
+				type: String,
+				observer: "_setCoverImg",
+				notify: true
+			},
+			coverImg: {
+				type: String
 			},
 			description: {
 				type: String,
@@ -332,7 +344,7 @@ paper-icon-button.createMarker #icon {
 			
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, UtilityBehaviors.JUtil],
 
 		ready: function(){
 
@@ -401,6 +413,8 @@ paper-icon-button.createMarker #icon {
 			targetObj.longitude = this.currentLongitude;
 			targetObj.latitude = this.currentLatitude;
 			this.geoji.target = targetObj;
+
+			this.geoji.private = public.checked;
 
 			setTimeout(function(){
 
@@ -561,11 +575,19 @@ paper-icon-button.createMarker #icon {
 			var id = event.target.id;
 			var type = this.geoji[id].type;
 			var message = this.geoji[id].message;
+			var marker = document.querySelector("#"+id);
 
 			if(type !== undefined && type !== null){
 
 				if(type === "img"){
+					var coverImg = this.coverImg;
+					var coverSet = this.coverSet;
+
 					this.getElem(this.ctrls.imgProcess).hideButtons = false;
+
+					if(coverImg !== null && coverImg !== null){
+
+					}
 				}
 
 				var e = this.getElem(this.ctrls[type+"Dialog"]);
@@ -646,12 +668,26 @@ paper-icon-button.createMarker #icon {
 				    console.log(e);
 				};
 			var dblClick = function(e) {
-					var vidUrl = self.geoji[e.target.id].vid;
-					var vidProcess = self.getElem(self.ctrls.vidProcess);
-					var vidIcon = self.getElem(self.ctrls.vidIcon);
+					var imgUrl = self.geoji[e.target.id].img;
+					var imgProcess = self.getElem(self.ctrls.imgProcess);
+					var imgIcon = self.getElem(self.ctrls.imgIcon);
 
 					self.toggleDialog(e);
 				    self.selectedMarker = e.target.id;
+				    
+				    if(imgUrl !== null && imgUrl !== undefined){
+				    	console.log("this is the img url::::");
+				    	console.log(imgUrl);
+				    	console.log("imgProcess.ctrls.imgPreview.src");
+				    	console.log(imgProcess.ctrls);
+				    	console.log("imgProcess.ctrls.imgPreview.src");
+				    	imgProcess.setImgPreview(imgUrl);
+				    	imgIcon.hidden = true;
+				    	imgProcess.showCropper();
+				    }else{
+				    	imgProcess.hideCropper();
+				    	imgIcon.hidden = false;
+				    }
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
@@ -784,7 +820,12 @@ paper-icon-button.createMarker #icon {
 			console.log("validate");
 		},
 		createcipher: function(){
-			var randomString = Math.random().toString(36).slice(-8);
+			var symbols = ["!", "@", "$", "%", "^", "&", "*", "_"];
+			var sym1 = symbols[this.getRandomInt(0, symbols.length)];
+			var sym2 = symbols[this.getRandomInt(0, symbols.length)];
+			var randomString = Math.random().toString(36).slice(-8)+Math.random().toString(36).slice(-8)+sym1+sym2;
+			randomString = this.shuffleString(randomString);
+
 			var cipherInput = this.getElem(this.ctrls.cipherInput);
 
 			cipherInput.value = randomString;
@@ -816,9 +857,22 @@ paper-icon-button.createMarker #icon {
 
 				if (! err) {
 						var ciphertext = buff.toString('hex');
-						console.log(ciphertext);
+						var keys = Object.keys(self.geoji);
+						var eKeys = Object.keys(self.geojiEncrypted);
+
+						//console.log(ciphertext);
 						self.geojiEncrypted[key] = ciphertext;
-						self._checkEncrypted();
+
+						if(keys.length === eKeys.length){
+							var eObj = self.geojiEncrypted[key];
+							var gObj = self.geoji[key];
+							var keysE = Object.keys(eObj);
+							var keysO = Object.keys(gObj);
+
+							if(keysE.length === keysO.length){
+								self._checkEncrypted();
+							}
+						}
 					}
 
 			});
@@ -840,9 +894,12 @@ paper-icon-button.createMarker #icon {
 
 				if (! err) {
 						var ciphertext = buff.toString('hex');
-						console.log(key);
-						console.log(innerKey);
-						console.log(ciphertext);
+						var keys = Object.keys(self.geoji);
+						var eKeys = Object.keys(self.geojiEncrypted);
+						
+						//console.log(key);
+						//console.log(innerKey);
+						//console.log(ciphertext);
 
 
 
@@ -850,10 +907,27 @@ paper-icon-button.createMarker #icon {
 							self.geojiEncrypted[key] = {};
 						}
 
-						self.geojiEncrypted[key][innerKey] = ciphertext;
-						self._checkEncrypted();
+						if(innerKey !== "type"){
+							self.geojiEncrypted[key][innerKey] = ciphertext;
+						}else{
+							self.geojiEncrypted[key].type = self.geoji[key].type;
+						}
 
-						console.log(self.geojiEncrypted);
+						if(keys.length === eKeys.length){
+							var eObj = self.geojiEncrypted[key][innerKey];
+							var gObj = self.geoji[key][innerKey];
+							var keysE = Object.keys(eObj);
+							var keysO = Object.keys(gObj);
+
+							if(keysE.length === keysO.length){
+								// console.log(ciphertext);
+								// console.log("self.geojiEncrypted[key]");
+								// console.log(self.geojiEncrypted[key]);
+								self._checkEncrypted();
+							}
+						}
+
+						//console.log(self.geojiEncrypted);
 					}
 
 			});
@@ -872,9 +946,27 @@ paper-icon-button.createMarker #icon {
 
 				if (! err) {
 						var ciphertext = buff.toString('hex');
+						var keys = Object.keys(self.geoji);
+						var eKeys = Object.keys(self.geojiEncrypted);
+						
+						//console.log(ciphertext);
 						console.log(ciphertext);
+
 						self.geojiEncrypted[key] = ciphertext;
-						self._checkEncrypted();
+
+						if(keys.length === eKeys.length){
+							var eObj = self.geojiEncrypted[innerKey];
+							var gObj = self.geoji[innerKey];
+							var keysE = Object.keys(eObj);
+							var keysO = Object.keys(gObj);
+
+							if(keysE.length === keysO.length){
+								// console.log(ciphertext);
+								// console.log("self.geojiEncrypted[key]");
+								// console.log(self.geojiEncrypted[key]);
+								self._checkEncrypted();
+							}
+						}
 					}
 
 			});
@@ -885,8 +977,6 @@ paper-icon-button.createMarker #icon {
 			console.log("start encrypt object.");
 
 			for(k in obj){
-				console.log("k");
-				console.log(k);
 				this.encryptInnerData(key, k, obj[k], cipher);
 			}
 
@@ -907,11 +997,23 @@ paper-icon-button.createMarker #icon {
 
 						if (! err) {
 								var ciphertext = buff.toString('hex');
+								var keys = Object.keys(self.geoji);
+								var eKeys = Object.keys(self.geojiEncrypted);
+								
 								console.log(ciphertext);
-								console.log("self.geojiEncrypted[key]");
-								console.log(self.geojiEncrypted[key]);
+								
 								self.geojiEncrypted[key].push(ciphertext);
-								self._checkEncrypted();
+
+								if(keys.length === eKeys.length){
+									var keysE = Object.keys(eObj);
+									var keysO = Object.keys(gObj);
+
+									if(keysE.length === keysO.length){
+										// console.log("self.geojiEncrypted[key]");
+										// console.log(self.geojiEncrypted[key]);
+										self._checkEncrypted();
+									}
+								}
 							}
 					});
 				}
@@ -945,7 +1047,7 @@ paper-icon-button.createMarker #icon {
 			var self = this;
 			var i = 0;
 
-			for (var member in this.geojiEncrypted) delete this.geojiEncrypted[member];
+			this.geojiEncrypted = {};
 
 			console.log("processObj---> "+keys[i]);
 
@@ -956,19 +1058,21 @@ paper-icon-button.createMarker #icon {
 						self.encryptData(key, self.geoji.title, cipher);
 						break;
 					case "private":
-						console.log("encrypt private")
+
 						if(self.geoji.private !== null && self.geoji.private !== undefined){
 							self.geojiEncrypted.private = self.geoji.private;
 						}
 						break;
 					case "encrypted":
-						console.log("encrypt encrypted")
+						console.log("encrypt encrypted");
+
 						if(self.geoji.encrypted !== null && self.geoji.encrypted !== undefined){
 							self.geojiEncrypted.encrypted = true;
 						}
 						break;
 					case "emailList":
-						console.log("encrypt email list")
+						console.log("encrypt email list");
+
 						if(self.geoji.emailList !== null && self.geoji.emailList !== undefined){
 							self.geojiEncrypted.emailList = [];
 							self.encryptArray(key, cipher);
@@ -979,10 +1083,10 @@ paper-icon-button.createMarker #icon {
 						console.log("default");
 
 						if(typeof self.geoji[key]==="object"){
-							console.log("encrypt object");
-							console.log("the key is: "+key);
-							console.log(self.geoji[key]);
-							geoji[key]=self.encryptObj(key, self.geoji[key], cipher);
+							// console.log("encrypt object");
+							// console.log("the key is: "+key);
+							// console.log(self.geoji[key]);
+							self.encryptObj(key, self.geoji[key], cipher);
 						}
 							
 						break;
@@ -1051,6 +1155,7 @@ paper-icon-button.createMarker #icon {
 			}
 		},
 		_checkEncrypted: function(){
+			var self = this;
 			var add = this.getElem(this.ctrls.add);
 			var save = this.getElem(this.ctrls.save);
 			var keys = Object.keys(this.geoji);
@@ -1059,51 +1164,49 @@ paper-icon-button.createMarker #icon {
 			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
 			var limit = eKeys.length;
 			var objsEncrypted = false;
+			var saved = false;
 			var i = 1;
 
-			console.log("keys length: "+keys.length+" <---> eKeys length: "+eKeys.length);
-			for(item in eKeys){
-				if(typeof this.geojiEncrypted[eKeys[item]]==="object"){
-					var obj = this.geojiEncrypted[eKeys[item]];
-					var max = Object.keys(obj).length;
-					var j = 1;
-
-					for(k in obj){
-
-						if((obj[k]!==null && obj[k]!==undefined)&&(j===max)){
-							if(keys.length === eKeys.length){
-								objsEncrypted = true;
-							}
-						}
-
-						j++;
-					}
-				}
-				i++;
-				if(i===limit && objsEncrypted){
-					var publicDB = this.getElem(this.ctrls.geojiPublic);
-					var privateDB = this.getElem(this.ctrls.geojiPrivate);
-					console.log("ALL DATA SHOULD BE ENCRYPTED.");
-
-					if(!add.hidden){
-						if(this.geojiEncrypted.private){
-							privateDB.add(this.geojiEncrypted);
-							console.log(this.privateData);
-						}else if(!this.geojiEncrypted.private){
-							publicDB.add(this.geojiEncrypted);
-							console.log(this.publicData);
-						}
-						add.hidden = true;
-						save.hidden = false;
-					}else{
-
-					}
-
+			var encryptComplete = function(){
+				if(add !== undefined && add !== null){
+					add.hidden = true;
+					save.hidden = false;
 					saveSpinner.active = false;
 					saveDialog.close();
+					saved = true;
 				}
 			}
 
+			console.log("keys length: "+keys.length+" <---> eKeys length: "+eKeys.length);
+
+			if (eKeys.length === keys.length && this.geojiEncrypted !== null && this.geojiEncrypted !== undefined){
+				var publicDB = this.getElem(this.ctrls.geojiPublic);
+				var privateDB = this.getElem(this.ctrls.geojiPrivate);
+				console.log("ALL DATA SHOULD BE ENCRYPTED.");
+				// console.log(this.geojiEncrypted);
+
+				if(this.geojiEncrypted.private && privateDB !== null && privateDB !== undefined){
+					setTimeout(function(){
+						privateDB.add(self.geojiEncrypted);
+						encryptComplete();
+					}, 100);
+				}else if(!this.geojiEncrypted.private  && publicDB !== null && publicDB !== undefined){
+					setTimeout(function(){
+						publicDB.add(self.geojiEncrypted);
+						encryptComplete();
+					}, 100);									
+				}
+			}
+			
+		},
+		_setCoverImg: function(){
+			var geoji = this.geoji;
+
+			if(geoji !== null && geoji !== undefined){
+				if(this.coverSet){
+					this.geoji.cover_image = this.coverImg;	
+				}
+			}
 		},
 		_updateEmails: function(){
 			console.log("helleo");
