@@ -61,10 +61,11 @@ This depends on j-button element which is a generic button.
         </section>
 
         <section id="{{assignCtrl('progressSection')}}">
-          
+        	<h2 class="inlineHalf center">{{status}}</h2>
         </section>
 
         <div id="{{assignCtrl('buttons')}}" class="upload layout horizontal">
+        	
         	<input type="file" id="{{assignCtrl('vidInput')}}" on-change="fileChange" hidden accept="video/*">
         	<paper-button class="vidProcess theme" id="{{assignCtrl('closeBtn')}}" raised class="red center" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
 	          Cancel
@@ -98,6 +99,10 @@ This depends on j-button element which is a generic button.
 				},
 				title: {
 					type: String,
+					value: "new video"
+				},
+				status: {
+					type: String,
 					value: ""
 				},
 				description: {
@@ -106,9 +111,13 @@ This depends on j-button element which is a generic button.
 				},
 				privacyStatus: {
 					type: String,
-					value: ""
+					value: "public"
 				},
 				videoId: {
+					type: String,
+					value: null
+				},
+				videoIdInput: {
 					type: String,
 					value: null
 				},
@@ -124,10 +133,13 @@ This depends on j-button element which is a generic button.
 				},
 		        progressSpinner: {
 		          type: String
+		        },
+		        progressBar: {
+		          type: String
 		        }
 			},
 
-			behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+			behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId],
 			attached: function(){
 				var self = this;
 				var videoList = this.getElem(this.ctrls.videoList);
@@ -219,7 +231,6 @@ This depends on j-button element which is a generic button.
 			fileChange: function(e) {
 		        var file = e.target.files[0];
 		        var upload = this.getElem(this.ctrls.upload);
-		        this.title = "test";
 
 		        console.log("upload.accessToken");
 		        
@@ -232,7 +243,10 @@ This depends on j-button element which is a generic button.
 				return 'https://youtu.be/' + vidId;
 			},
 			handleYouTubeUploadStart: function() {
-				console.log("upload started");
+				var buttons = this.getElem(this.ctrls.buttons);
+				buttons.hidden = true;
+				this.progressHandler();
+				this.status = "Uploading..."
 		        //this.process.state = 'upload';
 		        var upload = this.getElem(this.ctrls.uploadSection);
 		        var progress = this.getElem(this.ctrls.progressSection);
@@ -240,14 +254,20 @@ This depends on j-button element which is a generic button.
 		        this.process.fractionComplete = 0;
 		    },
 		    handleYouTubeUploadProgress: function(e) {
-		    	console.log(e);
+		    	var bar = this.getElem(this.progressBar);
 		        this.process.megabytesPerSecond = (e.detail.bytesPerSecond / (1024 * 1024)).toFixed(2);
 		        this.process.minutesRemaining = Math.floor(e.detail.estimatedSecondsRemaining / 60);
 		        this.process.secondsRemaining = Math.round(e.detail.estimatedSecondsRemaining % 60);
 		        this.process.fractionComplete = e.detail.fractionComplete;
+
+		        bar.value = e.detail.fractionComplete*100;
 		    },
 		    handleYouTubeUploadComplete: function() {
+		    	var input = this.getElem(this.videoIdInput);
 		    	console.log("upload complete.");
+		    	
+		    	input.value = this.computeVidUrl(this.videoId);
+		    	this.status = "Processing...";
 		        this.process.state = 'upload-complete';
 		    },
 		    handleYouTubeUploadFail: function(e) {
@@ -259,10 +279,19 @@ This depends on j-button element which is a generic button.
 		    },
 		    handleYouTubeProcessingComplete: function() {
 		    	console.log("video process complete.");
+		    	var buttons = this.getElem(this.ctrls.buttons);
+		    	var bar = this.getElem(this.progressBar);
+				
+		    	this.status = "";
+		    	this.progressHandler();
 		        this.process.state = 'processing-complete';
 		        this.process.processingComplete = true;
+		        buttons.hidden = false;
+		        bar.value = 0;
+		        this.handleDialogToggle();
 		    },
 		    handleYouTubeProcessingFail: function(e) {
+		    	var buttons = this.getElem(this.ctrls.buttons);
 		        var error;
 		        switch(e.detail.uploadStatus) {
 		          case 'failed':
@@ -276,7 +305,8 @@ This depends on j-button element which is a generic button.
 		        }
 		        this.process.error = 'YouTube processing failed (' + error + ').';
 		        this.process.state = 'error';
-		        console.log(e);
+		        this.progressHandler();
+		        buttons.hidden = false;
 		    },
 		    progressHandler: function(){
 		        if(this.progressSpinner !== null && this.progressSpinner !== undefined){
@@ -288,6 +318,10 @@ This depends on j-button element which is a generic button.
 		            progress.active = true;
 		          }
 		        }
+		    },
+		    progressInt: function(val){
+		    	var bar = this.getElem(this.progressBar);
+		    	bar.value = val;
 		    },
 		    _checkAuth: function(){
 		    	var upload = this.getElem(this.ctrls.upload);

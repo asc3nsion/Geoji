@@ -12,6 +12,7 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/google-map/google-map.html">
 <link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../../elements/j-ui/j-button.html">
 <link rel="import" href="../../elements/j-ui/j-profile-img.html">
 <link rel="import" href="../../elements/j-ui/j-dialog.html">
@@ -43,9 +44,9 @@ paper-icon-button.createMarker #icon {
  }
 
  iron-icon.createMarker{
- 	margin: 0px 0px 0px 8%;
-    width: 80%;
-    height: 20%;
+ 	margin: 0px 0px 0px 22%;
+    width: 55%;
+    height: 10%;
  }
 
  iron-image.createMarker{
@@ -72,7 +73,7 @@ paper-icon-button.createMarker #icon {
 
  paper-input-container.createMarker{
 
- 	width: 95%;
+ 	width: 85%;
  	margin: 10px 10px 10px 10px;
  }
  paper-input-container.txtData{
@@ -97,8 +98,8 @@ paper-icon-button.createMarker #icon {
  }
  paper-dialog.vidData{
 
- 	width: 35vw;
- 	height: 55%;
+ 	width: 45vw;
+ 	height: 65%;
 
  }
  paper-icon-button.closeDialog{
@@ -111,6 +112,10 @@ paper-icon-button.createMarker #icon {
  	width:300px;
  	height:300px;
  	--paper-spinner-stroke-width:10px;
+ }
+ paper-progress.bar {
+ 	margin: auto;
+ 	width:80%;
  }
 
 </style>	
@@ -203,7 +208,7 @@ paper-icon-button.createMarker #icon {
 		<paper-dialog class="imgData" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
 			<h2>Geoji Image</h2>
 			<paper-toggle-button id="{{assignCtrl('coverImg')}}"  checked="{{coverSet}}" class="inlineBlock">Cover Image</paper-toggle-button>
-			<paper-spinner-lite id="{{assignCtrl('progressSpinner')}}"  class="orange createMarker"></paper-spinner-lite>
+			<paper-spinner-lite id="{{assignCtrl('imgSpinner')}}"  class="orange createMarker"></paper-spinner-lite>
 			<div id="{{assignCtrl('tempImgs')}}" >
 				<iron-icon id="{{assignCtrl('imgIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
 			</div>
@@ -217,19 +222,41 @@ paper-icon-button.createMarker #icon {
 			hideButtons="false"
 			handleDialog="{{getCtrlId('imgDialog')}}"
 			parentElement="{{getCtrlId('imgDialog')}}"
-			progressSpinner="{{getCtrlId('progressSpinner')}}"
+			progressSpinner="{{getCtrlId('imgSpinner')}}"
 			></j-img-process>
 		</paper-dialog>
 
 		<paper-dialog class="vidData" id="{{assignCtrl('vidDialog')}}" modal role="alertdialog">
-			<h2>Geoji Video</h2>
+			<paper-progress class="bar" id="{{assignCtrl('vidProgress')}}"></paper-progress>
+			<h2 class="inlineBlock">Geoji Video</h2>
+			<paper-spinner-lite id="{{assignCtrl('vidSpinner')}}"  class="orange inlineBlock"></paper-spinner-lite>
+			<paper-toggle-button id="{{assignCtrl('vidPrivate')}}" checked="{{vidPrivate}}">Private</paper-toggle-button>
+			<paper-input-container id="{{assignCtrl('vidTitle')}}" class="createMarker" bind-value="{{vidTitle}}">
+			  <label>Title</label>
+			  <input id="{{assignCtrl('vidTitleInput')}}" is="iron-input" bind-value="">
+			</paper-input-container>
+			<paper-input-container id="{{assignCtrl('vidUrl')}}" class="createMarker unselectable" bind-value="{{vidTitle}}">
+			  <label>Link</label>
+			  <input id="{{assignCtrl('vidUrlInput')}}" is="iron-input" bind-value="{{vidId}}" class="unselectable" disabled>
+			</paper-input-container>
 			<div id="{{assignCtrl('vidImgs')}}" >
 				<iron-icon id="{{assignCtrl('vidIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
 			</div>
+			<google-youtube
+			  id="{{assignCtrl('youtubePlayer')}}"
+			  video-id="{{vidUrl}}"
+			  height="270px"
+			  width="480px"
+			  rel="0"
+			  autoplay="0"
+			  hidden="true">
+			</google-youtube>
 			<j-vid-process
 			 id="{{assignCtrl('vidProcess')}}"
+			 title="{{vidTitle}}"
+			 videoId="{{vidId}}"
 			 auto="true"
-			 privacy-status="private"
+			 privacyStatus="{{vidPrivacyStatus}}"
 			 categoryId = "22"
 			 ></j-vid-process>
 		</paper-dialog>
@@ -319,6 +346,34 @@ paper-icon-button.createMarker #icon {
 				observer: "_checkEncrypted",
 				notify: true
 			},
+			vidTitle: {
+				type: String,
+				value: "new video",
+				observer: "_setVidTitle",
+				notify: true
+			},
+			vidPrivate: {
+				type: Boolean,
+				value: false,
+				observer: "_setVidPrivate",
+				notify: true
+			},
+			vidPrivacyStatus: {
+				type: String,
+				value: "public",
+				observer: "_setVidPrivate",
+				notify: true
+			},
+			vidId: {
+				type: String,
+				value: "new video",
+				observer: "_setVidId",
+				notify: true
+			},
+			vidUrl: {
+				type: String,
+				value: ""
+			},
 			emailValue: {
 				type: String,
 				value: "",
@@ -366,7 +421,10 @@ paper-icon-button.createMarker #icon {
 			var imgDialog = this.getElem(this.ctrls.imgDialog);
 			var imgProcess = this.getElem(this.ctrls.imgProcess);
 			var imgIcon = this.getElem(this.ctrls.imgIcon);
-			var spinner = this.getElem(this.ctrls.progressSpinner);
+			var imgSpinner = this.getElem(this.ctrls.imgSpinner);
+			var vidSpinner = this.getElem(this.ctrls.vidSpinner);
+			var vidProgress = this.getElem(this.ctrls.vidProgress);
+			var vidUrlInput = this.getElem(this.ctrls.vidUrlInput);
 			var vidDialog = this.getElem(this.ctrls.vidDialog);
 			var vidProcess = this.getElem(this.ctrls.vidProcess);
 			var containerPrivate = this.getElem(this.ctrls.containerPrivate);
@@ -378,7 +436,10 @@ paper-icon-button.createMarker #icon {
 			
 			imgProcess.handleDialog = imgDialog.id;
 			imgProcess.handleElement = imgIcon.id;
-			imgProcess.progressSpinner = spinner.id;
+			imgProcess.progressSpinner = imgSpinner.id;
+			vidProcess.progressSpinner = vidSpinner.id;
+			vidProcess.progressBar = vidProgress.id;
+			vidProcess.videoIdInput = vidUrlInput.id;
 			vidProcess.handleDialog = vidDialog.id;
 
 			this.clipboard = new Clipboard(cipherCopy);
@@ -719,6 +780,7 @@ paper-icon-button.createMarker #icon {
 			var map = this.getElem(this.ctrls.map);
 			var marker = this.createMarker();
 			var geoji = this.geoji;
+
 			marker.icon = "/images/mascot-vid.png";
 
 			var onClick = function(e) {
@@ -727,6 +789,47 @@ paper-icon-button.createMarker #icon {
 			var dblClick = function(e) {
 				    self.toggleDialog(e);
 				    self.selectedMarker = e.target.id;
+				    if(self.geoji[e.target.id]!==null && self.geoji[e.target.id]!==undefined){
+
+				    	var marker = self.geoji[e.target.id];
+				    	var vidTitle = self.getElem(self.ctrls.vidTitleInput);
+				    	var vidId = self.getElem(self.ctrls.vidIdInput);
+				    	var vidPrivate = self.getElem(self.ctrls.vidPrivate);
+				    	var vidIcon = self.getElem(self.ctrls.vidIcon);
+				    	var player = self.getElem(self.ctrls.youtubePlayer);
+				    	console.log(marker);
+
+				    	if(marker.privacyStatus === "private"){
+				    		vidPrivate.checked = true;
+				    	}else{
+				    		vidPrivate.checked = false;
+				    	}
+
+				    	if(marker.link !== null && marker.link !== undefined && marker.link !== ""){
+				    		vidTitle.value = marker.title;
+				    		console.log(marker.link);
+
+					    	if(vidId !== null && vidId !== undefined && self.vidUrl !== null && self.vidUrl !== undefined){
+					    		vidId.value = marker.link;
+					    		self.vidUrl = marker.link;
+					    	}
+
+				    		vidIcon.hidden = true;
+				    		player.hidden = false;
+				    	}else{
+
+				    		vidTitle.value = "";
+
+				    		if(vidId !== null && vidId !== undefined && self.vidUrl !== null && self.vidUrl !== undefined){
+					    		vidId.value = "";
+					    		self.vidUrl = "";
+					    	}
+
+				    		vidIcon.hidden = false;
+				    		player.hidden = true;
+				    	}
+
+				    }
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
@@ -1217,6 +1320,54 @@ paper-icon-button.createMarker #icon {
 		},
 		_storeEmails: function(){
 			this.geoji.emailList = this.emailList;
+		},
+		_setVidTitle: function(){
+			var vidTitle = this.getElem(this.ctrls.vidTitleInput);
+			var selected = this.getElem(this.selectedMarker);
+
+			if(this.geoji!==null && this.geoji!==undefined
+			 && this.vidTitle!==null && this.vidTitle!==undefined
+			 && this.selected!==null && this.selected!==undefined){
+				this.geoji[selected].title = this.vidTitle;
+			}
+			
+		},
+		_setVidId: function(){
+			var vidId = this.getElem(this.ctrls.vidIdInput);
+			var vidIcon = this.getElem(this.ctrls.vidIcon);
+			var player = this.getElem(this.ctrls.youtubePlayer);
+			var selected = this.getElem(this.selectedMarker);
+
+			console.log("video id set");
+
+			if(this.geoji!==null && this.geoji!==undefined
+			 && this.vidId!==null && this.vidId!==undefined
+			 && this.selected!==null && this.selected!==undefined){
+				this.geoji[selected].link = this.vidId;
+				vidId.value = "https://youtu.be/"+this.vidId;
+				vidicon.hidden = true;
+			}
+			
+		},
+		_setVidPrivate: function(){
+			var vidPrivate = this.getElem(this.ctrls.vidPrivate);
+			var selected = this.getElem(this.selectedMarker);
+
+			console.log("video id set");
+
+			if(this.geoji!==null && this.geoji!==undefined
+			 && this.vidId!==null && this.vidId!==undefined
+			 && this.selected!==null && this.selected!==undefined){
+			 	if(vidPrivate.checked){
+			 		this.geoji[selected].privacyStatus = "private";
+			 		this.vidPrivacyStatus = "private";
+			 	}else{
+			 		this.geoji[selected].privacyStatus = "public";
+			 		this.vidPrivacyStatus = "public";
+			 	}
+
+			}
+			
 		}
 
 	});
