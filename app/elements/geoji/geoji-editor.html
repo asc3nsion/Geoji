@@ -112,6 +112,7 @@ paper-icon-button.createMarker #icon {
  	width:300px;
  	height:300px;
  	--paper-spinner-stroke-width:10px;
+ 	margin: auto;
  }
  paper-progress.bar {
  	margin: auto;
@@ -230,39 +231,39 @@ paper-icon-button.createMarker #icon {
 			<paper-progress class="bar" id="{{assignCtrl('vidProgress')}}"></paper-progress>
 			<h2 class="inlineBlock">Geoji Video</h2>
 			<paper-spinner-lite id="{{assignCtrl('vidSpinner')}}"  class="orange inlineBlock"></paper-spinner-lite>
-			<paper-toggle-button id="{{assignCtrl('vidPrivate')}}" checked="{{vidPrivate}}">Private</paper-toggle-button>
 			<paper-input-container id="{{assignCtrl('vidTitle')}}" class="createMarker" bind-value="{{vidTitle}}">
 			  <label>Title</label>
 			  <input id="{{assignCtrl('vidTitleInput')}}" is="iron-input" bind-value="">
 			</paper-input-container>
 			<paper-input-container id="{{assignCtrl('vidUrl')}}" class="createMarker unselectable" bind-value="{{vidTitle}}">
 			  <label>Link</label>
-			  <input id="{{assignCtrl('vidUrlInput')}}" is="iron-input" bind-value="{{vidId}}" class="unselectable" disabled>
+			  <input id="{{assignCtrl('vidUrlInput')}}" is="iron-input" bind-value="{{vidUrl}}">
 			</paper-input-container>
-			<div id="{{assignCtrl('vidImgs')}}" >
+			<div id="{{assignCtrl('vidImgs')}}">
 				<iron-icon id="{{assignCtrl('vidIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
 			</div>
 			<google-youtube
-			  id="{{assignCtrl('youtubePlayer')}}"
-			  video-id="{{vidUrl}}"
-			  height="270px"
-			  width="480px"
-			  rel="0"
-			  autoplay="0"
-			  hidden="true">
-			</google-youtube>
+			 id="{{assignCtrl('youtubePlayer')}}"
+			 video-id="{{vidId}}"
+			 height="270px"
+			 width="100%"
+			 rel="0"
+			 autoplay="0"
+			 hidden="true"
+			 ></google-youtube>
 			<j-vid-process
 			 id="{{assignCtrl('vidProcess')}}"
 			 title="{{vidTitle}}"
-			 videoId="{{vidId}}"
 			 auto="true"
-			 privacyStatus="{{vidPrivacyStatus}}"
-			 categoryId = "22"
+			 privacyStatus="unlisted"
+			 categoryId= "22"
+			 videoUrl= "{{vidUrl}}"
 			 ></j-vid-process>
 		</paper-dialog>
 
 		<paper-dialog class="vidData" id="{{assignCtrl('saveDialog')}}" modal role="alertdialog">
 			<h2>Saving Geoji</h2>
+			<paper-progress class="bar" id="{{assignCtrl('encryptProgress')}}"></paper-progress>
 			<paper-spinner-lite id="{{assignCtrl('saveSpinner')}}"  class="orange createMarker saveSpinner center"></paper-spinner-lite>
 		</paper-dialog>
 
@@ -372,7 +373,9 @@ paper-icon-button.createMarker #icon {
 			},
 			vidUrl: {
 				type: String,
-				value: ""
+				value: null,
+				observer: "_setVidUrl",
+				notify: true
 			},
 			emailValue: {
 				type: String,
@@ -422,11 +425,14 @@ paper-icon-button.createMarker #icon {
 			var imgProcess = this.getElem(this.ctrls.imgProcess);
 			var imgIcon = this.getElem(this.ctrls.imgIcon);
 			var imgSpinner = this.getElem(this.ctrls.imgSpinner);
+			var vidTitle = this.getElem(this.ctrls.vidTitleInput);
+			var vidIcon = this.getElem(this.ctrls.vidIcon);
 			var vidSpinner = this.getElem(this.ctrls.vidSpinner);
 			var vidProgress = this.getElem(this.ctrls.vidProgress);
 			var vidUrlInput = this.getElem(this.ctrls.vidUrlInput);
 			var vidDialog = this.getElem(this.ctrls.vidDialog);
 			var vidProcess = this.getElem(this.ctrls.vidProcess);
+			var player = self.getElem(self.ctrls.youtubePlayer);
 			var containerPrivate = this.getElem(this.ctrls.containerPrivate);
 			var containerEncrypt = this.getElem(this.ctrls.containerEncrypt);
 
@@ -441,6 +447,19 @@ paper-icon-button.createMarker #icon {
 			vidProcess.progressBar = vidProgress.id;
 			vidProcess.videoIdInput = vidUrlInput.id;
 			vidProcess.handleDialog = vidDialog.id;
+
+			vidUrlInput.onchange = function(e){
+		        console.log("-------------------------------------------------------------------------------------------");
+		        var selected = self.geoji[self.selectedMarker];
+
+		        if(selected !== null && selected !== undefined){
+		        	if(selected.type === "vid"){
+		        		selected.link = vidUrlInput.value;
+		        	}
+		        }
+				
+				console.log(self.geoji);
+		    };
 
 			this.clipboard = new Clipboard(cipherCopy);
 
@@ -737,11 +756,7 @@ paper-icon-button.createMarker #icon {
 				    self.selectedMarker = e.target.id;
 				    
 				    if(imgUrl !== null && imgUrl !== undefined){
-				    	console.log("this is the img url::::");
-				    	console.log(imgUrl);
-				    	console.log("imgProcess.ctrls.imgPreview.src");
-				    	console.log(imgProcess.ctrls);
-				    	console.log("imgProcess.ctrls.imgPreview.src");
+
 				    	imgProcess.setImgPreview(imgUrl);
 				    	imgIcon.hidden = true;
 				    	imgProcess.showCropper();
@@ -792,35 +807,32 @@ paper-icon-button.createMarker #icon {
 				    if(self.geoji[e.target.id]!==null && self.geoji[e.target.id]!==undefined){
 
 				    	var marker = self.geoji[e.target.id];
-				    	var vidTitle = self.getElem(self.ctrls.vidTitleInput);
-				    	var vidId = self.getElem(self.ctrls.vidIdInput);
-				    	var vidPrivate = self.getElem(self.ctrls.vidPrivate);
+				    	var vidTitle = self.getElem(self.ctrls.vidTitle);
+				    	var vidTitleInput = self.getElem(self.ctrls.vidTitleInput);
+				    	var vidId = self.getElem(self.ctrls.vidUrlInput);
 				    	var vidIcon = self.getElem(self.ctrls.vidIcon);
 				    	var player = self.getElem(self.ctrls.youtubePlayer);
 				    	console.log(marker);
 
-				    	if(marker.privacyStatus === "private"){
-				    		vidPrivate.checked = true;
-				    	}else{
-				    		vidPrivate.checked = false;
-				    	}
 
 				    	if(marker.link !== null && marker.link !== undefined && marker.link !== ""){
-				    		vidTitle.value = marker.title;
-				    		console.log(marker.link);
+				    		vidTitle.hidden = true;
 
-					    	if(vidId !== null && vidId !== undefined && self.vidUrl !== null && self.vidUrl !== undefined){
+					    	if(vidId !== null && vidId !== undefined){
 					    		vidId.value = marker.link;
 					    		self.vidUrl = marker.link;
+					    		self.vidId = marker.link.replace("https://youtu.be/", "");
 					    	}
 
 				    		vidIcon.hidden = true;
 				    		player.hidden = false;
 				    	}else{
+				    		vidTitle.hidden = false;
+				    		vidTitleInput.focus();
+				    		vidTitleInput.value = "new video";
+				    		vidTitleInput.blur();
 
-				    		vidTitle.value = "";
-
-				    		if(vidId !== null && vidId !== undefined && self.vidUrl !== null && self.vidUrl !== undefined){
+				    		if(vidId !== null && vidId !== undefined){
 					    		vidId.value = "";
 					    		self.vidUrl = "";
 					    	}
@@ -945,10 +957,12 @@ paper-icon-button.createMarker #icon {
 			
 			//window.prompt("Copy to clipboard: Ctrl+C, Enter", cipherInput.value);
 		},
-		encryptData: function(key, data, cipher){
+		encrypt_MainKey: function(key, data, cipher, i){
 			var self = this;
-			console.log(data + " " + cipher + "  encrypting...");
 
+			if(data.toString()==="true" || data.toString()==="false"){
+				data = data.toString();
+			}
 
 			triplesec.encrypt ({
 
@@ -963,29 +977,26 @@ paper-icon-button.createMarker #icon {
 						var keys = Object.keys(self.geoji);
 						var eKeys = Object.keys(self.geojiEncrypted);
 
-						//console.log(ciphertext);
 						self.geojiEncrypted[key] = ciphertext;
 
 						if(keys.length === eKeys.length){
-							var eObj = self.geojiEncrypted[key];
-							var gObj = self.geoji[key];
-							var keysE = Object.keys(eObj);
-							var keysO = Object.keys(gObj);
-
-							if(keysE.length === keysO.length){
-								self._checkEncrypted();
-							}
+							console.log("OBJECT SHOULD BE ENCRYPTED");
+						}else{
+							self.encrypt_MainObj(i+1, cipher);
 						}
 					}
 
 			});
 
 		},
-		encryptInnerData: function(key, innerKey, data, cipher){
-			console.log(data + " " + cipher + "  encrypting...");
-			var obj = this.geoji;
+		encrypt_InnerData: function(key, obj, innerKey, data, cipher, i, j){
+			console.log(innerKey + " " + data + " " + cipher + "  encrypting...");
 			var keys = Object.keys(obj);
 			var self = this;
+
+			if(data.toString()==="true" || data.toString()==="false"){
+				data = data.toString();
+			}
 
 			triplesec.encrypt ({
 
@@ -997,51 +1008,52 @@ paper-icon-button.createMarker #icon {
 
 				if (! err) {
 						var ciphertext = buff.toString('hex');
-						var keys = Object.keys(self.geoji);
+						var keys = Object.keys(obj);
 						var eKeys = Object.keys(self.geojiEncrypted);
+						var gKeys = Object.keys(self.geoji);
 						
-						//console.log(key);
-						//console.log(innerKey);
-						//console.log(ciphertext);
-
-
 
 						if(self.geojiEncrypted[key]===null || self.geojiEncrypted[key]===undefined){
 							self.geojiEncrypted[key] = {};
 						}
 
-						if(innerKey !== "type"){
+						if(innerKey.toString() !== "type" && innerKey.toString() !== "private"){
+
 							self.geojiEncrypted[key][innerKey] = ciphertext;
-						}else{
+						}else if(innerKey.toString() === "type"){
+
 							self.geojiEncrypted[key].type = self.geoji[key].type;
+						}else if(innerKey.toString() === "private"){
+							self.geojiEncrypted[key].private = self.geoji[key].private;
 						}
 
-						if(keys.length === eKeys.length){
-							var eObj = self.geojiEncrypted[key][innerKey];
-							var gObj = self.geoji[key][innerKey];
-							var keysE = Object.keys(eObj);
-							var keysO = Object.keys(gObj);
+						if(keys.length === j+1){
 
-							if(keysE.length === keysO.length){
-								// console.log(ciphertext);
-								// console.log("self.geojiEncrypted[key]");
-								// console.log(self.geojiEncrypted[key]);
-								self._checkEncrypted();
-							}
+							self.encrypt_MainObj(i+1, cipher);
+
+						}else if(keys.length > j+1){
+
+							self.encrypt_InnerObj(key, obj, cipher, i, j+1);
 						}
 
-						//console.log(self.geojiEncrypted);
 					}
 
 			});
 
 		},
-		encryptArrayData: function(key, cipher){
-			var self = this;
+		encrypt_InnerObj: function(key, obj, cipher, i, j){
+			console.log("encryptInnerObj");
+			var keys = Object.keys(obj);
 
+			this.encrypt_InnerData(key, obj, keys[j], obj[keys[j]], cipher, i, j);
+
+		},
+		encrypt_ArrayElem: function(key, array, cipher, i, j){
+			self = this;
+			console.log("encrypt_ArrayElem");
 			triplesec.encrypt ({
 
-				data:          new triplesec.Buffer(data),
+				data:          new triplesec.Buffer(array[j]),
 				key:           new triplesec.Buffer(cipher),
 				progress_hook: function (obj) { /* ... */ }
 
@@ -1049,40 +1061,117 @@ paper-icon-button.createMarker #icon {
 
 				if (! err) {
 						var ciphertext = buff.toString('hex');
-						var keys = Object.keys(self.geoji);
 						var eKeys = Object.keys(self.geojiEncrypted);
-						
-						//console.log(ciphertext);
-						console.log(ciphertext);
+						var gKeys = Object.keys(self.geoji);
 
-						self.geojiEncrypted[key] = ciphertext;
-
-						if(keys.length === eKeys.length){
-							var eObj = self.geojiEncrypted[innerKey];
-							var gObj = self.geoji[innerKey];
-							var keysE = Object.keys(eObj);
-							var keysO = Object.keys(gObj);
-
-							if(keysE.length === keysO.length){
-								// console.log(ciphertext);
-								// console.log("self.geojiEncrypted[key]");
-								// console.log(self.geojiEncrypted[key]);
-								self._checkEncrypted();
-							}
+						if(self.geojiEncrypted[key]===null || self.geojiEncrypted[key]===undefined){
+							self.geojiEncrypted[key] = [];
 						}
+
+						self.geojiEncrypted[key][j] = ciphertext;
+
+						if(j+1 === array.length){
+
+							self.encrypt_MainObj(i+1, cipher);
+
+						}else if(array.length > j+1){
+							self.encrypt_Array(key, array, cipher, i, j+1);
+						}
+
 					}
 
 			});
-
 		},
-		encryptObj: function(key, obj, cipher){
+		encrypt_Array: function(key, array, cipher, i, j){
+			var self = this;
+			console.log("encrypt_Array");
 
-			console.log("start encrypt object.");
-
-			for(k in obj){
-				this.encryptInnerData(key, k, obj[k], cipher);
+			if(array.constructor === Array){
+				self.encrypt_ArrayElem(key, array, cipher, i, j);
+			}else{
+				console.log("Must be type of array to encrypt.")
 			}
 
+		},
+		encrypt_MainObj: function(i, cipher){
+			var self = this;
+			var keys = Object.keys(self.geoji);
+			var eKeys = Object.keys(self.geojiEncrypted);
+			var gKeys = Object.keys(self.geoji);
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
+
+			var encryptComplete = function(){
+				if(add !== undefined && add !== null){
+					add.hidden = true;
+					save.hidden = false;
+					saveSpinner.active = false;
+					saveDialog.close();
+					saved = true;
+				}
+			}
+
+			console.log("encrypt_MainObj");
+
+			if(gKeys.length === eKeys.length){
+				var publicDB = this.getElem(this.ctrls.geojiPublic);
+				var privateDB = this.getElem(this.ctrls.geojiPrivate);
+				console.log("ALL DATA SHOULD BE ENCRYPTED.");
+				// console.log(this.geojiEncrypted);
+
+				if(this.geojiEncrypted.private && privateDB !== null && privateDB !== undefined){
+					privateDB.add(self.geojiEncrypted);
+					encryptComplete();
+				}else if(!this.geojiEncrypted.private  && publicDB !== null && publicDB !== undefined){
+					publicDB.add(self.geojiEncrypted);
+					encryptComplete();									
+				}
+			}else{
+				switch(keys[i]){
+					case "title":
+						console.log("encrypt title");
+						console.log("cipher");
+						console.log(cipher);
+						self.encrypt_MainKey(keys[i], self.geoji.title, cipher, i);
+						break;
+					case "private":
+
+						if(self.geoji.private !== null && self.geoji.private !== undefined){
+							self.geojiEncrypted.private = self.geoji.private;
+							self.encrypt_MainObj(i+1, cipher);
+						}
+						break;
+					case "encrypted":
+						console.log("encrypt encrypted");
+
+						if(self.geoji.encrypted !== null && self.geoji.encrypted !== undefined){
+							self.geojiEncrypted.encrypted = true;
+							self.encrypt_MainObj(i+1, cipher);
+						}
+						break;
+					case "emailList":
+						console.log("encrypt email list");
+
+						if(self.geoji.emailList !== null && self.geoji.emailList !== undefined){
+							self.geojiEncrypted.emailList = [];
+							self.encrypt_Array(keys[i], self.geoji.emailList, cipher, i, 0);
+						}
+							
+							break;
+					default:
+						console.log("default");
+
+						if(typeof self.geoji[keys[i]]==="object"){
+							console.log("encrypting innerObj");
+							self.encrypt_InnerObj(keys[i], self.geoji[keys[i]], cipher, i, 0);
+						}
+							
+						break;
+				}
+			}
+				
 		},
 		encryptArray: function(key, cipher){
 			var self = this;
@@ -1112,8 +1201,8 @@ paper-icon-button.createMarker #icon {
 									var keysO = Object.keys(gObj);
 
 									if(keysE.length === keysO.length){
-										// console.log("self.geojiEncrypted[key]");
-										// console.log(self.geojiEncrypted[key]);
+										console.log("self.geojiEncrypted[key]");
+										console.log(self.geojiEncrypted[key]);
 										self._checkEncrypted();
 									}
 								}
@@ -1126,19 +1215,6 @@ paper-icon-button.createMarker #icon {
 
 			console.log("start encrypt object.");
 
-		},
-		locationChange: function(){
-			var geoji = this.geoji;
-			// if(geoji !== null && geoji !== undefined){
-			// 	var target = this.geoji.target;
-			// 	var lat = this.currentLatitude;
-			// 	var long = this.currentLongitude;
-
-			// 	console.log("location change: " + this.currentLatitude);
-			// 	//console.log(this.geoji.target);
-			// 	//geoji.target.longitude = long;
-			// 	// geoji.target.latitude = this.currentLatitude;
-			// }
 		},
 		_encryptGeoji: function(){
 			var geoji = {};
@@ -1154,48 +1230,7 @@ paper-icon-button.createMarker #icon {
 
 			console.log("processObj---> "+keys[i]);
 
-			for(key in obj){
-				switch(key){
-					case "title":
-						console.log("encrypt title");
-						self.encryptData(key, self.geoji.title, cipher);
-						break;
-					case "private":
-
-						if(self.geoji.private !== null && self.geoji.private !== undefined){
-							self.geojiEncrypted.private = self.geoji.private;
-						}
-						break;
-					case "encrypted":
-						console.log("encrypt encrypted");
-
-						if(self.geoji.encrypted !== null && self.geoji.encrypted !== undefined){
-							self.geojiEncrypted.encrypted = true;
-						}
-						break;
-					case "emailList":
-						console.log("encrypt email list");
-
-						if(self.geoji.emailList !== null && self.geoji.emailList !== undefined){
-							self.geojiEncrypted.emailList = [];
-							self.encryptArray(key, cipher);
-						}
-							
-							break;
-					default:
-						console.log("default");
-
-						if(typeof self.geoji[key]==="object"){
-							// console.log("encrypt object");
-							// console.log("the key is: "+key);
-							// console.log(self.geoji[key]);
-							self.encryptObj(key, self.geoji[key], cipher);
-						}
-							
-						break;
-				}
-				i++;
-			}
+			this.encrypt_MainObj(0, cipher);
 
 		},
 		_getCurrentLocation: function(){
@@ -1338,7 +1373,7 @@ paper-icon-button.createMarker #icon {
 			var player = this.getElem(this.ctrls.youtubePlayer);
 			var selected = this.getElem(this.selectedMarker);
 
-			console.log("video id set");
+			console.log("video id set>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
 			if(this.geoji!==null && this.geoji!==undefined
 			 && this.vidId!==null && this.vidId!==undefined
@@ -1349,24 +1384,26 @@ paper-icon-button.createMarker #icon {
 			}
 			
 		},
-		_setVidPrivate: function(){
-			var vidPrivate = this.getElem(this.ctrls.vidPrivate);
+		_setVidUrl: function(){
+			var vidId = this.getElem(this.ctrls.vidIdInput);
+			var vidIcon = this.getElem(this.ctrls.vidIcon);
+			var player = this.getElem(this.ctrls.youtubePlayer);
 			var selected = this.getElem(this.selectedMarker);
 
-			console.log("video id set");
+			console.log("video url set>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-			if(this.geoji!==null && this.geoji!==undefined
-			 && this.vidId!==null && this.vidId!==undefined
-			 && this.selected!==null && this.selected!==undefined){
-			 	if(vidPrivate.checked){
-			 		this.geoji[selected].privacyStatus = "private";
-			 		this.vidPrivacyStatus = "private";
-			 	}else{
-			 		this.geoji[selected].privacyStatus = "public";
-			 		this.vidPrivacyStatus = "public";
-			 	}
+			// if(this.geoji!==null && this.geoji!==undefined
+			//  && this.vidId!==null && this.vidId!==undefined
+			//  && this.selected!==null && this.selected!==undefined){
+			// 	this.geoji[selected].link = this.vidId;
 
-			}
+			// 	vidIcon.hidden = true;
+			// 	player.hidden = false;
+			// }
+			
+		},
+		_setVidPrivate: function(){
+
 			
 		}
 

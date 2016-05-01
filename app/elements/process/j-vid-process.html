@@ -48,7 +48,7 @@ This depends on j-button element which is a generic button.
           						 auto="{{auto}}"
                                  video-title="{{title}}"
                                  description="{{description}}"
-                                 privacy-status="{{privacyStatus}}"
+                                 privacy-status="unlisted"
                                  video-id="{{videoId}}"
                                  on-youtube-upload-start="handleYouTubeUploadStart"
                                  on-youtube-upload-progress="handleYouTubeUploadProgress"
@@ -117,6 +117,10 @@ This depends on j-button element which is a generic button.
 					type: String,
 					value: null
 				},
+				videoUrl: {
+					type: String,
+					value: null
+				},
 				videoIdInput: {
 					type: String,
 					value: null
@@ -135,6 +139,9 @@ This depends on j-button element which is a generic button.
 		          type: String
 		        },
 		        progressBar: {
+		          type: String
+		        },
+		        parentElement: {
 		          type: String
 		        }
 			},
@@ -233,6 +240,7 @@ This depends on j-button element which is a generic button.
 		        var upload = this.getElem(this.ctrls.upload);
 
 		        console.log("upload.accessToken");
+		        console.log(e);
 		        
 		        upload.uploadFile(file);
 		    },
@@ -264,11 +272,26 @@ This depends on j-button element which is a generic button.
 		    },
 		    handleYouTubeUploadComplete: function() {
 		    	var input = this.getElem(this.videoIdInput);
+		    	var url = this.computeVidUrl(this.videoId);
 		    	console.log("upload complete.");
 		    	
-		    	input.value = this.computeVidUrl(this.videoId);
+		    	input.focus();
+		    	input.value = url;
+		    	this.videoUrl = url;
+		    	input.blur();
 		    	this.status = "Processing...";
 		        this.process.state = 'upload-complete';
+
+		        //fire the event
+		        if ("createEvent" in document) {  //NON IE browsers
+		          var evt = document.createEvent("HTMLEvents");
+		          evt.initEvent("change", false, true);
+		          input.dispatchEvent(evt);
+		        }
+		        else {  //IE
+		          var evt = document.createEventObject();
+		          input.fireEvent("onchange", evt);
+		        }
 		    },
 		    handleYouTubeUploadFail: function(e) {
 		        this.process.error = e.detail;
