@@ -124,18 +124,24 @@ paper-icon-button.createMarker #icon {
 <dom-module id= "geoji-editor">
 	<template>
 
+		<firebase-auth id="{{assignCtrl('publicAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
+
 		<firebase-collection
 	    	id="{{assignCtrl('geojiPublic')}}"
 			limit-to-first="3"
 		    location="https://geoji.firebaseio.com/public/"
-		    data="{{publicData}}">
+		    data="{{publicData}}"
+		    limitToFirst= "3">
 		</firebase-collection>
+		
+		<firebase-auth id="{{assignCtrl('privateAuth')}}" location="https://geoji.firebaseio.com/private"></firebase-auth>
 
 		<firebase-collection
 	    	id="{{assignCtrl('geojiPrivate')}}"
 			limit-to-first="3"
 		    location="https://geoji.firebaseio.com/private/"
-		    data="{{privateData}}">
+		    data="{{privateData}}"
+		    limitToFirst= "3">
 		</firebase-collection>
 
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
@@ -166,10 +172,8 @@ paper-icon-button.createMarker #icon {
 			  <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
 			  <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button>
 			</paper-input-container>
-		  </div>
-		  			
+		  </div>			
 			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
-			<!-- <gold-email-input id="{{assignCtrl('email')}}" class="createMarker" label="add email" hidden="true"></gold-email-input> -->
 		  </div>
 		  <google-map 
 		  id="{{assignCtrl('map')}}"
@@ -398,6 +402,10 @@ paper-icon-button.createMarker #icon {
 			},
 			cipherText: {
 				type: String
+			},
+			firebaseKey: {
+				type: String,
+				value: null
 			}
 			
 		},
@@ -405,6 +413,7 @@ paper-icon-button.createMarker #icon {
 		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, UtilityBehaviors.JUtil],
 
 		ready: function(){
+			
 
 		},
 		attached: function(){
@@ -436,6 +445,14 @@ paper-icon-button.createMarker #icon {
 			var containerPrivate = this.getElem(this.ctrls.containerPrivate);
 			var containerEncrypt = this.getElem(this.ctrls.containerEncrypt);
 
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+
+
 			title.focus();
 			title.value = " ";
 			title.blur();
@@ -449,7 +466,7 @@ paper-icon-button.createMarker #icon {
 			vidProcess.handleDialog = vidDialog.id;
 
 			vidUrlInput.onchange = function(e){
-		        console.log("-------------------------------------------------------------------------------------------");
+
 		        var selected = self.geoji[self.selectedMarker];
 
 		        if(selected !== null && selected !== undefined){
@@ -488,11 +505,13 @@ paper-icon-button.createMarker #icon {
 			}
 
 			this.geoji = {};
+			
 			map.mapType="satellite";
 
 			targetObj.longitude = this.currentLongitude;
 			targetObj.latitude = this.currentLatitude;
 			this.geoji.target = targetObj;
+
 
 			this.geoji.private = public.checked;
 
@@ -502,6 +521,17 @@ paper-icon-button.createMarker #icon {
 		        self.geoji.target.latitude = self.currentLatitude;
 		        targetObj.longitude = self.currentLongitude;
 				targetObj.latitude = self.currentLatitude;
+				self.geoji.id = self.generateUid("_");
+
+				publicRef.orderByChild("id").equalTo(self.geoji.id).on("child_added", function(snapshot) {
+				  console.log(snapshot.key());
+				  self.firebaseKey = snapshot.key();
+				});
+
+				privateRef.orderByChild("id").equalTo(self.geoji.id).on("child_added", function(snapshot) {
+				  console.log(snapshot.key());
+				  self.firebaseKey = snapshot.key();
+				});
 
 		    }, 1000);
 
@@ -554,6 +584,7 @@ paper-icon-button.createMarker #icon {
 
 			target.addEventListener('google-map-marker-dragend', targetDragEnd);
 			map.addEventListener('google-map-dragend', mapDragEnd);
+
 		},
 		addGeoji: function(){
 			var add = this.getElem(this.ctrls.add);
@@ -576,14 +607,14 @@ paper-icon-button.createMarker #icon {
 				}else{
 					if(!this.geoji.private){
 						if(publicDB !== null && publicDB !== undefined){
-							publicDB.add(this.geoji);
+							var x = publicDB.add(this.geoji);
 							add.hidden = true;
 							save.hidden = false;
 							saveDialog.close();
 						}
 					}else{
 						if(privateDB !== null && privateDB !== undefined){
-							privateDB.add(this.geoji);
+							var x = privateDB.add(this.geoji);
 							add.hidden = true;
 							save.hidden = false;
 							saveDialog.close();
@@ -600,24 +631,68 @@ paper-icon-button.createMarker #icon {
 			var saveDialog = this.getElem(this.ctrls.saveDialog);
 			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var saveGeoji = {};
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
 
-			saveDialog.open();
-			saveSpinner.active = true;
+
 
 			if(this.geoji!==null && this.geoji!==undefined){
 
 				if((geoji.encrypted)&&(cipher !== null || cipher !== undefined || cipher !== "")){
-					saveGeoji = this._encryptGeoji();
+					saveDialog.open();
+					saveSpinner.active = true;
+					this._encryptGeoji();
 				}else{
-
+					this.doSave();
 				}
 			}
 
-			if(publicDB !== null && publicDB !== undefined){
-				//publicDB.add(saveGeoji);
+		},
+		doSave: function(){
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+
+			console.log("this.geoji");
+			console.log(this.geoji);
+			console.log("this.geoji");
+
+			publicRef.orderByChild("id").equalTo(this.geoji.id).on("child_added", function(snapshot) {
+				console.log(snapshot.key());
+				self.firebaseKey = snapshot.key();
+				var obj = publicRef.child(snapshot.key());
+				obj.set(self.geoji);
+			});
+
+			privateRef.orderByChild("id").equalTo(this.geoji.id).on("child_added", function(snapshot) {
+				console.log(snapshot.key());
+				this.firebaseKey = snapshot.key();
+				var obj = publicRef.child(snapshot.key());
+				obj.set(self.geoji);
+			});
+
+			if(!this.geoji.private){
+
+				if(this.firebaseKey !== null && this.firebaseKey !== undefined){
+					console.log("should save geoji");
+					var obj = publicRef.child(this.firebaseKey);
+					obj.set(this.geoji);
+				}
+
+			}else if(this.geoji.private){
+
+				if(this.firebaseKey !== null && this.firebaseKey !== undefined){
+					var obj = privateRef.child(this.firebaseKey);
+					obj.set(this.geojiEncrypted);
+				}	
 			}
-			//this.$.firebasePublicData.add(mainObj);
 		},
 		createMarker: function(){
 			var map = this.getElem(this.ctrls.map);
@@ -1105,31 +1180,52 @@ paper-icon-button.createMarker #icon {
 
 			var encryptComplete = function(){
 				if(add !== undefined && add !== null){
-					add.hidden = true;
-					save.hidden = false;
-					saveSpinner.active = false;
-					saveDialog.close();
-					saved = true;
+					if(!add.hidden){
+						add.hidden = true;
+						save.hidden = false;
+						saveSpinner.active = false;
+						saveDialog.close();
+					}else{
+
+					}
 				}
 			}
 
 			console.log("encrypt_MainObj");
+			console.log(this.geoji);
 
 			if(gKeys.length === eKeys.length){
 				var publicDB = this.getElem(this.ctrls.geojiPublic);
 				var privateDB = this.getElem(this.ctrls.geojiPrivate);
 				console.log("ALL DATA SHOULD BE ENCRYPTED.");
-				// console.log(this.geojiEncrypted);
 
 				if(this.geojiEncrypted.private && privateDB !== null && privateDB !== undefined){
-					privateDB.add(self.geojiEncrypted);
-					encryptComplete();
+					if(add !== undefined && add !== null && save !== undefined && save !== null){
+						if(!add.hidden){
+							privateDB.add(self.geojiEncrypted);
+							encryptComplete();
+						}else{
+							this.doSave();
+						}
+					}
 				}else if(!this.geojiEncrypted.private  && publicDB !== null && publicDB !== undefined){
-					publicDB.add(self.geojiEncrypted);
-					encryptComplete();									
+					if(add !== undefined && add !== null && save !== undefined && save !== null){
+						if(!add.hidden){
+							publicDB.add(self.geojiEncrypted);
+							encryptComplete();	
+						}else{
+							this.doSave();
+						}
+					}							
 				}
 			}else{
 				switch(keys[i]){
+					case "id":
+						if(self.geoji.id !== null && self.geoji.id !== undefined){
+							self.geojiEncrypted.id = self.geoji.id;
+							self.encrypt_MainObj(i+1, cipher);
+						}
+						break;
 					case "title":
 						console.log("encrypt title");
 						console.log("cipher");
@@ -1172,49 +1268,6 @@ paper-icon-button.createMarker #icon {
 				}
 			}
 				
-		},
-		encryptArray: function(key, cipher){
-			var self = this;
-			var array = this.geoji[key];
-
-			if(array.constructor === Array){
-				for(i in array){
-					triplesec.encrypt ({
-
-						data:          new triplesec.Buffer(data),
-						key:           new triplesec.Buffer(cipher),
-						progress_hook: function (obj) { /* ... */ }
-
-					}, function(err, buff) {
-
-						if (! err) {
-								var ciphertext = buff.toString('hex');
-								var keys = Object.keys(self.geoji);
-								var eKeys = Object.keys(self.geojiEncrypted);
-								
-								console.log(ciphertext);
-								
-								self.geojiEncrypted[key].push(ciphertext);
-
-								if(keys.length === eKeys.length){
-									var keysE = Object.keys(eObj);
-									var keysO = Object.keys(gObj);
-
-									if(keysE.length === keysO.length){
-										console.log("self.geojiEncrypted[key]");
-										console.log(self.geojiEncrypted[key]);
-										self._checkEncrypted();
-									}
-								}
-							}
-					});
-				}
-			}else{
-				console.log("Must be type of array to encrypt.")
-			}
-
-			console.log("start encrypt object.");
-
 		},
 		_encryptGeoji: function(){
 			var geoji = {};
@@ -1292,55 +1345,9 @@ paper-icon-button.createMarker #icon {
 				}
 			}
 		},
-		_checkEncrypted: function(){
-			var self = this;
-			var add = this.getElem(this.ctrls.add);
-			var save = this.getElem(this.ctrls.save);
-			var keys = Object.keys(this.geoji);
-			var eKeys = Object.keys(this.geojiEncrypted);
-			var saveDialog = this.getElem(this.ctrls.saveDialog);
-			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
-			var limit = eKeys.length;
-			var objsEncrypted = false;
-			var saved = false;
-			var i = 1;
-
-			var encryptComplete = function(){
-				if(add !== undefined && add !== null){
-					add.hidden = true;
-					save.hidden = false;
-					saveSpinner.active = false;
-					saveDialog.close();
-					saved = true;
-				}
-			}
-
-			console.log("keys length: "+keys.length+" <---> eKeys length: "+eKeys.length);
-
-			if (eKeys.length === keys.length && this.geojiEncrypted !== null && this.geojiEncrypted !== undefined){
-				var publicDB = this.getElem(this.ctrls.geojiPublic);
-				var privateDB = this.getElem(this.ctrls.geojiPrivate);
-				console.log("ALL DATA SHOULD BE ENCRYPTED.");
-				// console.log(this.geojiEncrypted);
-
-				if(this.geojiEncrypted.private && privateDB !== null && privateDB !== undefined){
-					setTimeout(function(){
-						privateDB.add(self.geojiEncrypted);
-						encryptComplete();
-					}, 100);
-				}else if(!this.geojiEncrypted.private  && publicDB !== null && publicDB !== undefined){
-					setTimeout(function(){
-						publicDB.add(self.geojiEncrypted);
-						encryptComplete();
-					}, 100);									
-				}
-			}
-			
-		},
 		_setCoverImg: function(){
-			var geoji = this.geoji;
 
-			if(geoji !== null && geoji !== undefined){
+			if(this.geoji !== null && this.geoji !== undefined){
 				if(this.coverSet){
 					this.geoji.cover_image = this.coverImg;	
 				}
