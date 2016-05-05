@@ -144,6 +144,15 @@ paper-icon-button.createMarker #icon {
 		    limitToFirst= "3">
 		</firebase-collection>
 
+		<firebase-auth id="{{assignCtrl('mineAuth')}}" location="https://geoji.firebaseio.com/mine"></firebase-auth>
+
+		<firebase-collection
+	    	id="{{assignCtrl('geojiMine')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/mine/"
+		    limitToFirst= "3">
+		</firebase-collection>
+
 		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
 
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}">
@@ -325,12 +334,12 @@ paper-icon-button.createMarker #icon {
 			},
 			currentLongitude: {
 				type: String,
-				observer: "locationChange",
+				observer: "_locationChange",
 				notify: true
 			},
 			currentLatitude: {
 				type: String,
-				observer: "locationChange",
+				observer: "_locationChange",
 				notify: true
 			},
 			markerArray: {
@@ -523,16 +532,6 @@ paper-icon-button.createMarker #icon {
 				targetObj.latitude = self.currentLatitude;
 				self.geoji.id = self.generateUid("_");
 
-				publicRef.orderByChild("id").equalTo(self.geoji.id).on("child_added", function(snapshot) {
-				  console.log(snapshot.key());
-				  self.firebaseKey = snapshot.key();
-				});
-
-				privateRef.orderByChild("id").equalTo(self.geoji.id).on("child_added", function(snapshot) {
-				  console.log(snapshot.key());
-				  self.firebaseKey = snapshot.key();
-				});
-
 		    }, 1000);
 
 			this.clipboard.on('success', function(e) {
@@ -595,10 +594,12 @@ paper-icon-button.createMarker #icon {
 			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var mineDB = this.getElem(this.ctrls.geojiMine);
 			var saveGeoji = {};
 
 			saveDialog.open();
 			saveSpinner.active = true;
+
 
 			if(this.geoji!==null && this.geoji!==undefined){
 
@@ -607,14 +608,20 @@ paper-icon-button.createMarker #icon {
 				}else{
 					if(!this.geoji.private){
 						if(publicDB !== null && publicDB !== undefined){
-							var x = publicDB.add(this.geoji);
+							var obj = {};
+							obj.id = this.geoji.id;
+							publicDB.add(this.geoji);
+							mineDB.add(obj);
 							add.hidden = true;
 							save.hidden = false;
 							saveDialog.close();
 						}
 					}else{
 						if(privateDB !== null && privateDB !== undefined){
-							var x = privateDB.add(this.geoji);
+							var obj = {};
+							obj.id = this.geoji.id;
+							privateDB.add(this.geoji);
+							mineDB.add(obj);
 							add.hidden = true;
 							save.hidden = false;
 							saveDialog.close();
@@ -659,40 +666,55 @@ paper-icon-button.createMarker #icon {
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
 
-			console.log("this.geoji");
-			console.log(this.geoji);
-			console.log("this.geoji");
+			var complete = function(){
+				if(add !== undefined && add !== null){
+					if(!add.hidden){
+						add.hidden = true;
+						save.hidden = false;
+						saveSpinner.active = false;
+						saveDialog.close();
+					}else if(add.hidden){
+						saveSpinner.active = false;
+						saveDialog.close();
+					}
+				}
+			}
 
 			publicRef.orderByChild("id").equalTo(this.geoji.id).on("child_added", function(snapshot) {
 				console.log(snapshot.key());
 				self.firebaseKey = snapshot.key();
 				var obj = publicRef.child(snapshot.key());
-				obj.set(self.geoji);
+
+				if(self.geoji.encrypted){
+					obj.set(self.geojiEncrypted);
+					complete();
+				}else{
+					obj.set(self.geoji);
+					complete();
+				}
+				
 			});
 
 			privateRef.orderByChild("id").equalTo(this.geoji.id).on("child_added", function(snapshot) {
 				console.log(snapshot.key());
-				this.firebaseKey = snapshot.key();
-				var obj = publicRef.child(snapshot.key());
-				obj.set(self.geoji);
+				self.firebaseKey = snapshot.key();
+				var obj = privateRef.child(snapshot.key());
+
+				if(self.geoji.encrypted){
+					obj.set(self.geojiEncrypted);
+					complete();
+				}else{
+					obj.set(self.geoji);
+					complete();
+				}
+				
 			});
 
-			if(!this.geoji.private){
-
-				if(this.firebaseKey !== null && this.firebaseKey !== undefined){
-					console.log("should save geoji");
-					var obj = publicRef.child(this.firebaseKey);
-					obj.set(this.geoji);
-				}
-
-			}else if(this.geoji.private){
-
-				if(this.firebaseKey !== null && this.firebaseKey !== undefined){
-					var obj = privateRef.child(this.firebaseKey);
-					obj.set(this.geojiEncrypted);
-				}	
-			}
 		},
 		createMarker: function(){
 			var map = this.getElem(this.ctrls.map);
@@ -737,12 +759,15 @@ paper-icon-button.createMarker #icon {
 				if(type === "img"){
 					var coverImg = this.coverImg;
 					var coverSet = this.coverSet;
+					var coverToggle = this.getElem(this.ctrls.coverImg);
+					var imgUrl = this.geoji[id].img;
+					var imgProcess = this.getElem(this.ctrls.imgProcess);
+					var imgIcon = this.getElem(this.ctrls.imgIcon);
+
 
 					this.getElem(this.ctrls.imgProcess).hideButtons = false;
+					
 
-					if(coverImg !== null && coverImg !== null){
-
-					}
 				}
 
 				var e = this.getElem(this.ctrls[type+"Dialog"]);
@@ -820,24 +845,38 @@ paper-icon-button.createMarker #icon {
 			marker.icon = "/images/mascot-img.png";
 
 			var onClick = function(e) {
-				    console.log(e);
+				    //console.log(e);
 				};
 			var dblClick = function(e) {
 					var imgUrl = self.geoji[e.target.id].img;
 					var imgProcess = self.getElem(self.ctrls.imgProcess);
 					var imgIcon = self.getElem(self.ctrls.imgIcon);
+					var coverToggle = self.getElem(self.ctrls.coverImg);
+					var data = geoji[e.target.id];
 
 					self.toggleDialog(e);
 				    self.selectedMarker = e.target.id;
+				    imgProcess.hideImgPreview();
+
+				    console.log("imgUrl");
+				    console.log(imgUrl);
+				    console.log("self.coverImg");
+				    console.log(self.coverImg);
 				    
 				    if(imgUrl !== null && imgUrl !== undefined){
-
-				    	imgProcess.setImgPreview(imgUrl);
 				    	imgIcon.hidden = true;
-				    	imgProcess.showCropper();
+				    	coverToggle.hidden = false;
+				    	imgProcess.hideCropper();
+				    	imgProcess.showImgPreview(imgUrl);
+				    	if(imgUrl == self.coverImg){
+				    		coverToggle.checked = true;
+				    	}else{
+				    		coverToggle.checked = false;
+				    	}
 				    }else{
 				    	imgProcess.hideCropper();
 				    	imgIcon.hidden = false;
+				    	coverToggle.hidden = true;
 				    }
 				};
 			var onDragEnd = function(e) {
@@ -1191,18 +1230,19 @@ paper-icon-button.createMarker #icon {
 				}
 			}
 
-			console.log("encrypt_MainObj");
-			console.log(this.geoji);
-
 			if(gKeys.length === eKeys.length){
 				var publicDB = this.getElem(this.ctrls.geojiPublic);
 				var privateDB = this.getElem(this.ctrls.geojiPrivate);
+				var mineDB = this.getElem(this.ctrls.geojiMine);
 				console.log("ALL DATA SHOULD BE ENCRYPTED.");
 
 				if(this.geojiEncrypted.private && privateDB !== null && privateDB !== undefined){
 					if(add !== undefined && add !== null && save !== undefined && save !== null){
 						if(!add.hidden){
+							var obj = {};
+							obj.id = this.geoji.id;
 							privateDB.add(self.geojiEncrypted);
+							mineDB.add(obj);
 							encryptComplete();
 						}else{
 							this.doSave();
@@ -1211,7 +1251,10 @@ paper-icon-button.createMarker #icon {
 				}else if(!this.geojiEncrypted.private  && publicDB !== null && publicDB !== undefined){
 					if(add !== undefined && add !== null && save !== undefined && save !== null){
 						if(!add.hidden){
+							var obj = {};
+							obj.id = this.geoji.id;
 							publicDB.add(self.geojiEncrypted);
+							mineDB.add(obj);
 							encryptComplete();	
 						}else{
 							this.doSave();
@@ -1347,11 +1390,23 @@ paper-icon-button.createMarker #icon {
 		},
 		_setCoverImg: function(){
 
-			if(this.geoji !== null && this.geoji !== undefined){
-				if(this.coverSet){
-					this.geoji.cover_image = this.coverImg;	
+			if(this.coverSet === true){
+				if(this.geoji !== null && this.geoji !== undefined){
+					if(this.selectedMarker !== null && this.selectedMarker !== undefined){
+						var marker = this.getElem(this.selectedMarker);
+						var data = this.geoji[this.selectedMarker];
+						console.log(data);
+						if(data.type === "img" && data.img !== null && data.img !== undefined){
+							this.geoji.coverImg = data.img;
+							this.coverImg = data.img;	
+						}
+					}
 				}
+			}else{
+				
 			}
+
+			
 		},
 		_updateEmails: function(){
 			console.log("helleo");
@@ -1380,8 +1435,6 @@ paper-icon-button.createMarker #icon {
 			var player = this.getElem(this.ctrls.youtubePlayer);
 			var selected = this.getElem(this.selectedMarker);
 
-			console.log("video id set>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
 			if(this.geoji!==null && this.geoji!==undefined
 			 && this.vidId!==null && this.vidId!==undefined
 			 && this.selected!==null && this.selected!==undefined){
@@ -1397,21 +1450,13 @@ paper-icon-button.createMarker #icon {
 			var player = this.getElem(this.ctrls.youtubePlayer);
 			var selected = this.getElem(this.selectedMarker);
 
-			console.log("video url set>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
-			// if(this.geoji!==null && this.geoji!==undefined
-			//  && this.vidId!==null && this.vidId!==undefined
-			//  && this.selected!==null && this.selected!==undefined){
-			// 	this.geoji[selected].link = this.vidId;
-
-			// 	vidIcon.hidden = true;
-			// 	player.hidden = false;
-			// }
-			
 		},
 		_setVidPrivate: function(){
 
 			
+		},
+		_locationChange: function(){
+
 		}
 
 	});

@@ -131,33 +131,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <paper-material elevation="1">
 
                   <my-greeting></my-greeting>
-                
+                  
                   <p class="subhead">You now have:</p>
                   <my-list></my-list>
                 </paper-material>
               </section>
 
               <section id= "mainCollection" data-route="mine">
-                <paper-material elevation="1">
-                  <h2 class="page-title">Users</h2>
-                  <a href$="{{baseUrl}}mine/Addy">Addy</a><br>
-                  <a href$="{{baseUrl}}mine/Rob">Rob</a><br>
-                  <a href$="{{baseUrl}}mine/Chuck">Chuck</a><br>
-                  <a href$="{{baseUrl}}mine/Sam">Sam</a>
-                </paper-material>
+                <geoji-mine></geoji-mine>
               </section>
 
               <section data-route="user-info">
-                <paper-material elevation="1">
-                  <geoji-editor heading="{{params.name}}"></geoji-editor>
-                </paper-material>
+                
               </section>
 
               <section id="mainCreate" data-route="create">
-                <paper-material elevation="1">
-                  <geoji-card></geoji-card>
-                </paper-material>
+                <geoji-editor heading="{{params.name}}"></geoji-editor>
               </section>
+
             </iron-pages>
           </div>
         </paper-scroll-header-panel>

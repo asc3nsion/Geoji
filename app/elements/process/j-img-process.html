@@ -147,6 +147,8 @@ fixedSize = it the size of the cropped square in pixels.
 
     <div hidden$='{{!file}}'>
 
+    <img id="{{assignCtrl('imgPreview')}}" hidden="true">
+
       <div class='layout_ horizontal_' id="{{assignCtrl('cropperParent')}}">
         <div class='flex_ cropperContainer cropperDiv' id="{{assignCtrl('cropperContainer')}}"> </div>
         &nbsp;
@@ -237,6 +239,9 @@ fixedSize = it the size of the cropped square in pixels.
         },
         progressSpinner: {
           type: String
+        },
+        previewImg: {
+          type: String
         }
       },
       behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId],
@@ -292,12 +297,13 @@ fixedSize = it the size of the cropped square in pixels.
       },
       setImgPreview: function(url){
 
-        var imgPreview = this.getElem(this.ctrls.imgPreview);
+        // var imgPreview = this.getElem(this.ctrls.imgPreview);
 
-        if(imgPreview !== null && imgPreview !== undefined){
-          console.log("set img preview to: "+url);
-          imgPreview.src = url;
-        }
+        // if(imgPreview !== null && imgPreview !== undefined){
+        //   console.log("set img preview to: "+url);
+        //   imgPreview.src = url;
+        //   this.imgPreview = url;
+        // }
 
       },
       getImgPreview: function(url){
@@ -326,6 +332,18 @@ fixedSize = it the size of the cropped square in pixels.
           return null;
         }
 
+      },
+      showImgPreview: function(url){
+
+        var imgPreview = this.getElem(this.ctrls.imgPreview);
+        imgPreview.src = url;
+        imgPreview.hidden = false;
+      },
+      hideImgPreview: function(){
+
+        var imgPreview = this.getElem(this.ctrls.imgPreview);
+
+        imgPreview.hidden = true;
       },
       hideCropper: function(url){
 
@@ -392,7 +410,7 @@ fixedSize = it the size of the cropped square in pixels.
             var self = this;
             if (!this.imageNode) {
               var imgNode = util.create('img');
-              imgNode.id = this.assignCtrl('imgPreview');
+              // imgNode.id = this.assignCtrl('imgPreview');
               this.imageNode = imgNode;
               this.domNode.appendChild(this.imageNode);
               this.imageNode.onload = function(){
@@ -421,7 +439,7 @@ fixedSize = it the size of the cropped square in pixels.
             this.image = url;
             if (!this.imageNode) {
                 this.imageNode = util.create('img');
-                imgNode.id = this.assignCtrl('imgPreview');
+                // imgNode.id = this.assignCtrl('imgPreview');
                 this.domNode.appendChild(this.imageNode);
                 var self = this;
                 //TODO: onerror?

@@ -1,0 +1,302 @@
+<!-- 
+This is an element button used as a base for other buttons.
+ text = The text to be displayed on the button
+ icon = The icon to be desplayed on the button
+ iput = This is the id of the component the button will call a method on.
+
+ style of the button is set via j-styles behavior.
+ interaction is set via j-handler.
+ if the button doesn't have an explicit id, one is assigned via auto-id.
+-->
+<!-- components: -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/j-ui/j-button.html">
+<link rel="import" href="../../elements/j-ui/j-profile-img.html">
+<link rel="import" href="../../elements/j-ui/j-dialog.html">
+<link rel="import" href="../../elements/api/imgur-upload.html">
+<!-- behaviors: -->
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/selection/auto-id.html">
+<link rel="import" href="../../behaviors/style/j-styles.html">
+
+<style>
+
+	paper-card.collection{
+		--paper-card-background-color: white;
+		--paper-card-background-size: cover;
+		width: 50vw;
+	    height: 50%;
+	    padding: 1%;
+        margin: 1%;
+	}
+	
+
+</style>	
+
+<dom-module id= "geoji-mine">
+	<template>
+
+		<firebase-auth id="{{assignCtrl('publicAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
+
+	    <firebase-collection
+	    	id= "{{assignCtrl('geojiPublic')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/public/"
+		    data="{{publicData}}">
+		</firebase-collection>
+
+		<firebase-auth id="{{assignCtrl('privateAuth')}}" location="https://geoji.firebaseio.com/private"></firebase-auth>
+
+		<firebase-collection
+	    	id= "{{assignCtrl('geojiPrivate')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/private/"
+		    data="{{privateData}}">
+		</firebase-collection>
+
+		<firebase-auth id="{{assignCtrl('mineAuth')}}" location="https://geoji.firebaseio.com/mine"></firebase-auth>
+
+		<firebase-collection
+	    	id= "{{assignCtrl('geojiMine')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/mine/"
+		    data="{{mineData}}">
+		</firebase-collection>
+
+		<template is="dom-repeat" items="{{mineData}}" as="data">
+		    <paper-card id="{{assignCtrl(data.id)}}_myCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection">
+				<div class="card-content">
+					<template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template>
+				</div>
+		      	<div class="card-actions">
+		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
+				  	<a href="{{baseUrl}}mine/geoji"><paper-button id"{{assignCtrl('Edit')}}">Edit</paper-button></a>
+				  	<paper-button id"{{assignCtrl('Delete')}}" on-tap="dataHandler">Delete</paper-button>
+		      	</div>
+		    </paper-card>
+		</template>
+
+		<!-- <paper-card id="{{assignCtrl('geojiCard')}}" class="collection" heading="{{heading}}" image="{{cardImage}}">
+		  <div class="card-content">{{detail}}</div>
+		  <div class="card-actions">
+		  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
+		    <a href="{{baseUrl}}mine/geoji"><paper-button id"{{assignCtrl('Explore')}}">Explore</paper-button></a>
+		    <paper-button id"{{assignCtrl('Add')}}" on-tap="dataHandler">Add</paper-button>
+		  </div>
+		</paper-card> -->
+
+	</template>
+</dom-module>
+
+<script>
+	// I pass the button handler property from the base element, defined as the input
+	// The call back is made via document.querySelector on the input element name.
+	Polymer({		
+		is: "geoji-mine",
+		properties: {
+			cardImg: {
+				type: String,
+				value: ""
+			},
+			heading: {
+				type: String,
+				value: "GEOJI"
+			},
+			detail: {
+				type: String,
+				value: ""
+			},
+			description: {
+				type: String,
+				value: ""
+			},
+			canShare: {
+				type: Boolean,
+				value: true
+			},
+			publicURL: {
+		        type: String,
+		        computed: '_userURL()'
+	      	},
+	      	publicData: {
+	      		type: Array,
+	      		value: [],
+	      		observer: "_dataPublic",
+	      		notify: true
+	      	},
+	      	privateData: {
+	      		type: Array,
+	      		value: [],
+	      		observer: "_dataPrivate",
+	      		notify: true
+	      	},
+	      	mineData: {
+	      		type: Array,
+	      		value: [],
+	      		observer: "_dataMine",
+	      		notify: true
+	      	}
+		},
+
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles],
+
+		ready: function(){
+
+		},
+		attached: function(){
+
+			var self = this;
+
+			setTimeout(function(){
+		        // self._computeData();
+		    }, 1000);
+			
+		},
+		dataHandler: function(){
+			console.log(app.getUser());
+			var user = app.getUser();
+			var mainObj = {};
+			var subObj = {};
+			subObj[this.makeId()] = "test";
+			mainObj.data = subObj;
+			user.customData = mainObj;
+			this.$.firebasePublicData.add(mainObj);
+			console.log(this.publicData);
+		},
+		_computeData: function(data){
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var mineDB = this.getElem(this.ctrls.geojiMine);
+			var mineAuth = this.getElem(this.ctrls.mineAuth);
+			var mineRef = mineAuth.ref;
+
+
+			publicRef.orderByChild("id").equalTo(data.id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				console.log(snapshot.val());
+
+				return obj;		
+			});
+
+			
+		},
+		_computeTitle: function(id){
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var mineDB = this.getElem(this.ctrls.geojiMine);
+			var mineAuth = this.getElem(this.ctrls.mineAuth);
+			var mineRef = mineAuth.ref;
+
+			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_myCard");
+
+				if(obj.encrypted){
+					card.heading = "Encrypted Geoji";
+				}else{
+					card.heading = obj.title;
+				}
+			});
+
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_myCard");
+
+				if(obj.encrypted){
+					card.heading = "Encrypted Geoji";
+				}else{
+					card.heading = obj.title;
+				}
+			});
+
+			
+		},
+		_computeImg: function(id){
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var mineDB = this.getElem(this.ctrls.geojiMine);
+			var mineAuth = this.getElem(this.ctrls.mineAuth);
+			var mineRef = mineAuth.ref;
+
+			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_myCard");
+
+
+				if(obj.encrypted){
+
+				}else{
+					if(obj.coverImg !== null && obj.coverImg !== undefined){
+						card.image = obj.coverImg;
+
+					}else{
+						card.image = "/images/mascot-mine.png";
+
+					}
+				}
+
+			});
+
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_myCard");
+
+				if(obj.encrypted){
+
+				}else{
+					if(obj.coverImg !== null && obj.coverImg !== undefined){
+
+						card.image = obj.coverImg;
+					}else{
+
+						card.image = "/images/mascot-mine.png";
+					}
+				}
+
+			});
+
+			
+		},
+		_publicURL: function(){
+
+			if(!app.getUser()){
+	          return null;
+	        }else{
+	          // return "https://geoji.firebaseio.com/public/";
+	          return "https://geoji.firebaseio.com/users/" + this.user.uid + "/"
+	        }     
+	    },
+	    _dataPublic: function(e){
+
+	    	console.log("data recieved");
+	    	console.log(e);
+	    },
+	    _dataPrivate: function(e){
+	    	
+	    	console.log("data recieved");
+	    	console.log(e);
+	    },
+	    _dataMine: function(e){
+	    	
+	    	console.log("data recieved");
+	    	console.log(e);
+	    }
+
+	});
+</script>
