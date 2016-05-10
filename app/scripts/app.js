@@ -31,6 +31,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     userData: "firebaseUserData",
     main: "mainContainer",
     bar: "mainToolbar",
+    editor: "editor",
     feed: "mainFeed",
     collection: "mainCollection",
     create: "mainCreate",
@@ -132,6 +133,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.element = function(id){
     return document.querySelector("#"+id);
+  }
+
+  app.feed = function(){
+    return app.element(app.elements.feed);
+  }
+
+  app.editor = function(){
+    return app.element(app.elements.editor);
+  }
+
+  app.create = function(){
+    return app.element(app.elements.create);
   }
 
   app.setAttr = function(id, attr, value){

@@ -17,6 +17,7 @@ This is an element button used as a base for other buttons.
 <!-- behaviors: -->
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/interaction/j-events.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 <link rel="import" href="../../behaviors/style/j-styles.html">
 
@@ -41,7 +42,7 @@ This is an element button used as a base for other buttons.
 
 	    <firebase-collection
 	    	id= "{{assignCtrl('geojiPublic')}}"
-			limit-to-first="3"
+			limit-to-first="100"
 		    location="https://geoji.firebaseio.com/public/"
 		    data="{{publicData}}">
 		</firebase-collection>
@@ -50,7 +51,7 @@ This is an element button used as a base for other buttons.
 
 		<firebase-collection
 	    	id= "{{assignCtrl('geojiPrivate')}}"
-			limit-to-first="3"
+			limit-to-first="100"
 		    location="https://geoji.firebaseio.com/private/"
 		    data="{{privateData}}">
 		</firebase-collection>
@@ -59,32 +60,30 @@ This is an element button used as a base for other buttons.
 
 		<firebase-collection
 	    	id= "{{assignCtrl('geojiMine')}}"
-			limit-to-first="3"
+			limit-to-first="100"
 		    location="https://geoji.firebaseio.com/mine/"
 		    data="{{mineData}}">
 		</firebase-collection>
 
 		<template is="dom-repeat" items="{{mineData}}" as="data">
-		    <paper-card id="{{assignCtrl(data.id)}}_myCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection">
+		    <paper-card id="[[assignCtrl(data.id)]]_myCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection">
 				<div class="card-content">
 					<template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template>
 				</div>
 		      	<div class="card-actions">
 		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
-				  	<a href="{{baseUrl}}mine/geoji"><paper-button id"{{assignCtrl('Edit')}}">Edit</paper-button></a>
+				  	<a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" name="{{data.id}}editBtn">Edit</paper-button></a>
 				  	<paper-button id"{{assignCtrl('Delete')}}" on-tap="dataHandler">Delete</paper-button>
 		      	</div>
 		    </paper-card>
 		</template>
 
-		<!-- <paper-card id="{{assignCtrl('geojiCard')}}" class="collection" heading="{{heading}}" image="{{cardImage}}">
-		  <div class="card-content">{{detail}}</div>
-		  <div class="card-actions">
-		  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
-		    <a href="{{baseUrl}}mine/geoji"><paper-button id"{{assignCtrl('Explore')}}">Explore</paper-button></a>
-		    <paper-button id"{{assignCtrl('Add')}}" on-tap="dataHandler">Add</paper-button>
-		  </div>
-		</paper-card> -->
+		<paper-dialog class="vidData" id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
+			<h2>Enter Cipher</h2>
+			<input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="">
+			<paper-progress class="bar" id="{{assignCtrl('encryptProgress')}}"></paper-progress>
+			<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite>
+		</paper-dialog>
 
 	</template>
 </dom-module>
@@ -139,7 +138,7 @@ This is an element button used as a base for other buttons.
 	      	}
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles, InteractionBehaviors.JEvents],
 
 		ready: function(){
 
@@ -163,6 +162,48 @@ This is an element button used as a base for other buttons.
 			user.customData = mainObj;
 			this.$.firebasePublicData.add(mainObj);
 			console.log(this.publicData);
+		},
+		editHandler: function(e){
+			var editor = app.editor();
+			var id = e.target.name.replace("editBtn", "");
+			var self = this;
+			var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+			var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var obj = null;
+			var privateRef = privateAuth.ref;
+			var private = false;
+			var card = e.target.parentNode.parentNode.parentNode;
+
+			console.log(e.target.parentNode.parentNode.parentNode);
+			console.log(card.name);
+
+			// publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+			// 	console.log(snapshot.val());
+			// 	var obj = snapshot.val()
+			// });
+
+			// privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+			// 	console.log(snapshot.val());
+			// 	var obj = snapshot.val()
+			// 	private = true;
+			// });
+
+			if(card.name.includes("encrypted")>0){
+
+				editor.loadEncrypted(id);
+
+			}else{
+
+				editor.loadGeoji(id);
+
+			}
+
 		},
 		_computeData: function(data){
 			var self = this;
@@ -203,8 +244,10 @@ This is an element button used as a base for other buttons.
 				var card = self.getElem(self.ctrls[id]+"_myCard");
 
 				if(obj.encrypted){
+					card.name = self.ctrls[id]+"_encrypted";
 					card.heading = "Encrypted Geoji";
 				}else{
+					card.name = self.ctrls[id]+"_decrypted";
 					card.heading = obj.title;
 				}
 			});
@@ -214,8 +257,10 @@ This is an element button used as a base for other buttons.
 				var card = self.getElem(self.ctrls[id]+"_myCard");
 
 				if(obj.encrypted){
+					card.name = self.ctrls[id]+"_encrypted";
 					card.heading = "Encrypted Geoji";
 				}else{
+					card.name = self.ctrls[id]+"_decrypted";
 					card.heading = obj.title;
 				}
 			});
@@ -240,7 +285,7 @@ This is an element button used as a base for other buttons.
 
 
 				if(obj.encrypted){
-
+					card.image = "/images/mascot-encrypted.png";
 				}else{
 					if(obj.coverImg !== null && obj.coverImg !== undefined){
 						card.image = obj.coverImg;
@@ -258,7 +303,7 @@ This is an element button used as a base for other buttons.
 				var card = self.getElem(self.ctrls[id]+"_myCard");
 
 				if(obj.encrypted){
-
+					card.image = "/images/mascot-encrypted.png";
 				}else{
 					if(obj.coverImg !== null && obj.coverImg !== undefined){
 

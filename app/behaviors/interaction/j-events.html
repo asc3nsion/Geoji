@@ -76,6 +76,7 @@ then the events table can be updated.
  		},
  		fireJMouseEvent: function(id, event){
  			var e = document.querySelector("#"+id);
+ 			console.log(id);
 			if(e && document.createEvent) {
 		      var evt = document.createEvent("MouseEvents");
 		      evt.initEvent(event, true, false);

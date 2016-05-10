@@ -143,11 +143,10 @@ fixedSize = it the size of the cropped square in pixels.
 
     <imgur-upload id="{{assignCtrl('imgurUpload')}}" client-id="c16e7a9d7583546" auto="true"></imgur-upload>
     <input type="file" id="{{assignCtrl('imgInput')}}" on-change="fileChange" hidden accept="image/*" >
-	<img id="{{assignCtrl('imgResize')}}" hidden="true">
+  	<img id="{{assignCtrl('imgResize')}}" hidden="true">
+    <img id="{{assignCtrl('imgPreview')}}" hidden="true">
 
     <div hidden$='{{!file}}'>
-
-    <img id="{{assignCtrl('imgPreview')}}" hidden="true">
 
       <div class='layout_ horizontal_' id="{{assignCtrl('cropperParent')}}">
         <div class='flex_ cropperContainer cropperDiv' id="{{assignCtrl('cropperContainer')}}"> </div>
@@ -336,8 +335,10 @@ fixedSize = it the size of the cropped square in pixels.
       showImgPreview: function(url){
 
         var imgPreview = this.getElem(this.ctrls.imgPreview);
+        console.log("should show imgPreview:  "+url);
         imgPreview.src = url;
         imgPreview.hidden = false;
+        console.log(imgPreview);
       },
       hideImgPreview: function(){
 

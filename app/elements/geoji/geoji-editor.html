@@ -21,6 +21,8 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
+<link rel="import" href="../../behaviors/crypto/j-encrypt.html">
+<link rel="import" href="../../behaviors/crypto/j-decrypt.html">
 <link rel="import" href="../../behaviors/util/j-util.html">
 
 <style>
@@ -69,6 +71,8 @@ paper-icon-button.createMarker #icon {
  gold-email-input.createMarker{
  	background-color: orange;
  	color:red;
+ 	width: 85%;
+ 	margin: 10px 10px 10px 10px;
  }
 
  paper-input-container.createMarker{
@@ -85,6 +89,11 @@ paper-icon-button.createMarker #icon {
 
  	width: 35vw;
  	height: 55%;
+ }
+ paper-dialog.decryptData{
+
+ 	width: 45vw;
+ 	height: 25%;
  }
  paper-button.txtData{
  	float: right;
@@ -153,7 +162,7 @@ paper-icon-button.createMarker #icon {
 		    limitToFirst= "3">
 		</firebase-collection>
 
-		<geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
+		<!-- <geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location> -->
 
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}">
 			<paper-input-container class="createMarker">
@@ -166,7 +175,7 @@ paper-icon-button.createMarker #icon {
 		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}">Private</paper-toggle-button>
 		  	<paper-input-container id="{{assignCtrl('email')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
 			  <label>Add Email</label>
-			  <input id="{{assignCtrl('emailInput')}}" is="iron-input" bind-value="">
+			  <input id="{{assignCtrl('emailInput')}}" is="iron-input" type="email" autocomplete="on" bind-value="">
 			  <paper-input-error>Enter a valid email!</paper-input-error>
 			  <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
 			</paper-input-container>
@@ -175,8 +184,8 @@ paper-icon-button.createMarker #icon {
 		  	<paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}">Encrypt</paper-toggle-button>
 		  	<paper-input-container id="{{assignCtrl('cipher')}}" class="createMarker" bind-value="{{emailValue}}" hidden="true">
 			  <label>Cipher Key</label>
-			  <input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="{{cipherText}}">
-			  <input id="cipherHidden" is="iron-input" bind-value="{{cipherText}}" hidden="true">
+			  <input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="{{cipherKey}}">
+			  <input id="cipherHidden" is="iron-input" bind-value="{{cipherKey}}" hidden="true">
 			  <paper-input-error>Enter or Generate cipher</paper-input-error>
 			  <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
 			  <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button>
@@ -197,7 +206,7 @@ paper-icon-button.createMarker #icon {
           fitToMarkers="true"
           zoom="20"
           drag-events="true">
-		  <google-map-marker id="{{assignCtrl('targetMarker')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
+		  <google-map-marker id="{{assignCtrl('targetMarker')}}" name="targetMarker" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
 		                     draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker></google-map>
 
 		  <div class="card-actions">
@@ -278,6 +287,16 @@ paper-icon-button.createMarker #icon {
 			<h2>Saving Geoji</h2>
 			<paper-progress class="bar" id="{{assignCtrl('encryptProgress')}}"></paper-progress>
 			<paper-spinner-lite id="{{assignCtrl('saveSpinner')}}"  class="orange createMarker saveSpinner center"></paper-spinner-lite>
+		</paper-dialog>
+
+		<paper-dialog class="decryptData" id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
+			<paper-progress class="bar" id="{{assignCtrl('decryptProgress')}}"></paper-progress>
+			<h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
+			<paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
+			  <input id="{{assignCtrl('decryptInput')}}" is="iron-input" class="txtData" bind-value="{{cipherKey}}"></input> 
+			</paper-input-container>
+			<paper-button id="{{assignCtrl('cancelDecryptBtn')}}" class="txtData theme" raised on-tap="toggleDecryptDialog">CANCEL</paper-button>
+			<paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
 		</paper-dialog>
 
 	</template>
@@ -409,7 +428,7 @@ paper-icon-button.createMarker #icon {
 			selectedMarker: {
 				type: String
 			},
-			cipherText: {
+			cipherKey: {
 				type: String
 			},
 			firebaseKey: {
@@ -419,7 +438,8 @@ paper-icon-button.createMarker #icon {
 			
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, UtilityBehaviors.JUtil],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+		 UtilityBehaviors.JUtil, CryptoBehaviors.JEncrypt, CryptoBehaviors.JDecrypt],
 
 		ready: function(){
 			
@@ -428,6 +448,7 @@ paper-icon-button.createMarker #icon {
 		attached: function(){
 			var self = this;
 			var map = this.getElem(this.ctrls.map);
+			var location = this.getElem("geoLocation");
 			var target = this.getElem(this.ctrls.targetMarker);
 			var targetObj = {};
 			var title = this.getElem(this.ctrls.title);
@@ -453,6 +474,8 @@ paper-icon-button.createMarker #icon {
 			var player = self.getElem(self.ctrls.youtubePlayer);
 			var containerPrivate = this.getElem(this.ctrls.containerPrivate);
 			var containerEncrypt = this.getElem(this.ctrls.containerEncrypt);
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
 
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -460,6 +483,9 @@ paper-icon-button.createMarker #icon {
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
+
+			add.hidden = false;
+			save.hidden = true;
 
 
 			title.focus();
@@ -513,6 +539,7 @@ paper-icon-button.createMarker #icon {
 				this.assignStyles(containers[i], containerStyle);
 			}
 
+
 			this.geoji = {};
 			
 			map.mapType="satellite";
@@ -532,6 +559,12 @@ paper-icon-button.createMarker #icon {
 				targetObj.latitude = self.currentLatitude;
 				self.geoji.id = self.generateUid("_");
 
+				self.currentLongitude = location.longitude;
+				self.currentLatitude = location.latitude;
+
+				target.longitude = location.longitude;
+				target.latitude = location.latitude;
+
 		    }, 1000);
 
 			this.clipboard.on('success', function(e) {
@@ -548,16 +581,25 @@ paper-icon-button.createMarker #icon {
 				};
 			var mapDragEnd = function(e) {
 
-				    self.geoji.target.longitude = target.longitude;
-				    self.geoji.target.latitude = target.latitude;
+					var target = self.getElem(self.ctrls.targetMarker);
+
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	self.geoji.target.longitude = e.target.longitude;
+					    	self.geoji.target.latitude = e.target.latitude;
+					    }
+				    }, 50);
 
 				    console.log(self.geoji);
 				};
 			var targetDragEnd = function(e) {
-					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
 
-				    self.geoji.target.longitude = latLng.lng();
-				    self.geoji.target.latitude = latLng.lat();
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	self.geoji.target.longitude = e.target.longitude;
+					    	self.geoji.target.latitude = e.target.latitude;
+					    }
+				    }, 50);
 
 				    console.log(self.geoji);
 				};
@@ -658,6 +700,209 @@ paper-icon-button.createMarker #icon {
 			}
 
 		},
+		buildGeoji: function(obj){
+			if(obj !== null){
+					var self = this;
+					var map = this.getElem(this.ctrls.map);
+					var target = this.getElem(this.ctrls.targetMarker);
+					var title = self.getElem(self.ctrls.title);
+					var email = self.getElem(self.ctrls.email);
+					var public = self.getElem(self.ctrls.public);
+					var email = self.getElem(self.ctrls.email);
+					var emailInput = self.getElem(self.ctrls.emailInput);
+					var add = self.getElem(self.ctrls.add);
+					var save = self.getElem(self.ctrls.save);
+					var encrypt = self.getElem(self.ctrls.encrypt);
+
+					add.hidden = true;
+					save.hidden = false;
+					self.private = obj.private;
+					map.clear();
+					target = self.targetMarker(obj.target.longitude, obj.target.latitude, target.id);
+
+					if(obj.title !== null && obj.title !== undefined){
+						title.value = obj.title;
+					}
+
+					if(obj.emailList !== null && obj.emailList !== undefined){
+						self.populateEmails(obj.emailList);
+					}
+
+					if(obj.encrypted){
+						encrypt.checked = true;
+					}
+
+
+					var markers = [];
+
+					self.currentLatitude = obj.target.latitude;
+					self.currentLongitude = obj.target.longitude;
+
+					self.geoji = obj;
+
+					for(k in obj){
+						if(obj[k].type !== null && obj[k].type !== undefined && k !== "target"){
+								
+							switch(obj[k].type){
+								case "txt":
+									marker = self.txtMarker(obj[k].longitude, obj[k].latitude, k);
+									break;
+								case "img":
+									marker = self.imgMarker(obj[k].longitude, obj[k].latitude, k);
+									break;
+								case "vid":
+									marker = self.vidMarker(obj[k].longitude, obj[k].latitude, k);
+									break;
+								default:
+
+							}
+						}
+					}
+
+				}else{
+					console.log("cannot load geoji with id: "+obj.id);
+				}
+		},
+		loadGeoji: function(id){
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var private = false;
+			var marker;
+
+			var copy = target.cloneNode(true);
+
+			if(this.geoji === null && this.geoji === undefined){
+				this.geoji = {};
+			}
+
+			this.geoji.id = id;
+
+			var doLoad = function(obj){
+				if(obj !== null){
+					var title = self.getElem(self.ctrls.title);
+					var email = self.getElem(self.ctrls.email);
+					var public = self.getElem(self.ctrls.public);
+					var email = self.getElem(self.ctrls.email);
+					var emailInput = self.getElem(self.ctrls.emailInput);
+					var add = self.getElem(self.ctrls.add);
+					var save = self.getElem(self.ctrls.save);
+
+					add.hidden = true;
+					save.hidden = false;
+					self.private = obj.private;
+					map.clear();
+					target = self.targetMarker(obj.target.longitude, obj.target.latitude, target.id);
+
+					if(obj.title !== null && obj.title !== undefined){
+						title.value = obj.title;
+					}
+
+					if(obj.emailList !== null && obj.emailList !== undefined){
+						self.populateEmails(obj.emailList);
+					}
+
+
+					if(obj.encrypted){
+						var cipher = this.getElem(this.ctrls.cipherInput).value;
+						this.ecryptedObj = obj;
+						this.decryptedObj = obj;
+						decrypt_MainObj(0, cipher);
+					}else{
+						var markers = [];
+
+						self.currentLatitude = obj.target.latitude;
+						self.currentLongitude = obj.target.longitude;
+
+						self.geoji = obj;
+
+						for(k in obj){
+							if(obj[k].type !== null && obj[k].type !== undefined && k !== "target"){
+								
+								switch(obj[k].type){
+									case "txt":
+										marker = self.txtMarker(obj[k].longitude, obj[k].latitude, k);
+										break;
+									case "img":
+										marker = self.imgMarker(obj[k].longitude, obj[k].latitude, k);
+										break;
+									case "vid":
+										marker = self.vidMarker(obj[k].longitude, obj[k].latitude, k);
+										break;
+									default:
+
+								}
+							}
+						}
+					}
+
+				}else{
+					console.log("cannot load geoji with id: "+id);
+				}
+			}
+
+			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				console.log(snapshot.val());
+				var obj = snapshot.val()
+				doLoad(obj);
+			});
+
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+
+				console.log(snapshot.val());
+				var obj = snapshot.val()
+				private = true;
+				doLoad(obj);
+			});
+
+		},
+		loadEncrypted: function(id){
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+			var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var title = self.getElem(self.ctrls.title);
+			var email = self.getElem(self.ctrls.email);
+			var public = self.getElem(self.ctrls.public);
+			var email = self.getElem(self.ctrls.email);
+			var emailInput = self.getElem(self.ctrls.emailInput);
+			var add = self.getElem(self.ctrls.add);
+			var save = self.getElem(self.ctrls.save);
+
+			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				console.log(snapshot.val());
+				var obj = snapshot.val()
+				self.decryptedObj = {};
+				self.encryptedObj = obj;
+				cipherDialog.open();
+				//doLoad(obj);
+			});
+
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+
+				console.log(snapshot.val());
+				var obj = snapshot.val();
+				self.decryptedObj = {};
+				self.encryptedObj = obj;
+				cipherDialog.open();
+				//doLoad(obj);
+			});
+
+
+		},
 		doSave: function(){
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
@@ -716,6 +961,20 @@ paper-icon-button.createMarker #icon {
 			});
 
 		},
+		loadMarker: function(long, lat, id){
+			console.log("this is the fucking id: "+ id);
+			var map = this.getElem(this.ctrls.map);
+			var marker = document.createElement('google-map-marker');
+			marker.setAttribute('latitude', lat);
+			marker.setAttribute('longitude', long);
+			marker.setAttribute('drag-events', true);
+			marker.setAttribute('click-events', true);
+			marker.draggable = true;
+			marker.animation = "DROP";
+			marker.id = this.addCtrl(id);
+
+			return marker;
+		},
 		createMarker: function(){
 			var map = this.getElem(this.ctrls.map);
 			var id = this.makeId();
@@ -737,6 +996,8 @@ paper-icon-button.createMarker #icon {
 			setTimeout(function(){
 		        var elem = self.getElem(id);
 		        self.markerArray.push(id);
+
+		        console.log(self.markerArray);
 
 				elem.addEventListener('google-map-marker-click', click);
 				elem.addEventListener('google-map-marker-click', dblclick);
@@ -782,16 +1043,75 @@ paper-icon-button.createMarker #icon {
 			var e = this.getElem(this.ctrls.txtDialog);
 			e.toggle();
 		},
-		txtMarker: function(){
+		toggleDecryptDialog: function(){
+
+			var e = this.getElem(this.ctrls.cipherDialog);
+			e.toggle();
+		},
+		targetMarker: function(long, lat, id){
+
 			var self = this;
 			var map = this.getElem(this.ctrls.map);
-			var marker = this.createMarker();
-			var txt = this.getElem(this.ctrls.txtInput);
 			var geoji = this.geoji;
-			marker.icon = "/images/mascot-txt.png";
+			var target = document.createElement('google-map-marker');
+
+			target.setAttribute('name', "targetMarker");
+			target.setAttribute('latitude', lat);
+			target.setAttribute('longitude', long);
+			target.setAttribute('drag-events', true);
+			target.setAttribute('click-events', true);
+			target.draggable = true;
+			target.animation = "DROP";	
+
+			target.icon = "/images/marker-target.png";
 
 			var onClick = function(e) {
 				    console.log(e);
+				};
+
+			var targetDragEnd = function(e) {
+
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	self.geoji.target.longitude = e.target.longitude;
+					    	self.geoji.target.latitude = e.target.latitude;
+
+					    	console.log(self.geoji);
+					    }
+				    }, 50);
+
+				};
+
+			target.addEventListener('google-map-marker-dragend', targetDragEnd);
+
+			Polymer.dom(map).appendChild(target);
+
+			return target;
+
+		},
+		txtMarker: function(long, lat, id){
+			console.log("txtmarker-----");
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var txt = this.getElem(this.ctrls.txtInput);
+			var geoji = this.geoji;
+			var doUpdate = true;
+			var marker;	
+
+
+			if(typeof long === "number"){
+				marker = this.loadMarker(long, lat, id);
+				marker.icon = "/images/mascot-txt.png";
+				doUpdate = false;
+			}else{
+				marker = this.createMarker();
+				marker.icon = "/images/mascot-txt.png";
+			}
+
+			var onClick = function(e) {
+				    console.log(e);
+				    console.log(self.geoji);
+				    //console.log(e.target.latitude);
 				};
 			var dblClick = function(e) {
 					var message = self.geoji[e.target.id].message;
@@ -811,18 +1131,21 @@ paper-icon-button.createMarker #icon {
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
 					var data = geoji[marker.id];
-				    
-				    if(data !== undefined || data !== null){
-				    	data.longitude = latLng.lng();
-				    	data.latitude = latLng.lat();
-				    }
+					var pos = this.position;
 
-				    console.log(geoji);
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	data.longitude = e.target.longitude;
+					    	data.latitude = e.target.latitude;
+					    }
+				    }, 50);
 				};
 
 			Polymer.dom(map).appendChild(marker);
 			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
-			self.updateMarker(marker);
+			if(doUpdate){
+				self.updateMarker(marker);
+			}
 
 		},
 		saveTxt: function(){
@@ -837,12 +1160,24 @@ paper-icon-button.createMarker #icon {
 			}
 
 		},
-		imgMarker: function(){
+		imgMarker: function(long, lat, id){
 			var self = this;
 			var map = this.getElem(this.ctrls.map);
-			var marker = this.createMarker();
 			var geoji = this.geoji;
-			marker.icon = "/images/mascot-img.png";
+			var doUpdate = true;
+			var marker;
+
+			console.log("this is long");
+			console.log(long);
+
+			if(typeof long === "number"){
+				marker = this.loadMarker(long, lat, id);
+				marker.icon = "/images/mascot-img.png";
+				doUpdate = false;
+			}else{
+				marker = this.createMarker();
+				marker.icon = "/images/mascot-img.png";
+			}
 
 			var onClick = function(e) {
 				    //console.log(e);
@@ -857,6 +1192,7 @@ paper-icon-button.createMarker #icon {
 					self.toggleDialog(e);
 				    self.selectedMarker = e.target.id;
 				    imgProcess.hideImgPreview();
+				    imgIcon.hidden = false;
 
 				    console.log("imgUrl");
 				    console.log(imgUrl);
@@ -883,15 +1219,19 @@ paper-icon-button.createMarker #icon {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
 				    var data = geoji[marker.id];
 				    
-				    if(data !== undefined || data !== null){
-				    	data.longitude = latLng.lng();
-				    	data.latitude = latLng.lat();
-				    }
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	data.longitude = e.target.longitude;
+					    	data.latitude = e.target.latitude;
+					    }
+				    }, 50);
 				};
 				
 			Polymer.dom(map).appendChild(marker);
 			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
-			this.updateMarker(marker);
+			if(doUpdate){
+				this.updateMarker(marker);
+			}
 
 		},
 		saveImg: function(){
@@ -904,13 +1244,21 @@ paper-icon-button.createMarker #icon {
 			}
 
 		},
-		vidMarker: function(){
+		vidMarker: function(long, lat, id){
 			var self = this;
 			var map = this.getElem(this.ctrls.map);
-			var marker = this.createMarker();
 			var geoji = this.geoji;
+			var doUpdate = true;
+			var marker;
 
-			marker.icon = "/images/mascot-vid.png";
+			if(typeof long === "number"){
+				marker = this.loadMarker(long, lat, id);
+				marker.icon = "/images/mascot-vid.png";
+				doUpdate = false;
+			}else{
+				marker = this.createMarker();
+				marker.icon = "/images/mascot-vid.png";
+			}
 
 			var onClick = function(e) {
 				    console.log(e);
@@ -961,15 +1309,20 @@ paper-icon-button.createMarker #icon {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
 				    var data = geoji[marker.id];
 				    
-				    if(data !== undefined || data !== null){
-				    	data.longitude = latLng.lng();
-				    	data.latitude = latLng.lat();
-				    }
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	data.longitude = e.target.longitude;
+					    	data.latitude = e.target.latitude;
+					    }
+				    }, 50);
 				};
 				
 			Polymer.dom(map).appendChild(marker);
 			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
-			this.updateMarker(marker);
+
+			if(doUpdate){
+				this.updateMarker(marker);
+			}
 
 		},
 		updateMarker: function(marker){
@@ -1035,6 +1388,17 @@ paper-icon-button.createMarker #icon {
 			
 
 		},
+		populateEmails: function(list){
+
+			for(item in list){
+
+				if(!this.emailString.includes(list[item])){
+					this.emailString += "  " + list[item] + ",";
+					this.emailList.push(list[item]);
+				}
+			}
+			
+		},
 		emailValidate: function(){
 			var input = this.getElem(this.ctrls.emailInput);
 			var email = this.getElem(this.ctrls.email);
@@ -1073,6 +1437,7 @@ paper-icon-button.createMarker #icon {
 		},
 		encrypt_MainKey: function(key, data, cipher, i){
 			var self = this;
+			console.log(this.cipherKey);
 
 			if(data.toString()==="true" || data.toString()==="false"){
 				data = data.toString();
@@ -1080,8 +1445,8 @@ paper-icon-button.createMarker #icon {
 
 			triplesec.encrypt ({
 
-				data:          new triplesec.Buffer(data),
-				key:           new triplesec.Buffer(cipher),
+				data:          new triplesec.Buffer(data.toString()),
+				key:           new triplesec.Buffer(self.cipherKey),
 				progress_hook: function (obj) { /* ... */ }
 
 			}, function(err, buff) {
@@ -1105,6 +1470,7 @@ paper-icon-button.createMarker #icon {
 		},
 		encrypt_InnerData: function(key, obj, innerKey, data, cipher, i, j){
 			console.log(innerKey + " " + data + " " + cipher + "  encrypting...");
+			console.log(this.cipherKey);
 			var keys = Object.keys(obj);
 			var self = this;
 
@@ -1114,8 +1480,8 @@ paper-icon-button.createMarker #icon {
 
 			triplesec.encrypt ({
 
-				data:          new triplesec.Buffer(data),
-				key:           new triplesec.Buffer(cipher),
+				data:          new triplesec.Buffer(data.toString()),
+				key:           new triplesec.Buffer(self.cipherKey),
 				progress_hook: function (obj) { /* ... */ }
 
 			}, function(err, buff) {
@@ -1125,6 +1491,8 @@ paper-icon-button.createMarker #icon {
 						var keys = Object.keys(obj);
 						var eKeys = Object.keys(self.geojiEncrypted);
 						var gKeys = Object.keys(self.geoji);
+
+						console.log(ciphertext);
 						
 
 						if(self.geojiEncrypted[key]===null || self.geojiEncrypted[key]===undefined){
@@ -1165,10 +1533,11 @@ paper-icon-button.createMarker #icon {
 		encrypt_ArrayElem: function(key, array, cipher, i, j){
 			self = this;
 			console.log("encrypt_ArrayElem");
+			console.log(this.cipherKey);
 			triplesec.encrypt ({
 
-				data:          new triplesec.Buffer(array[j]),
-				key:           new triplesec.Buffer(cipher),
+				data:          new triplesec.Buffer(array[j].toString()),
+				key:           new triplesec.Buffer(self.cipherKey),
 				progress_hook: function (obj) { /* ... */ }
 
 			}, function(err, buff) {
@@ -1312,22 +1681,121 @@ paper-icon-button.createMarker #icon {
 			}
 				
 		},
-		_encryptGeoji: function(){
-			var geoji = {};
-			var cipher = this.getElem(this.ctrls.cipherInput).value;
-			var saveDialog = this.getElem(this.ctrls.saveDialog);
-			var obj = this.geoji;
-			var keys = Object.keys(obj);
-			var length = Object.keys(obj).length;
+		decrypt_MainObj: function(i, cipher){
 			var self = this;
-			var i = 0;
+			this.geoji = this.decryptedObj;
+			console.log(this.encryptedObj);
+			var keys = Object.keys(self.encryptedObj);
+			var dKeys = Object.keys(self.decryptedObj);
+			var eKeys = Object.keys(self.encryptedObj);
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+			var decryptProgress = this.getElem(this.ctrls.decryptProgress);
+
+			this.decryptCallback = this.decrypt_MainObj;
+			decryptProgress.value = dKeys.length*10;
+
+			if(this.decryptedObj === null && this.decryptedObj === undefined){
+				this.decryptedObj = {};
+			}
+
+			var decryptComplete = function(){
+				if(add !== undefined && add !== null){
+					if(!add.hidden){
+						add.hidden = true;
+						save.hidden = false;
+						saveSpinner.active = false;
+						saveDialog.close();
+					}else{
+
+					}
+				}
+			}
+
+			if(eKeys.length === dKeys.length){
+				var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+
+				cipherDialog.close();
+				decryptProgress.value = 0;
+				decryptSpinner.active = false;
+				this.buildGeoji(this.decryptedObj);
+
+				console.log("ALL DATA SHOULD BE DECRYPTED.");
+
+			}else{
+				switch(keys[i]){
+					case "id":
+						if(self.encryptedObj.id !== null && self.encryptedObj.id !== undefined){
+							self.decryptedObj.id = self.encryptedObj.id;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
+					case "title":
+						console.log("decrypt title");
+
+						self.decryptMainKey(keys[i], self.encryptedObj.title, this.cipherKey, i);
+						break;
+					case "private":
+
+						if(self.encryptedObj.private !== null && self.encryptedObj.private !== undefined){
+							self.decryptedObj.private = self.encryptedObj.private;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
+					case "encrypted":
+						console.log("decrypt encrypted");
+
+						if(self.encryptedObj.encrypted !== null && self.encryptedObj.encrypted !== undefined){
+							self.decryptedObj.encrypted = true;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
+					case "emailList":
+						console.log("decrypt email list");
+
+						if(self.encryptedObj.emailList !== null && self.encryptedObj.emailList !== undefined){
+							self.decryptedObj.emailList = [];
+							self.decryptArray(keys[i], self.encryptedObj.emailList, this.cipherKey, i, 0);
+						}
+							
+							break;
+					default:
+						console.log("decrypt default");
+						console.log(keys[i]);
+						console.log("--------------------");
+
+						if(typeof self.encryptedObj[keys[i]]==="object"){
+							console.log("decrypting innerObj");
+							self.decryptedObj[keys[i]] = {};
+							self.decryptInnerObj(keys[i], self.encryptedObj[keys[i]], this.cipherKey, i, 0);
+						}
+							
+						break;
+				}
+			}
+
+		},
+		_encryptGeoji: function(){
+			var cipher = this.getElem(this.ctrls.cipherInput).value;
 
 			this.geojiEncrypted = {};
-
-			console.log("processObj---> "+keys[i]);
+			console.log("this is the cipher key: ");
+			console.log(this.cipherKey);
 
 			this.encrypt_MainObj(0, cipher);
 
+		},
+		_decryptGeoji: function(){
+			var cipher = this.getElem(this.ctrls.decryptInput).value;
+			var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+
+			decryptSpinner.active = true;
+
+			this.skipKeys = ["id","type"];
+
+			this.decrypt_MainObj(0, this.cipherKey);
 		},
 		_getCurrentLocation: function(){
 			console.log("getting current location.");
@@ -1383,7 +1851,7 @@ paper-icon-button.createMarker #icon {
 				this.getElem(this.ctrls.cipher).hidden = !pToggle.checked;
 				if(this.getElem(this.ctrls.cipher).hidden === false){
 					cipherInput.focus();
-					cipherInput.value = " ";
+					cipherInput.value = "undefined";
 					cipherInput.blur();
 				}
 			}
