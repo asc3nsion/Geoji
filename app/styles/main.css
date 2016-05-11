@@ -121,3 +121,9 @@ li.userDataInput{
   display: inline-block;
   width: 75%;
 }
+
+.topCorner{
+    position:absolute;
+    top:0;
+    right:0;
+}

@@ -1662,9 +1662,12 @@ paper-icon-button.createMarker #icon {
 					case "emailList":
 						console.log("encrypt email list");
 
-						if(self.geoji.emailList !== null && self.geoji.emailList !== undefined){
+						if(self.geoji.emailList !== null && self.geoji.emailList !== undefined && self.geoji.emailList.length > 0){
 							self.geojiEncrypted.emailList = [];
 							self.encrypt_Array(keys[i], self.geoji.emailList, cipher, i, 0);
+						}else{
+							self.geojiEncrypted.emailList = [];
+							self.encrypt_MainObj(i+1, cipher);
 						}
 							
 							break;

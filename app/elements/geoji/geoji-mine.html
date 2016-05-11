@@ -180,8 +180,6 @@ This is an element button used as a base for other buttons.
 			var private = false;
 			var card = e.target.parentNode.parentNode.parentNode;
 
-			console.log(e.target.parentNode.parentNode.parentNode);
-			console.log(card.name);
 
 			// publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
 			// 	console.log(snapshot.val());
@@ -213,14 +211,10 @@ This is an element button used as a base for other buttons.
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
-			var mineDB = this.getElem(this.ctrls.geojiMine);
-			var mineAuth = this.getElem(this.ctrls.mineAuth);
-			var mineRef = mineAuth.ref;
 
 
 			publicRef.orderByChild("id").equalTo(data.id).on("child_added", function(snapshot) {
 				var obj = snapshot.val();
-				console.log(snapshot.val());
 
 				return obj;		
 			});
@@ -235,9 +229,6 @@ This is an element button used as a base for other buttons.
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
-			var mineDB = this.getElem(this.ctrls.geojiMine);
-			var mineAuth = this.getElem(this.ctrls.mineAuth);
-			var mineRef = mineAuth.ref;
 
 			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
 				var obj = snapshot.val();
@@ -329,18 +320,15 @@ This is an element button used as a base for other buttons.
 	    },
 	    _dataPublic: function(e){
 
-	    	console.log("data recieved");
-	    	console.log(e);
+
 	    },
 	    _dataPrivate: function(e){
 	    	
-	    	console.log("data recieved");
-	    	console.log(e);
+
 	    },
 	    _dataMine: function(e){
 	    	
-	    	console.log("data recieved");
-	    	console.log(e);
+
 	    }
 
 	});

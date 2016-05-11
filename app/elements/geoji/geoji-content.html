@@ -20,14 +20,24 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 
-<style is="custom-style">
+<style>
+	paper-card.mainMap{
+		height: 100vh;
+	    width: 100vw;
+	}
+	google-map.mainMap {
+	    height: 75vh;
+	    width: 85vw;
+	}
 
 </style>	
 
 <dom-module id= "geoji-content">
 	<template>
-		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
-		  <div class="card-content">{{detail}}</div>
+		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}" class="mainMap">
+		<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeMap" class="topCorner"></paper-icon-button></div>
+		  
+		  <div class="card-content floatRight"><h3>{{detail}}</h3></div>
 		  <google-map 
 		  id="{{assignCtrl('map')}}"
 		  latitude="37.779" 
@@ -38,15 +48,14 @@ This is an element button used as a base for other buttons.
           api-key="AIzaSyCgmlzQ8iH-U2KDt2mhXJbZvQm-KB5dWSo"
           clickEvents="true" 
           google-map-dblclick="placeMarker"
-          fitToMarkers="true">
-		  <!-- <google-map-marker latitude="37.779" longitude="-122.3892"
-		                     title="Go Giants!" draggable="true" drag-events></google-map-marker> -->
+          fitToMarkers="true"
+          class="mainMap">
+
 		  <google-map-marker latitude="37.78" longitude="-122.3892" draggable="true" drag-events></google-map-marker>
 		</google-map>
 
 		  <div class="card-actions">
 		    <paper-button on-tap="placeMarker">Start</paper-button>
-		    </paper-icon-button>
 		  </div>
 		</paper-card>
 
@@ -86,34 +95,9 @@ This is an element button used as a base for other buttons.
 		attached: function(){
 			var map = this.getElem(this.ctrls.map);
 			map.resize();
-
-			// var e = this.getElem(this.ctrls.profileImgInput);
-			// var p = this.getElem(this.ctrls.profileImgUpload);
-			// var self = this;
-
-			// e.addEventListener('change', function() {
-   //          	p.file = this.files[0];
-	  //           console.log(e.file);
-	  //       });
-			// document.addEventListener('imgur-upload-success', function(e) {
-	  //         console.log(e);
-	  //         self.url = e.detail.link;
-	  //         self.customUrl = e.detail.link;
-	  //       });
-	  //       document.addEventListener('imgur-upload-failure', function(e) {
-	  //         console.log(e);
-	  //         alert(e.detail.data.error);
-	  //       });
 		},
-		placeMarker: function(location){
-			console.log("place a map marker");
-			var map = this.getElem(this.ctrls.map);
-			var marker = document.createElement('google-map-marker');
-			marker.setAttribute('latitude', 37.78);
-			marker.setAttribute('longitude', -122.39);
-			marker.draggable = "true";
-			Polymer.dom(map).appendChild(marker);
-			console.log(marker);
+		_closeMap: function(){
+			console.log(app.lastRoute);
 		}
 
 	});

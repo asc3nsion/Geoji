@@ -39,6 +39,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     profileDialog: ""
   }
 
+  app.lastRoute = "home";
+
   //References to data used by the app
   app.data = {
     userName:"",
@@ -233,6 +235,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.element(app.elements.login).logout();
     app.close();
     location.reload();
+  }
+
+  app.mainMap = function(on){
+    if(on){
+      app.show("mainMap");
+    }else{
+      app.hide("mainMap");
+    }
   }
 
   app.geoji = function(on){

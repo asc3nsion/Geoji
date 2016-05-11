@@ -39,14 +39,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     page('/', function() {
       app.route = 'home';
+      app.lastRoute = 'home';
+      app.mainMap(false);
     });
 
     page(app.baseUrl, function() {
       app.route = 'home';
+      app.lastRoute = 'home';
+      app.mainMap(false);
     });
 
     page('/mine', function() {
       app.route = 'mine';
+      app.lastRoute = 'mine';
+      app.mainMap(false);
     });
 
     page('/mine/:name', function(data) {
@@ -56,10 +62,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     page('/create', function() {
       app.route = 'create';
+      app.lastRoute = 'create';
+      app.mainMap(false);
     });
 
-    page('/geoji', function() {
+    page('/geoji/:id', function(data) {
       app.route = 'geoji';
+      app.lastRoute = 'geoji';
+      app.mainMap(true);
     });
 
     // 404

@@ -20,6 +20,7 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/interaction/j-events.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 <link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/util/j-util.html">
 
 <style>
 
@@ -40,6 +41,15 @@ This is an element button used as a base for other buttons.
 
 		<!-- <geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location> -->
 
+		<firebase-auth id="{{assignCtrl('feedAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
+
+	    <firebase-collection
+	    	id= "{{assignCtrl('feed')}}"
+			limit-to-first="100"
+		    location="https://geoji.firebaseio.com/feed/"
+		    data="{{mainFeed}}">
+		</firebase-collection>
+
 		<firebase-auth id="{{assignCtrl('publicAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
 
 	    <firebase-collection
@@ -58,14 +68,25 @@ This is an element button used as a base for other buttons.
 		    data="{{privateFeed}}">
 		</firebase-collection>
 
-		<template is="dom-repeat" items="{{publicFeed}}" as="data">
-		    <paper-card id="{{assignCtrl(data.id)}}_feedCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection" >
+		<template is="dom-repeat" items="{{publicFeed}}" as="public">
+			<div name="[[_computeData(public)]]" hidden="true"></div>
+		</template>
+
+		<template is="dom-repeat" items="{{privateFeed}}" as="private">
+			<div name="[[_computeData(private)]]" hidden="true"></div>
+		</template>
+		
+
+		<template id="feedList" is="dom-repeat" items="{{mainFeed}}" as="data">
+
+		    <paper-card id="[[assignCtrl(data.id)]]_feedCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection">
 				<div class="card-content">
-					<template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template>
+					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
 				</div>
 		      	<div class="card-actions">
 		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
-				  	<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" name="{{data.id}}editBtn">Explore</paper-button></a>
+				  	<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/geoji/{{data.id}}"><paper-button id"{{assignCtrl('Edit')}}" on-tap="exploreHandler" name="{{data.id}}editBtn">Explore</paper-button></a>
+				  	<paper-button id"{{assignCtrl('Keep')}}">Keep</paper-button>
 		      	</div>
 		    </paper-card>
 		</template>
@@ -112,15 +133,15 @@ This is an element button used as a base for other buttons.
 	      	},
 	      	publicFeed: {
 	      		type: Array,
-	      		value: [],
-	      		observer: "_publicFeed",
-	      		notify: true
+	      		value: []
 	      	},
 	      	privateFeed: {
 	      		type: Array,
-	      		value: [],
-	      		observer: "_privateFeed",
-	      		notify: true
+	      		value: []
+	      	},
+	      	mainFeed: {
+	      		type: Array,
+	      		value: []
 	      	},
 	      	currentLongitude: {
 				type: String,
@@ -134,51 +155,209 @@ This is an element button used as a base for other buttons.
 			},
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles, InteractionBehaviors.JEvents],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
 
 		ready: function(){
 
 		},
 		attached: function(){
 			var self = this;
+			var feed = this.getElem(this.ctrls.feed);
 			var location = this.getElem("geoLocation");
 
 			setTimeout(function(){
 		        self.currentLongitude = location.longitude;
 		        self.currentLatitude = location.latitude;
-		    }, 1000);
-		},
-		_computeData: function(){
+
+		    }, 2000);
+
+		    for(i in self.mainFeed){
+		        console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+			    feed.remove(self.mainFeed[i]);
+			}
+
+		    this._updateLocation();
 
 		},
-		_computeLongLat: function(){
+		exploreHandler: function(){
 
+		},
+		_computeData: function(data){
 			var self = this;
-			var target = this.getElem(this.ctrls.targetMarker);
+			var feed = this.getElem(this.ctrls.feed);
+			var feedList = this.getElem("feedList");
+			var arr = [];
+			var lookup = {};
+
+			for (i in this.mainFeed) {
+			    lookup[this.mainFeed[i].id] = this.mainFeed[i];
+			}
+
+			if(!data.encrypted){
+				if(this._inRange(data)){
+					if(lookup[data.id] === null || lookup[data.id] === undefined){
+						feed.add(data);
+						this.$.feedList.render()
+					}
+				}
+			}
+
+		},
+		_inRange: function(data){
+			var self = this;
+			var feed = this.getElem(this.ctrls.feed);
+			var feedList = this.getElem(this.ctrls.feedList);
+			var location = this.getElem("geoLocation");
+			var target = data.target;
+			var dist = this.geoDistance(target.latitude, target.longitude, location.latitude, location.longitude, "M");
+			var postDec = dist.toString().split(".");
+			var chars = postDec[1].split("");
+			var places = [];
+
+			for(char in chars){
+				if(parseFloat(chars[char])!==0){
+					break;	
+				}
+				places.push(chars[char]);
+			}
+
+			if(places.length>=2){
+				return true;
+			}else{
+				return false;
+			}
+		},
+		_computeCard: function(data){
+			//var card = this.getElem(this.ctrls[data.id]+"_feedCard");
+
+			console.log("this is the card!!!!");
+			//console.log(card);
+
+		},
+		_computeTitle: function(id){
+			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
-
-			console.log("WHAT THE FUCK IS THIS SHIT-------------------");
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
 
 			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				console.log(snapshot.val());
 				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_feedCard");
 
-				console.log("WHAT THE FUCK IS THIS SHIT-------------------");
-				console.log(obj);
+				if(obj.encrypted){
+					card.name = self.ctrls[id]+"_encrypted";
+					card.heading = "Encrypted Geoji";
+				}else{
+					card.name = self.ctrls[id]+"_decrypted";
+					card.heading = obj.title;
+				}
+			});
+
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_feedCard");
+
+				if(obj.encrypted){
+					card.name = self.ctrls[id]+"_encrypted";
+					card.heading = "Encrypted Geoji";
+				}else{
+					card.name = self.ctrls[id]+"_decrypted";
+					card.heading = obj.title;
+				}
+			});
+
+			
+		},
+		_computeImg: function(id){
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+
+			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_feedCard");
+
+
+				if(obj.encrypted){
+					card.image = "/images/mascot-encrypted.png";
+				}else{
+					if(obj.coverImg !== null && obj.coverImg !== undefined){
+						card.image = obj.coverImg;
+
+					}else{
+						card.image = "/images/mascot-mine.png";
+
+					}
+				}
 
 			});
 
-			return true;
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				var obj = snapshot.val();
+				var card = self.getElem(self.ctrls[id]+"_feedCard");
+
+				if(obj.encrypted){
+					card.image = "/images/mascot-encrypted.png";
+				}else{
+					if(obj.coverImg !== null && obj.coverImg !== undefined){
+
+						card.image = obj.coverImg;
+					}else{
+
+						card.image = "/images/mascot-mine.png";
+					}
+				}
+
+			});
+
+			
 		},
 		_locationChange: function(){
-			console.log("location changed...");
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+
 		},
-		_publicFeed: function(){
-			console.log("public feed changed...");
-		},
-		_privateFeed: function(){
-			console.log("private feed changed...");
+		_updateLocation: function(){
+			var self = this;
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var feed = this.getElem(this.ctrls.feed);
+			var feedList = this.getElem("feedList");
+			var location = this.getElem("geoLocation");
+
+			// setInterval(function(){
+		 //    	self.currentLongitude = location.longitude;
+		 //    	self.currentLatitude = location.latitude;
+		 //    	for(i in self.publicFeed){
+		 //    		for(j in self.mainFeed){
+		 //    			if(self.publicFeed[i].id === self.mainFeed[j].id){
+		 //    				if(!self._inRange(self.publicFeed[i])){
+		 //    					feed.remove(self.publicFeed[i]);
+		 //    					feedList.render();
+		 //    				}else if(self._inRange(self.publicFeed[i])){
+		 //    					self._computeData(self.publicFeed[i]);
+		 //    				}
+		 //    			}
+		 //    		}
+
+		 //    	}
+		 //    }, 3000);
 		}
 
 	});
