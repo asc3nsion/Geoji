@@ -39,19 +39,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     page('/', function() {
       app.route = 'home';
-      app.lastRoute = 'home';
+      app.setLastRoute('home');
       app.mainMap(false);
     });
 
     page(app.baseUrl, function() {
       app.route = 'home';
-      app.lastRoute = 'home';
+      app.setLastRoute('home');
       app.mainMap(false);
     });
 
     page('/mine', function() {
       app.route = 'mine';
-      app.lastRoute = 'mine';
+      app.setLastRoute('mine');
       app.mainMap(false);
     });
 
@@ -62,13 +62,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     page('/create', function() {
       app.route = 'create';
-      app.lastRoute = 'create';
+      app.setLastRoute('create');
       app.mainMap(false);
     });
 
     page('/geoji/:id', function(data) {
       app.route = 'geoji';
-      app.lastRoute = 'geoji';
+      app.setLastRoute('geoji');
       app.mainMap(true);
     });
 

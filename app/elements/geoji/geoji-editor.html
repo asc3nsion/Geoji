@@ -140,7 +140,7 @@ paper-icon-button.createMarker #icon {
 			limit-to-first="3"
 		    location="https://geoji.firebaseio.com/public/"
 		    data="{{publicData}}"
-		    limitToFirst= "3">
+		    limitToFirst= "100">
 		</firebase-collection>
 		
 		<firebase-auth id="{{assignCtrl('privateAuth')}}" location="https://geoji.firebaseio.com/private"></firebase-auth>
@@ -150,19 +150,16 @@ paper-icon-button.createMarker #icon {
 			limit-to-first="3"
 		    location="https://geoji.firebaseio.com/private/"
 		    data="{{privateData}}"
-		    limitToFirst= "3">
+		    limitToFirst= "100">
 		</firebase-collection>
 
-		<firebase-auth id="{{assignCtrl('mineAuth')}}" location="https://geoji.firebaseio.com/mine"></firebase-auth>
+		<firebase-auth id="{{assignCtrl('mineAuth')}}"></firebase-auth>
 
 		<firebase-collection
 	    	id="{{assignCtrl('geojiMine')}}"
 			limit-to-first="3"
-		    location="https://geoji.firebaseio.com/mine/"
-		    limitToFirst= "3">
+		    limitToFirst= "100">
 		</firebase-collection>
-
-		<!-- <geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location> -->
 
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}">
 			<paper-input-container class="createMarker">
@@ -434,6 +431,9 @@ paper-icon-button.createMarker #icon {
 			firebaseKey: {
 				type: String,
 				value: null
+			},
+			uid: {
+				type: String
 			}
 			
 		},
@@ -483,6 +483,10 @@ paper-icon-button.createMarker #icon {
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
+			var mine = this.getElem(this.ctrls.geojiMine);
+			var mineAuth = this.getElem(this.ctrls.mineAuth);
+
+			this.uid = app.data.uid;
 
 			add.hidden = false;
 			save.hidden = true;
@@ -565,6 +569,9 @@ paper-icon-button.createMarker #icon {
 				target.longitude = location.longitude;
 				target.latitude = location.latitude;
 
+				mine.location = "https://geoji.firebaseio.com/mine/"+app.data.uid;
+				mineAuth.location = "https://geoji.firebaseio.com/mine/"+app.data.uid;
+
 		    }, 1000);
 
 			this.clipboard.on('success', function(e) {
@@ -639,11 +646,10 @@ paper-icon-button.createMarker #icon {
 			var mineDB = this.getElem(this.ctrls.geojiMine);
 			var saveGeoji = {};
 
-			saveDialog.open();
-			saveSpinner.active = true;
-
-
 			if(this.geoji!==null && this.geoji!==undefined){
+
+				saveDialog.open();
+				saveSpinner.active = true;
 
 				if((this.geoji.encrypted)&&(cipher !== null || cipher !== undefined || cipher !== "")){
 					this._encryptGeoji();
@@ -652,21 +658,25 @@ paper-icon-button.createMarker #icon {
 						if(publicDB !== null && publicDB !== undefined){
 							var obj = {};
 							obj.id = this.geoji.id;
+							obj.uid = app.data.uid;
 							publicDB.add(this.geoji);
 							mineDB.add(obj);
 							add.hidden = true;
 							save.hidden = false;
 							saveDialog.close();
+							saveSpinner.active = false;
 						}
 					}else{
 						if(privateDB !== null && privateDB !== undefined){
 							var obj = {};
 							obj.id = this.geoji.id;
+							obj.uid = app.data.uid;
 							privateDB.add(this.geoji);
 							mineDB.add(obj);
 							add.hidden = true;
 							save.hidden = false;
 							saveDialog.close();
+							saveSpinner.active = false;
 						}
 					}
 				}
@@ -679,13 +689,6 @@ paper-icon-button.createMarker #icon {
 			var cipher = this.getElem(this.ctrls.cipherInput).value;
 			var saveDialog = this.getElem(this.ctrls.saveDialog);
 			var saveSpinner = this.getElem(this.ctrls.saveSpinner);
-			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var publicAuth = this.getElem(this.ctrls.publicAuth);
-			var publicRef = publicAuth.ref;
-			var privateDB = this.getElem(this.ctrls.geojiPrivate);
-			var privateAuth = this.getElem(this.ctrls.privateAuth);
-			var privateRef = privateAuth.ref;
-
 
 
 			if(this.geoji!==null && this.geoji!==undefined){
@@ -1008,8 +1011,6 @@ paper-icon-button.createMarker #icon {
 			this.geoji[id] = obj;
 		},
 		toggleDialog: function(event){
-			console.log("event");
-			console.log(event);
 			var id = event.target.id;
 			var type = this.geoji[id].type;
 			var message = this.geoji[id].message;
@@ -1036,7 +1037,6 @@ paper-icon-button.createMarker #icon {
 
 			}
 
-			console.log(event);
 		},
 		toggleTxtDialog: function(){
 
@@ -1231,16 +1231,6 @@ paper-icon-button.createMarker #icon {
 			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
 			if(doUpdate){
 				this.updateMarker(marker);
-			}
-
-		},
-		saveImg: function(){
-
-			var marker = this.getElem(this.selectedMarker);
-			var type = this.geoji[marker.id].type;
-
-			if(type == "img"){
-
 			}
 
 		},
@@ -1610,6 +1600,7 @@ paper-icon-button.createMarker #icon {
 						if(!add.hidden){
 							var obj = {};
 							obj.id = this.geoji.id;
+							obj.uid = app.data.uid;
 							privateDB.add(self.geojiEncrypted);
 							mineDB.add(obj);
 							encryptComplete();
@@ -1622,6 +1613,7 @@ paper-icon-button.createMarker #icon {
 						if(!add.hidden){
 							var obj = {};
 							obj.id = this.geoji.id;
+							obj.uid = app.data.uid;
 							publicDB.add(self.geojiEncrypted);
 							mineDB.add(obj);
 							encryptComplete();	
@@ -1671,6 +1663,13 @@ paper-icon-button.createMarker #icon {
 						}
 							
 							break;
+					case "target":
+
+						if(self.geoji.target !== null && self.geoji.target !== undefined && self.geoji.target.length > 0){
+							self.geojiEncrypted.target = self.geoji.target;
+							self.encrypt_MainObj(i+1, cipher);
+						}
+						break;
 					default:
 						console.log("default");
 
@@ -1764,6 +1763,12 @@ paper-icon-button.createMarker #icon {
 						}
 							
 							break;
+					case "target":
+						if(self.encryptedObj.target !== null && self.encryptedObj.target !== undefined){
+							self.decryptedObj.target = self.encryptedObj.target;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
 					default:
 						console.log("decrypt default");
 						console.log(keys[i]);
@@ -1929,6 +1934,5 @@ paper-icon-button.createMarker #icon {
 		_locationChange: function(){
 
 		}
-
 	});
 </script>

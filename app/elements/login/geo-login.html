@@ -241,7 +241,6 @@ addEventListener('WebComponentsReady', function() {
 
           this.$.firebaseLogin.login(params);
 
-          console.log(this.$.firebaseLogin.user);
           break;
         case "twitter":
           console.log("do a twitter log in.");
@@ -256,12 +255,12 @@ addEventListener('WebComponentsReady', function() {
       var data = {};
       data.test = "test";
       if(this.user !== null){
-          console.log("userdata element data:");
           this.userData = this.providerData();
 
       }
     },
     dataCallBack: function(){
+      var feed = app.element("feedList");
       if(this.userData !== null){
         console.log(this.userData);
         if(this.userData.customName !== undefined){
@@ -278,8 +277,24 @@ addEventListener('WebComponentsReady', function() {
           console.log("no custom profile image.");
           app.data.profileImg = this.userData.profileImg;
         }
+        app.data.uid = this.user.auth.uid;
         app.data.email = this.userData.email;
         app.element("profilePic").setURL(app.data.profileImg);
+        //force feed loads at login
+
+          var feedSection = app.element("mainFeed");
+          var feed = app.element("geoFeed");
+          var mineSection = app.element("mainCollection");
+          var mine = app.element("geoMine");
+          if(feed!==null&&feed!==undefined){
+            feed.publicURL = "https://geoji.firebaseio.com/public/";
+            feed.privateURL = "https://geoji.firebaseio.com/private/";
+            feed.feedURL = "https://geoji.firebaseio.com/feed/"+app.data.uid;
+          }
+          if(mine!==null&&mine!==undefined){
+            mine.mineURL = "https://geoji.firebaseio.com/mine/"+app.data.uid;
+          }
+    
         app.launch();
       }
     },
@@ -289,7 +304,6 @@ addEventListener('WebComponentsReady', function() {
     providerData: function(){
       data = {};
       if (this.provider === "password"){
-        console.log(this.user);
         data.name = "unknown";
         data.email = this.user.password.email;
         data.profileImg = this.$.firebasLogin.user.password.profileImageURL;

@@ -1,0 +1,134 @@
+<!-- 
+This is an element button used as a base for other buttons.
+ text = The text to be displayed on the button
+ icon = The icon to be desplayed on the button
+ iput = This is the id of the component the button will call a method on.
+
+ style of the button is set via j-styles behavior.
+ interaction is set via j-handler.
+ if the button doesn't have an explicit id, one is assigned via auto-id.
+-->
+<!-- components: -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/j-ui/j-button.html">
+<link rel="import" href="../../elements/j-ui/j-profile-img.html">
+<link rel="import" href="../../elements/j-ui/j-dialog.html">
+<link rel="import" href="../../elements/api/imgur-upload.html">
+<!-- behaviors: -->
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/interaction/j-events.html">
+<link rel="import" href="../../behaviors/selection/auto-id.html">
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/util/j-util.html">
+
+<style>
+
+	paper-card.collection{
+		--paper-card-background-color: white;
+		--paper-card-background-size: cover;
+		width: 50vw;
+	    height: 50%;
+	    padding: 1%;
+        left: 15%;
+	}
+	
+
+</style>	
+
+<dom-module id= "geoji-list">
+
+	<firebase-collection
+	    id= "{{assignCtrl('feed')}}"
+		limit-to-first="100"
+		data="{{data}}"
+		location="{{location}}">
+	</firebase-collection>
+
+	<template id="feed_List" is="dom-repeat" items="{{data}}" as="geoji">
+
+				<!-- <geoji-card 
+				id="[[assignCtrl(data.id)]]"
+				heading="[[_computeTitle(data.id)]]"
+				image="[[_computeImg(data.id)]]" 
+				feedCard="true"
+				></geoji-card> -->
+
+		<paper-card id="[[assignCtrl(geoji.id)]]_feedCard" heading="[[_computeTitle(geoji)]]" image="[[_computeImg(geoji)]]" class="collection center">
+			<div class="card-content">
+						<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
+			</div>
+			<div class="card-actions">
+			    <template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
+				<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/geoji/{{data.id}}"><paper-button id"{{assignCtrl('Edit')}}" on-tap="exploreHandler" name="{{geoji.id}}exploreBtn">Explore</paper-button></a>
+				<paper-button id"{{assignCtrl('Keep')}}">Keep</paper-button>
+			</div>
+		</paper-card>
+
+	</template>
+
+</dom-module>
+
+<script>
+	// I pass the button handler property from the base element, defined as the input
+	// The call back is made via document.querySelector on the input element name.
+	Polymer({		
+		is: "geoji-list",
+		properties: {
+			data: {
+				type: Array
+			},
+			location: {
+				type: String
+			}
+		},
+
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+		 StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
+
+		ready: function(){
+
+		},
+		attached: function(){
+			var self = this;
+			this.uid = app.data.uid;
+			console.log("GGGGGGGGGGGGGGGGEEEEEEEEEEEEEEEEEEEEEEEEEEEEOOOOOOOOOOOOOOOOOOOOOOOJJJJJJJJJJJJJJJJJJJJJJJJJIIIIIIIIIIIIIIIIIIIIIIII");
+
+			setTimeout(function(){
+				console.log("GHGJHUIGGGGGGGGKJN<N<>:LKJLKJ");
+				console.log(self.data);
+		    }, 2000);
+
+		},
+		renderFeed: function(){
+			this.$.feed_List.render();
+		},
+		_computeTitle: function(data){
+			console.log("computeTitle....");
+			console.log(data);
+
+			if(data.title !== null && data.title !== undefined){
+				return data.title;
+			}else{
+				return "GEOJI";
+			}
+	
+		},
+		_computeImg: function(data){
+			console.log("computeImg....");
+			console.log(data);
+
+			if(data.coverImg !== null && data.coverImg !== undefined){
+				return data.coverImg;
+			}else{
+				return "/images/mascot-mine.png";
+			}
+		},
+		_dataSet: function(){
+			console.log("DATA IS SET!!!!!!!!!!!!!!!!!!!!!");
+			console.log(this.data);
+
+		}
+
+	});
+</script>

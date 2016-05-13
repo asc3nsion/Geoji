@@ -63,6 +63,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <body unresolved>
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
+    <a id="forceRender" href="{{baseUrl}}" hidden="true"></a>
     <geo-location id="geoLocation"  watch-pos></geo-location>
     <section id="loginUI" hidden="{{loginCtrl()}}">
       <geo-login id="mainLogin"></geo-login>
@@ -129,11 +130,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <iron-pages attr-for-selected="data-route" selected="{{route}}">
 
               <section id="mainFeed" data-route="home">
-                <geoji-feed></geoji-feed>
+                <geoji-feed id="geoFeed"></geoji-feed>
               </section>
 
               <section id= "mainCollection" data-route="mine">
-                <geoji-mine></geoji-mine>
+                <geoji-mine id="geoMine"></geoji-mine>
               </section>
 
               <section data-route="user-info">

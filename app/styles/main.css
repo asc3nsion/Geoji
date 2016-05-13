@@ -127,3 +127,8 @@ li.userDataInput{
     top:0;
     right:0;
 }
+
+.alignBottom{
+    position:absolute;
+    bottom:0;
+}

@@ -30,7 +30,7 @@ This is an element button used as a base for other buttons.
 		width: 50vw;
 	    height: 50%;
 	    padding: 1%;
-        margin: 1%;
+        left: 15%;
 	}
 	
 
@@ -39,32 +39,24 @@ This is an element button used as a base for other buttons.
 <dom-module id= "geoji-feed">
 	<template>
 
-		<!-- <geo-location id="{{assignCtrl('location')}}"  watch-pos latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location> -->
-
-		<firebase-auth id="{{assignCtrl('feedAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
-
 	    <firebase-collection
 	    	id= "{{assignCtrl('feed')}}"
 			limit-to-first="100"
-		    location="https://geoji.firebaseio.com/feed/"
+			location="{{feedURL}}"
 		    data="{{mainFeed}}">
 		</firebase-collection>
-
-		<firebase-auth id="{{assignCtrl('publicAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
 
 	    <firebase-collection
 	    	id= "{{assignCtrl('geojiPublic')}}"
 			limit-to-first="100"
-		    location="https://geoji.firebaseio.com/public/"
+		    location="{{publicURL}}"
 		    data="{{publicFeed}}">
 		</firebase-collection>
-
-		<firebase-auth id="{{assignCtrl('privateAuth')}}" location="https://geoji.firebaseio.com/private"></firebase-auth>
 
 		<firebase-collection
 	    	id= "{{assignCtrl('geojiPrivate')}}"
 			limit-to-first="100"
-		    location="https://geoji.firebaseio.com/private/"
+		    location="{{privateURL}}"
 		    data="{{privateFeed}}">
 		</firebase-collection>
 
@@ -72,20 +64,20 @@ This is an element button used as a base for other buttons.
 			<div name="[[_computeData(public)]]" hidden="true"></div>
 		</template>
 
-		<template is="dom-repeat" items="{{privateFeed}}" as="private">
+		<!-- <template is="dom-repeat" items="{{privateFeed}}" as="private">
 			<div name="[[_computeData(private)]]" hidden="true"></div>
-		</template>
+		</template> -->
 		
 
 		<template id="feedList" is="dom-repeat" items="{{mainFeed}}" as="data">
 
-		    <paper-card id="[[assignCtrl(data.id)]]_feedCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection">
+		    <paper-card id="[[assignCtrl(data.id)]]_feedCard" heading="[[_computeTitle(data)]]" image="[[_computeImg(data)]]" class="collection center">
 				<div class="card-content">
 					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
 				</div>
 		      	<div class="card-actions">
 		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
-				  	<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/geoji/{{data.id}}"><paper-button id"{{assignCtrl('Edit')}}" on-tap="exploreHandler" name="{{data.id}}editBtn">Explore</paper-button></a>
+				  	<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/geoji/{{data.id}}"><paper-button id"{{assignCtrl('Edit')}}" on-tap="exploreHandler" name="{{data.id}}exploreBtn">Explore</paper-button></a>
 				  	<paper-button id"{{assignCtrl('Keep')}}">Keep</paper-button>
 		      	</div>
 		    </paper-card>
@@ -127,9 +119,17 @@ This is an element button used as a base for other buttons.
 				type: Boolean,
 				value: true
 			},
+			feedURL: {
+		        type: String
+	      	},
+	      	privateURL: {
+		        type: String
+	      	},
 			publicURL: {
-		        type: String,
-		        computed: '_userURL()'
+		        type: String
+	      	},
+	      	privateURL: {
+		        type: String
 	      	},
 	      	publicFeed: {
 	      		type: Array,
@@ -153,54 +153,84 @@ This is an element button used as a base for other buttons.
 				observer: "_locationChange",
 				notify: true
 			},
+			feedReady: {
+				type: Boolean,
+				value: false
+			}
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+		 StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
 
 		ready: function(){
-
+			console.log("geoFeed ready");
+			this.feedReady = true;
 		},
 		attached: function(){
 			var self = this;
-			var feed = this.getElem(this.ctrls.feed);
-			var location = this.getElem("geoLocation");
+
+			this.uid = app.data.uid;
+
+			console.log("geoFeed ATTACHEDDDDD");
+
 
 			setTimeout(function(){
+				var feed = self.getElem(self.ctrls.feed);
+				var location = self.getElem("geoLocation");
+
+				console.log("https://geoji.firebaseio.com/feed/"+app.data.uid);
+				// feed.location = "https://geoji.firebaseio.com/feed/"+app.data.uid;
 		        self.currentLongitude = location.longitude;
 		        self.currentLatitude = location.latitude;
 
-		    }, 2000);
+		        console.log("self.publicFeed");
+		        console.log(self.publicFeed);
 
-		    for(i in self.mainFeed){
-		        console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
-			    feed.remove(self.mainFeed[i]);
-			}
+
+		    }, 2000);
 
 		    this._updateLocation();
 
 		},
-		exploreHandler: function(){
-
+		exploreHandler: function(e){
+			var self = this;
+			var map = this.getElem("mainMap");
+			var id = e.target.name.replace("exploreBtn", "");
+			
+			map.loadGeoji(id);
+		},
+		refresh: function(){
+			this.$.feedList.render();
+		},
+		clearFeed: function(){
+			console.log("SHOULD CLEAR THE FEED...");
+			var feed = this.getElem(this.ctrls.feed);
+			feed.location = "https://geoji.firebaseio.com/feed/";
+			feed.removeByKey(app.data.uid);
+			feed.location = "https://geoji.firebaseio.com/feed/"+app.data.uid;
+			
 		},
 		_computeData: function(data){
 			var self = this;
-			var feed = this.getElem(this.ctrls.feed);
-			var feedList = this.getElem("feedList");
-			var arr = [];
-			var lookup = {};
+			setTimeout(function(){
+				var feed = self.getElem(self.ctrls.feed);
+				var feedList = self.getElem("feedList");
+				var arr = [];
+				var lookup = {};
 
-			for (i in this.mainFeed) {
-			    lookup[this.mainFeed[i].id] = this.mainFeed[i];
-			}
+				for (i in self.mainFeed) {
+				    lookup[self.mainFeed[i].id] = self.mainFeed[i];
+				}
 
-			if(!data.encrypted){
-				if(this._inRange(data)){
-					if(lookup[data.id] === null || lookup[data.id] === undefined){
-						feed.add(data);
-						this.$.feedList.render()
+				if(!data.encrypted){
+					if(self._inRange(data)){
+						if(lookup[data.id] === null || lookup[data.id] === undefined){
+							feed.add(data);
+							self.$.feedList.render()
+						}
 					}
 				}
-			}
+		    }, 2000);
 
 		},
 		_inRange: function(data){
@@ -226,138 +256,61 @@ This is an element button used as a base for other buttons.
 			}else{
 				return false;
 			}
-		},
-		_computeCard: function(data){
-			//var card = this.getElem(this.ctrls[data.id]+"_feedCard");
-
-			console.log("this is the card!!!!");
-			//console.log(card);
 
 		},
-		_computeTitle: function(id){
-			var self = this;
-			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var publicAuth = this.getElem(this.ctrls.publicAuth);
-			var publicRef = publicAuth.ref;
-			var privateDB = this.getElem(this.ctrls.geojiPrivate);
-			var privateAuth = this.getElem(this.ctrls.privateAuth);
-			var privateRef = privateAuth.ref;
+		_computeTitle: function(data){
 
-			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_feedCard");
-
-				if(obj.encrypted){
-					card.name = self.ctrls[id]+"_encrypted";
-					card.heading = "Encrypted Geoji";
-				}else{
-					card.name = self.ctrls[id]+"_decrypted";
-					card.heading = obj.title;
-				}
-			});
-
-			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_feedCard");
-
-				if(obj.encrypted){
-					card.name = self.ctrls[id]+"_encrypted";
-					card.heading = "Encrypted Geoji";
-				}else{
-					card.name = self.ctrls[id]+"_decrypted";
-					card.heading = obj.title;
-				}
-			});
-
-			
+			if(data.title !== null && data.title !== undefined){
+				return data.title;
+			}else{
+				return "GEOJI";
+			}
+	
 		},
-		_computeImg: function(id){
-			var self = this;
-			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var publicAuth = this.getElem(this.ctrls.publicAuth);
-			var publicRef = publicAuth.ref;
-			var privateDB = this.getElem(this.ctrls.geojiPrivate);
-			var privateAuth = this.getElem(this.ctrls.privateAuth);
-			var privateRef = privateAuth.ref;
+		_computeImg: function(data){
 
-			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_feedCard");
-
-
-				if(obj.encrypted){
-					card.image = "/images/mascot-encrypted.png";
-				}else{
-					if(obj.coverImg !== null && obj.coverImg !== undefined){
-						card.image = obj.coverImg;
-
-					}else{
-						card.image = "/images/mascot-mine.png";
-
-					}
-				}
-
-			});
-
-			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_feedCard");
-
-				if(obj.encrypted){
-					card.image = "/images/mascot-encrypted.png";
-				}else{
-					if(obj.coverImg !== null && obj.coverImg !== undefined){
-
-						card.image = obj.coverImg;
-					}else{
-
-						card.image = "/images/mascot-mine.png";
-					}
-				}
-
-			});
-
-			
+			if(data.coverImg !== null && data.coverImg !== undefined){
+				return data.coverImg;
+			}else{
+				return "/images/mascot-mine.png";
+			}
 		},
 		_locationChange: function(){
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var publicAuth = this.getElem(this.ctrls.publicAuth);
-			var publicRef = publicAuth.ref;
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
-			var privateAuth = this.getElem(this.ctrls.privateAuth);
-			var privateRef = privateAuth.ref;
 
 		},
 		_updateLocation: function(){
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var publicAuth = this.getElem(this.ctrls.publicAuth);
-			var publicRef = publicAuth.ref;
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
-			var privateAuth = this.getElem(this.ctrls.privateAuth);
-			var privateRef = privateAuth.ref;
 			var feed = this.getElem(this.ctrls.feed);
 			var feedList = this.getElem("feedList");
 			var location = this.getElem("geoLocation");
 
-			// setInterval(function(){
-		 //    	self.currentLongitude = location.longitude;
-		 //    	self.currentLatitude = location.latitude;
-		 //    	for(i in self.publicFeed){
-		 //    		for(j in self.mainFeed){
-		 //    			if(self.publicFeed[i].id === self.mainFeed[j].id){
-		 //    				if(!self._inRange(self.publicFeed[i])){
-		 //    					feed.remove(self.publicFeed[i]);
-		 //    					feedList.render();
-		 //    				}else if(self._inRange(self.publicFeed[i])){
-		 //    					self._computeData(self.publicFeed[i]);
-		 //    				}
-		 //    			}
-		 //    		}
+			setInterval(function(){
+				var feed = self.getElem(self.ctrls.feed);
+				var location = self.getElem("geoLocation");
 
-		 //    	}
-		 //    }, 3000);
+		    	self.currentLongitude = location.longitude;
+		    	self.currentLatitude = location.latitude;
+
+
+		    	for(i in self.publicFeed){
+		    		for(j in self.mainFeed){
+		    			if(self.publicFeed[i].id === self.mainFeed[j].id){
+		    				if(!self._inRange(self.publicFeed[i])){
+		    					feed.remove(self.publicFeed[i]);
+		    					feedList.render();
+		    				}else if(self._inRange(self.publicFeed[i])){
+		    					self._computeData(self.publicFeed[i]);
+		    				}
+		    			}
+		    		}
+
+		    	}
+		    }, 3000);
 		}
 
 	});

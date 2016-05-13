@@ -39,10 +39,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     profileDialog: ""
   }
 
-  app.lastRoute = "home";
-
   //References to data used by the app
   app.data = {
+    uid:"",
     userName:"",
     email:"",
     profileImg: ""
@@ -79,12 +78,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // it's done like this.
     setTimeout(function(){
         app.hide("mainApp");
-      }, 50);
+    }, 50);
+
+    // setTimeout(function(){
+    //   var feedSection = app.element("mainFeed");
+    //   var mineSection = app.element("mainCollection");
+    //   var feed = document.createElement('geoji-feed');
+    //   var mine = document.createElement('geoji-mine');
+
+    //   Polymer.dom(feedSection).appendChild(feed);
+    //   Polymer.dom(mineSection).appendChild(mine); 
+    // }, 1000);
+
   });
 
   // See https://github.com/Polymer/polymer/issues/1381
   window.addEventListener('WebComponentsReady', function() {
     // imports are loaded and elements have been registered
+    
+
   });
 
   // Main area's paper-scroll-header-panel custom condensing transformation of
@@ -114,6 +126,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // Scale middleContainer appName
     Polymer.Base.transform('scale(' + scaleMiddle + ') translateZ(0)', appName);
   });
+
+  app.lastRoute = ["home", "home"];
+
+  app.setLastRoute = function(route){
+    app.lastRoute.unshift(route);
+    if(app.lastRoute.length > 2){
+      app.lastRoute.pop();
+    }
+  }
+
+  app.getLastRoute = function(){
+    return app.lastRoute[1];
+  }
 
   //get a hook into a web component on the dom
   //returns a reference to that component.
@@ -232,6 +257,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   app.logout = function(){
+    app.component("geoji-feed").clearFeed();
     app.element(app.elements.login).logout();
     app.close();
     location.reload();
@@ -256,8 +282,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   app.launch = function(){
+    console.log("LAUNCH APPPPPPPPPP");
     app.hide("loginUI");
     app.show("mainApp");
+    //force feed loads at login
+    // setTimeout(function(){
+    //   var feedSection = app.element("mainFeed");
+    //   var mineSection = app.element("mainCollection");
+    //   var feed = document.createElement('geoji-feed');
+    //   var mine = document.createElement('geoji-mine');
+
+    //   Polymer.dom(feedSection).appendChild(feed);
+    //   Polymer.dom(mineSection).appendChild(mine); 
+    // }, 1000);
+    
   }
 
   app.close = function(){

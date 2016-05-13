@@ -79,7 +79,7 @@ then the events table can be updated.
  			console.log(id);
 			if(e && document.createEvent) {
 		      var evt = document.createEvent("MouseEvents");
-		      evt.initEvent(event, true, false);
+		      evt.initEvent(event, false, false);
 		      e.dispatchEvent(evt);
 		   }
  		},

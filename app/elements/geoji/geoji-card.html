@@ -18,45 +18,36 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
+<link rel="import" href="../../behaviors/crypto/j-encrypt.html">
+<link rel="import" href="../../behaviors/crypto/j-decrypt.html">
+<link rel="import" href="../../behaviors/util/j-util.html">
 
-<style is="custom-style">
+<style>
 
-	paper-card{
+	paper-card.collection{
 		--paper-card-background-color: white;
+		--paper-card-background-size: cover;
+		width: 50vw;
+	    height: 50%;
+	    padding: 1%;
+        margin: 1%;
 	}
 	
 
 </style>	
 
 <dom-module id= "geoji-card">
-	<template>
-		<!-- <firebase-document
-	      id= "firebasePublicData"
-	      location="{{publicURL}}"
-	      query="{{publicData}}"
-	      ></firebase-document> -->
 
-	    <firebase-collection
-	    	id= "firebasePublicData"
-			limit-to-first="3"
-		    location="https://geoji.firebaseio.com/public/"
-		    data="{{publicData}}">
-		</firebase-collection>
+	<paper-card id="{{id}}_feedCard" heading="{{heading}}" image="{{image}}" class="collection center">
+		<div class="card-content">
+		</div>
+		<div class="card-actions">
+			<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
+			<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/geoji/{{id}}"><paper-button id"{{assignCtrl('Edit')}}" on-tap="exploreHandler" name="{{id}}exploreBtn">Explore</paper-button></a>
+			<paper-button id"{{assignCtrl('Keep')}}">Keep</paper-button>
+		</div>
+	</paper-card>
 
-		    <template is="dom-repeat" items="[[publicData]]" as="data">
-		      <h4>[[data.__firebaseKey__]]</h4>
-		    </template>
-
-		<paper-card id"{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}">
-		  <div class="card-content">{{detail}}</div>
-		  <div class="card-actions">
-		  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
-		    <a href="{{baseUrl}}mine/geoji"><paper-button id"{{assignCtrl('Explore')}}">Explore</paper-button></a>
-		    <paper-button id"{{assignCtrl('Add')}}" on-tap="dataHandler">Add</paper-button>
-		  </div>
-		</paper-card>
-
-	</template>
 </dom-module>
 
 <script>
@@ -65,7 +56,11 @@ This is an element button used as a base for other buttons.
 	Polymer({		
 		is: "geoji-card",
 		properties: {
-			cardImg: {
+			id: {
+				type: String,
+				value: ""
+			},
+			image: {
 				type: String,
 				value: ""
 			},
@@ -85,69 +80,25 @@ This is an element button used as a base for other buttons.
 				type: Boolean,
 				value: true
 			},
-			publicURL: {
-		        type: String,
-		        computed: '_userURL()'
-	      	},
-	      	publicData: {
-	      		type: Array,
-	      		value: [],
-	      		observer: "_dataCallback",
-	      		notify: true
-	      	}
-
-			
+			feedCard: {
+				type: Boolean,
+				value: false
+			},
+			myCard: {
+				type: Boolean,
+				value: false
+			}	
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+		 UtilityBehaviors.JUtil, CryptoBehaviors.JEncrypt, CryptoBehaviors.JDecrypt],
 
 		ready: function(){
 
 		},
 		attached: function(){
 
-			// var e = this.getElem(this.ctrls.profileImgInput);
-			// var p = this.getElem(this.ctrls.profileImgUpload);
-			// var self = this;
-
-			// e.addEventListener('change', function() {
-   //          	p.file = this.files[0];
-	  //           console.log(e.file);
-	  //       });
-			// document.addEventListener('imgur-upload-success', function(e) {
-	  //         console.log(e);
-	  //         self.url = e.detail.link;
-	  //         self.customUrl = e.detail.link;
-	  //       });
-	  //       document.addEventListener('imgur-upload-failure', function(e) {
-	  //         console.log(e);
-	  //         alert(e.detail.data.error);
-	  //       });
-		},
-		dataHandler: function(){
-			console.log(app.getUser());
-			var user = app.getUser();
-			var mainObj = {};
-			var subObj = {};
-			subObj[this.makeId()] = "test";
-			mainObj.data = subObj;
-			user.customData = mainObj;
-			this.$.firebasePublicData.add(mainObj);
-			console.log(this.publicData);
-		},
-		_publicURL: function(){
-
-			if(!app.getUser()){
-	          return null;
-	        }else{
-	          // return "https://geoji.firebaseio.com/public/";
-	          return "https://geoji.firebaseio.com/users/" + this.user.uid + "/"
-	        }     
-	    },
-	    _dataCallback: function(e){
-	    	console.log("data recieved");
-	    	console.log(e);
-	    }
+		}
 
 	});
 </script>

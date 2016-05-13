@@ -56,19 +56,17 @@ This is an element button used as a base for other buttons.
 		    data="{{privateData}}">
 		</firebase-collection>
 
-		<firebase-auth id="{{assignCtrl('mineAuth')}}" location="https://geoji.firebaseio.com/mine"></firebase-auth>
-
 		<firebase-collection
 	    	id= "{{assignCtrl('geojiMine')}}"
 			limit-to-first="100"
-		    location="https://geoji.firebaseio.com/mine/"
+		    location="{{mineURL}}"
 		    data="{{mineData}}">
 		</firebase-collection>
 
 		<template is="dom-repeat" items="{{mineData}}" as="data">
 		    <paper-card id="[[assignCtrl(data.id)]]_myCard" heading="[[_computeTitle(data.id)]]" image="[[_computeImg(data.id)]]" class="collection">
 				<div class="card-content">
-					<template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template>
+					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
 				</div>
 		      	<div class="card-actions">
 		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
@@ -114,9 +112,14 @@ This is an element button used as a base for other buttons.
 				type: Boolean,
 				value: true
 			},
+			mineURL: {
+		        type: String
+	      	},
 			publicURL: {
-		        type: String,
-		        computed: '_userURL()'
+		        type: String
+	      	},
+	      	privateURL: {
+		        type: String
 	      	},
 	      	publicData: {
 	      		type: Array,
@@ -144,12 +147,13 @@ This is an element button used as a base for other buttons.
 
 		},
 		attached: function(){
-
 			var self = this;
 
 			setTimeout(function(){
-		        // self._computeData();
-		    }, 1000);
+				var mine = self.getElem(self.ctrls.geojiMine);
+				console.log("https://geoji.firebaseio.com/mine/"+app.data.uid);
+				self.mineURL = "https://geoji.firebaseio.com/mine/"+app.data.uid;
+		    }, 2000);;
 			
 		},
 		dataHandler: function(){
@@ -204,6 +208,8 @@ This is an element button used as a base for other buttons.
 
 		},
 		_computeData: function(data){
+			console.log("mine compute data");
+			console.log(data);
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -222,6 +228,8 @@ This is an element button used as a base for other buttons.
 			
 		},
 		_computeTitle: function(id){
+			console.log("mine compute title");
+			console.log(id);
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -230,35 +238,39 @@ This is an element button used as a base for other buttons.
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
 
-			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_myCard");
+			if(id !== null && id !== undefined){
 
-				if(obj.encrypted){
-					card.name = self.ctrls[id]+"_encrypted";
-					card.heading = "Encrypted Geoji";
-				}else{
-					card.name = self.ctrls[id]+"_decrypted";
-					card.heading = obj.title;
-				}
-			});
+				publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+					var obj = snapshot.val();
+					var card = self.getElem(self.ctrls[id]+"_myCard");
 
-			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_myCard");
+					if(obj.encrypted){
+						card.name = self.ctrls[id]+"_encrypted";
+						card.heading = "Encrypted Geoji";
+					}else{
+						card.name = self.ctrls[id]+"_decrypted";
+						card.heading = obj.title;
+					}
+				});
 
-				if(obj.encrypted){
-					card.name = self.ctrls[id]+"_encrypted";
-					card.heading = "Encrypted Geoji";
-				}else{
-					card.name = self.ctrls[id]+"_decrypted";
-					card.heading = obj.title;
-				}
-			});
+				privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+					var obj = snapshot.val();
+					var card = self.getElem(self.ctrls[id]+"_myCard");
 
+					if(obj.encrypted){
+						card.name = self.ctrls[id]+"_encrypted";
+						card.heading = "Encrypted Geoji";
+					}else{
+						card.name = self.ctrls[id]+"_decrypted";
+						card.heading = obj.title;
+					}
+				});
+			}
 			
 		},
 		_computeImg: function(id){
+			console.log("mine compute img");
+			console.log(id);
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -267,46 +279,45 @@ This is an element button used as a base for other buttons.
 			var privateAuth = this.getElem(this.ctrls.privateAuth);
 			var privateRef = privateAuth.ref;
 			var mineDB = this.getElem(this.ctrls.geojiMine);
-			var mineAuth = this.getElem(this.ctrls.mineAuth);
-			var mineRef = mineAuth.ref;
 
-			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_myCard");
+			if(id !== null && id !== undefined){
+				publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+					var obj = snapshot.val();
+					var card = self.getElem(self.ctrls[id]+"_myCard");
 
 
-				if(obj.encrypted){
-					card.image = "/images/mascot-encrypted.png";
-				}else{
-					if(obj.coverImg !== null && obj.coverImg !== undefined){
-						card.image = obj.coverImg;
-
+					if(obj.encrypted){
+						card.image = "/images/mascot-encrypted.png";
 					}else{
-						card.image = "/images/mascot-mine.png";
+						if(obj.coverImg !== null && obj.coverImg !== undefined){
+							card.image = obj.coverImg;
 
+						}else{
+							card.image = "/images/mascot-mine.png";
+
+						}
 					}
-				}
 
-			});
+				});
 
-			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-				var card = self.getElem(self.ctrls[id]+"_myCard");
+				privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+					var obj = snapshot.val();
+					var card = self.getElem(self.ctrls[id]+"_myCard");
 
-				if(obj.encrypted){
-					card.image = "/images/mascot-encrypted.png";
-				}else{
-					if(obj.coverImg !== null && obj.coverImg !== undefined){
-
-						card.image = obj.coverImg;
+					if(obj.encrypted){
+						card.image = "/images/mascot-encrypted.png";
 					}else{
+						if(obj.coverImg !== null && obj.coverImg !== undefined){
 
-						card.image = "/images/mascot-mine.png";
+							card.image = obj.coverImg;
+						}else{
+
+							card.image = "/images/mascot-mine.png";
+						}
 					}
-				}
 
-			});
-
+				});
+			}
 			
 		},
 		_publicURL: function(){

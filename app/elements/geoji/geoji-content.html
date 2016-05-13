@@ -16,9 +16,15 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../elements/j-ui/j-dialog.html">
 <link rel="import" href="../../elements/api/imgur-upload.html">
 <!-- behaviors: -->
+<link rel="import" href="../../behaviors/selection/auto-id.html">
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
+<link rel="import" href="../../behaviors/interaction/j-events.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
+<link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/util/j-util.html">
+<link rel="import" href="../../behaviors/crypto/j-decrypt.html">
+
 
 <style>
 	paper-card.mainMap{
@@ -29,35 +35,127 @@ This is an element button used as a base for other buttons.
 	    height: 75vh;
 	    width: 85vw;
 	}
+	img.mainMap{
+		height: 100%;
+	    width: 100%;
+	    top: 20%;
+	}
+	div.mainMap {
+		
+	}
+	div.messageContent {
+		background-color: #F0F4C3;
+		height: 60%;
+	    width: 60%;
+	    margin: 0 auto;
+	    margin-top: 8%;
+	}
+	paper-dialog.txtContent{
+		position:relative;
+	 	width: 35vw;
+	 	height: 30%;
+	}
+	paper-dialog.imgContent{
+		position:relative;
+	 	width: 35vw;
+	 	height: 45%;
+
+	}
+	paper-dialog.vidContent{
+		position:relative;
+	 	width: 35vw;
+	 	height: 55%;
+
+	}
 
 </style>	
 
 <dom-module id= "geoji-content">
 	<template>
+
+		<firebase-auth id="{{assignCtrl('publicAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
+
+		<firebase-collection
+	    	id="{{assignCtrl('geojiPublic')}}"
+			limit-to-first="100"
+		    location="https://geoji.firebaseio.com/public/"
+		    data="{{publicData}}"
+		    limitToFirst= "3">
+		</firebase-collection>
+		
+		<firebase-auth id="{{assignCtrl('privateAuth')}}" location="https://geoji.firebaseio.com/private"></firebase-auth>
+
+		<firebase-collection
+	    	id="{{assignCtrl('geojiPrivate')}}"
+			limit-to-first="3"
+		    location="https://geoji.firebaseio.com/private/"
+		    data="{{privateData}}"
+		    limitToFirst= "100">
+		</firebase-collection>
+
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}" class="mainMap">
-		<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeMap" class="topCorner"></paper-icon-button></div>
+		  <div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeMap" class="topCorner"></paper-icon-button></div>
+		  <a id="{{assignCtrl('backLink')}}" data-route="home" href="/" hidden="true"></a>
 		  
 		  <div class="card-content floatRight"><h3>{{detail}}</h3></div>
 		  <google-map 
-		  id="{{assignCtrl('map')}}"
-		  latitude="37.779" 
-		  longitude="-122.3892" 
+		  id="{{assignCtrl('map')}}" 
 		  min-zoom="9" 
-		  max-zoom="11"
+		  max-zoom="30"
           language="en" 
           api-key="AIzaSyCgmlzQ8iH-U2KDt2mhXJbZvQm-KB5dWSo"
           clickEvents="true" 
-          google-map-dblclick="placeMarker"
           fitToMarkers="true"
+          zoom="20"
           class="mainMap">
-
-		  <google-map-marker latitude="37.78" longitude="-122.3892" draggable="true" drag-events></google-map-marker>
-		</google-map>
+		  <google-map-marker id="{{assignCtrl('targetMarker')}}" name="targetMarker" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
+		                     draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker>
+		  </google-map>
 
 		  <div class="card-actions">
-		    <paper-button on-tap="placeMarker">Start</paper-button>
+		    <paper-button on-tap="refresh">Refresh</paper-button>
 		  </div>
 		</paper-card>
+
+		<paper-dialog class="txtContent" id="{{assignCtrl('txtDialog')}}" modal role="alertdialog">
+			<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeTxt" class="topCorner"></paper-icon-button></div>
+			<h2>Message</h2>
+			<div class="messageContent" vspace="50">
+				<p>{{markerText}}</p>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog class="imgContent" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
+			<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeImg" class="topCorner"></paper-icon-button></div>
+			<h2>Image</h2>
+			<div id="{{assignCtrl('tempImgs')}}" >
+				<img id="{{assignCtrl('markerImg')}}" src="{{markerImg}}" vspace="50" class="mainMap"></img>
+			</div>
+		</paper-dialog>
+
+		<paper-dialog class="vidContent" id="{{assignCtrl('vidDialog')}}" modal role="alertdialog">
+			<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeVid" class="topCorner"></paper-icon-button></div>
+			<h2 class="inlineBlock">Video</h2>
+			<google-youtube
+			 id="{{assignCtrl('youtubePlayer')}}"
+			 video-id="{{vidId}}"
+			 height="270px"
+			 width="100%"
+			 rel="0"
+			 autoplay="0"
+			 hidden="true"
+			 ></google-youtube>
+		</paper-dialog>
+
+		<paper-dialog class="decryptData" id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
+			<paper-progress class="bar" id="{{assignCtrl('decryptProgress')}}"></paper-progress>
+			<h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
+			<paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
+			  <input id="{{assignCtrl('decryptInput')}}" is="iron-input" class="txtData" bind-value="{{cipherKey}}"></input> 
+			</paper-input-container>
+			<paper-button id="{{assignCtrl('cancelDecryptBtn')}}" class="txtData theme" raised on-tap="toggleDecryptDialog">CANCEL</paper-button>
+			<paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
+		</paper-dialog>
 
 	</template>
 </dom-module>
@@ -83,21 +181,578 @@ This is an element button used as a base for other buttons.
 			description: {
 				type: String,
 				value: ""
+			},
+			markerText: {
+				type: String,
+				value: ""
+			},
+			markerImg: {
+				type: String,
+				value: ""
+			},
+			geoji: {
+				type: Object,
+				value: {}
 			}
 			
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId, StyleBehaviors.jStyles,
+		 InteractionBehaviors.JEvents, UtilityBehaviors.JUtil, SelectionBehaviors.AutoId, CryptoBehaviors.JDecrypt],
 
 		ready: function(){
 
 		},
 		attached: function(){
 			var map = this.getElem(this.ctrls.map);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var location = this.getElem("geoLocation");
+
+			setTimeout(function(){
+				map.longitude = location.longitude;
+				map.latitude = location.latitude;
+		        target.longitude = location.longitude;
+				target.latitude = location.latitude;
+				map.mapType="satellite";
+				map.resize();
+		    }, 1000);
+
+		    setTimeout(function(){
+
+				map.resize();
+		    }, 3000);
+		},
+		refresh: function(){
+			var map = this.getElem(this.ctrls.map);
 			map.resize();
 		},
+		toggleDialog: function(event){
+			var id = event.target.id;
+			var type = this.geoji[id].type;
+			var message = this.geoji[id].message;
+			var marker = document.querySelector("#"+id);
+
+			if(type !== undefined && type !== null){
+				var e = this.getElem(this.ctrls[type+"Dialog"]);
+
+				e.toggle();
+
+			}
+
+		},
+		loadMarker: function(long, lat, id){
+
+			var map = this.getElem(this.ctrls.map);
+			var marker = document.createElement('google-map-marker');
+			marker.setAttribute('latitude', lat);
+			marker.setAttribute('longitude', long);
+			marker.setAttribute('drag-events', true);
+			marker.setAttribute('click-events', true);
+			marker.draggable = true;
+			marker.animation = "DROP";
+			marker.id = this.addCtrl(id);
+
+			return marker;
+		},
+		targetMarker: function(long, lat, id){
+
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var geoji = this.geoji;
+			var target = document.createElement('google-map-marker');
+
+			target.setAttribute('name', "targetMarker");
+			target.setAttribute('latitude', lat);
+			target.setAttribute('longitude', long);
+			target.setAttribute('drag-events', true);
+			target.setAttribute('click-events', true);
+			target.draggable = true;
+			target.animation = "DROP";	
+
+			target.icon = "/images/marker-target.png";
+
+			var onClick = function(e) {
+				    console.log(e);
+				};
+
+			var targetDragEnd = function(e) {
+
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	self.geoji.target.longitude = e.target.longitude;
+					    	self.geoji.target.latitude = e.target.latitude;
+
+					    	console.log(self.geoji);
+					    }
+				    }, 50);
+
+				};
+
+			target.addEventListener('google-map-marker-dragend', targetDragEnd);
+
+			Polymer.dom(map).appendChild(target);
+
+			return target;
+
+		},
+		setMarkerListeners: function(id, click, dblclick, dragend){
+
+			var self = this;
+
+			setTimeout(function(){
+		        var elem = self.getElem(id);
+
+				elem.addEventListener('google-map-marker-click', click);
+				elem.addEventListener('google-map-marker-click', dblclick);
+				elem.addEventListener('google-map-marker-dragend', dragend);
+		    }, 50);
+		},
+		txtMarker: function(long, lat, id){
+			console.log("txtmarker-----");
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var txt = this.getElem(this.ctrls.txtInput);
+			var geoji = this.geoji;
+			var doUpdate = true;
+			var marker;	
+
+
+			if(typeof long === "number"){
+				marker = this.loadMarker(long, lat, id);
+				marker.icon = "/images/mascot-txt.png";
+				doUpdate = false;
+			}else{
+				marker = this.createMarker();
+				marker.icon = "/images/mascot-txt.png";
+			}
+
+			var onClick = function(e) {
+				    console.log(e);
+				    console.log(self.geoji);
+				    //console.log(e.target.latitude);
+				};
+			var dblClick = function(e) {
+					var message = self.geoji[e.target.id].message;
+
+				    if(message !== null && message !== undefined){
+
+						self.markerText = message;
+					}else if(message === null || message === undefined){
+
+						self.markerText = "";
+					}
+
+					self.toggleDialog(e);
+
+				};
+			var onDragEnd = function(e) {
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+					var data = geoji[marker.id];
+					var pos = this.position;
+
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	data.longitude = e.target.longitude;
+					    	data.latitude = e.target.latitude;
+					    }
+				    }, 50);
+				};
+
+			Polymer.dom(map).appendChild(marker);
+			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
+			if(doUpdate){
+				self.updateMarker(marker);
+			}
+
+		},
+		imgMarker: function(long, lat, id){
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var geoji = this.geoji;
+			var doUpdate = true;
+			var marker;
+
+			if(typeof long === "number"){
+				marker = this.loadMarker(long, lat, id);
+				marker.icon = "/images/mascot-img.png";
+				doUpdate = false;
+			}else{
+				marker = this.createMarker();
+				marker.icon = "/images/mascot-img.png";
+			}
+
+			var onClick = function(e) {
+				    //console.log(e);
+				};
+			var dblClick = function(e) {
+					var imgUrl = self.geoji[e.target.id].img;
+					var data = geoji[e.target.id];
+
+					self.toggleDialog(e);
+				    self.selectedMarker = e.target.id;
+
+				    if(imgUrl !== null && imgUrl !== undefined){
+				    	self.markerImg = imgUrl;
+				    }else{
+
+				    	self.markerImg = "temp.png";
+				    }
+				};
+			var onDragEnd = function(e) {
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+				    var data = geoji[marker.id];
+				    
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	data.longitude = e.target.longitude;
+					    	data.latitude = e.target.latitude;
+					    }
+				    }, 50);
+				};
+				
+			Polymer.dom(map).appendChild(marker);
+			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
+			if(doUpdate){
+				this.updateMarker(marker);
+			}
+
+		},
+		vidMarker: function(long, lat, id){
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var geoji = this.geoji;
+			var doUpdate = true;
+			var marker;
+
+			if(typeof long === "number"){
+				marker = this.loadMarker(long, lat, id);
+				marker.icon = "/images/mascot-vid.png";
+				doUpdate = false;
+			}else{
+				marker = this.createMarker();
+				marker.icon = "/images/mascot-vid.png";
+			}
+
+			var onClick = function(e) {
+				    console.log(e);
+				};
+			var dblClick = function(e) {
+				    self.toggleDialog(e);
+				    self.selectedMarker = e.target.id;
+				    if(self.geoji[e.target.id]!==null && self.geoji[e.target.id]!==undefined){
+
+				    	var marker = self.geoji[e.target.id];
+				    	var vidTitle = self.getElem(self.ctrls.vidTitle);
+				    	var vidTitleInput = self.getElem(self.ctrls.vidTitleInput);
+				    	var vidId = self.getElem(self.ctrls.vidUrlInput);
+				    	var vidIcon = self.getElem(self.ctrls.vidIcon);
+				    	var player = self.getElem(self.ctrls.youtubePlayer);
+				    	console.log(marker);
+
+
+				    	if(marker.link !== null && marker.link !== undefined && marker.link !== ""){
+				    		vidTitle.hidden = true;
+
+					    	if(vidId !== null && vidId !== undefined){
+					    		vidId.value = marker.link;
+					    		self.vidUrl = marker.link;
+					    		self.vidId = marker.link.replace("https://youtu.be/", "");
+					    	}
+
+				    		vidIcon.hidden = true;
+				    		player.hidden = false;
+				    	}else{
+				    		vidTitle.hidden = false;
+				    		vidTitleInput.focus();
+				    		vidTitleInput.value = "new video";
+				    		vidTitleInput.blur();
+
+				    		if(vidId !== null && vidId !== undefined){
+					    		vidId.value = "";
+					    		self.vidUrl = "";
+					    	}
+
+				    		vidIcon.hidden = false;
+				    		player.hidden = true;
+				    	}
+
+				    }
+				};
+			var onDragEnd = function(e) {
+					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
+				    var data = geoji[marker.id];
+				    
+				    setTimeout(function(){
+				        if(data !== undefined || data !== null){
+					    	data.longitude = e.target.longitude;
+					    	data.latitude = e.target.latitude;
+					    }
+				    }, 50);
+				};
+				
+			Polymer.dom(map).appendChild(marker);
+			this.setMarkerListeners(marker.id, onClick, dblClick, onDragEnd);
+
+			if(doUpdate){
+				this.updateMarker(marker);
+			}
+
+		},
+		buildGeoji: function(obj){
+			if(obj !== null){
+					var self = this;
+					var map = this.getElem(this.ctrls.map);
+					var target = this.getElem(this.ctrls.targetMarker);
+					var title = self.getElem(self.ctrls.title);
+					var email = self.getElem(self.ctrls.email);
+					var public = self.getElem(self.ctrls.public);
+					var email = self.getElem(self.ctrls.email);
+					var emailInput = self.getElem(self.ctrls.emailInput);
+					var add = self.getElem(self.ctrls.add);
+					var save = self.getElem(self.ctrls.save);
+					var encrypt = self.getElem(self.ctrls.encrypt);
+
+					add.hidden = true;
+					save.hidden = false;
+					self.private = obj.private;
+					map.clear();
+					target = self.targetMarker(obj.target.longitude, obj.target.latitude, target.id);
+
+					if(obj.title !== null && obj.title !== undefined){
+						title.value = obj.title;
+					}
+
+					if(obj.emailList !== null && obj.emailList !== undefined){
+						self.populateEmails(obj.emailList);
+					}
+
+					if(obj.encrypted){
+						encrypt.checked = true;
+					}
+
+
+					var markers = [];
+
+					self.currentLatitude = obj.target.latitude;
+					self.currentLongitude = obj.target.longitude;
+
+					self.geoji = obj;
+
+					for(k in obj){
+						if(obj[k].type !== null && obj[k].type !== undefined && k !== "target"){
+								
+							switch(obj[k].type){
+								case "txt":
+									marker = self.txtMarker(obj[k].longitude, obj[k].latitude, k);
+									break;
+								case "img":
+									marker = self.imgMarker(obj[k].longitude, obj[k].latitude, k);
+									break;
+								case "vid":
+									marker = self.vidMarker(obj[k].longitude, obj[k].latitude, k);
+									break;
+								default:
+
+							}
+						}
+					}
+
+				}else{
+					console.log("cannot load geoji with id: "+obj.id);
+				}
+		},
+		loadGeoji: function(id){
+			var self = this;
+			var map = this.getElem(this.ctrls.map);
+			var target = this.getElem(this.ctrls.targetMarker);
+			var publicDB = this.getElem(this.ctrls.geojiPublic);
+			var publicAuth = this.getElem(this.ctrls.publicAuth);
+			var publicRef = publicAuth.ref;
+			var privateDB = this.getElem(this.ctrls.geojiPrivate);
+			var privateAuth = this.getElem(this.ctrls.privateAuth);
+			var privateRef = privateAuth.ref;
+			var marker;
+
+			var doLoad = function(obj){
+				if(obj !== null){
+					self.geoji = obj;
+					var title = self.getElem(self.ctrls.title);
+					var email = self.getElem(self.ctrls.email);
+					var public = self.getElem(self.ctrls.public);
+					var email = self.getElem(self.ctrls.email);
+					var emailInput = self.getElem(self.ctrls.emailInput);
+
+					self.private = obj.private;
+					map.clear();
+					target = self.targetMarker(obj.target.longitude, obj.target.latitude, target.id);
+
+					if(obj.title !== null && obj.title !== undefined){
+						self.heading = obj.title;
+					}
+
+					if(obj.encrypted){
+						var cipher = this.getElem(this.ctrls.cipherInput).value;
+						this.ecryptedObj = obj;
+						this.decryptedObj = obj;
+						decrypt_MainObj(0, cipher);
+					}else{
+						var markers = [];
+
+						self.currentLatitude = obj.target.latitude;
+						self.currentLongitude = obj.target.longitude;
+
+						self.geoji = obj;
+
+						for(k in obj){
+							if(obj[k].type !== null && obj[k].type !== undefined && k !== "target"){
+								
+								switch(obj[k].type){
+									case "txt":
+										marker = self.txtMarker(obj[k].longitude, obj[k].latitude, k);
+										break;
+									case "img":
+										marker = self.imgMarker(obj[k].longitude, obj[k].latitude, k);
+										break;
+									case "vid":
+										marker = self.vidMarker(obj[k].longitude, obj[k].latitude, k);
+										break;
+									default:
+
+								}
+							}
+						}
+					}
+
+				}else{
+					console.log("cannot load geoji with id: "+id);
+				}
+			}
+
+			publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+				console.log(snapshot.val());
+				var obj = snapshot.val()
+				doLoad(obj);
+			});
+
+			privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+
+				console.log(snapshot.val());
+				var obj = snapshot.val()
+				private = true;
+				doLoad(obj);
+			});
+
+		},
+		decrypt_MainObj: function(i, cipher){
+			var self = this;
+			console.log(this.encryptedObj);
+			var keys = Object.keys(self.encryptedObj);
+			var dKeys = Object.keys(self.decryptedObj);
+			var eKeys = Object.keys(self.encryptedObj);
+			var add = this.getElem(this.ctrls.add);
+			var save = this.getElem(this.ctrls.save);
+			var saveDialog = this.getElem(this.ctrls.saveDialog);
+			var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+			var decryptProgress = this.getElem(this.ctrls.decryptProgress);
+
+			this.decryptCallback = this.decrypt_MainObj;
+			decryptProgress.value = dKeys.length*10;
+
+			if(this.decryptedObj === null && this.decryptedObj === undefined){
+				this.decryptedObj = {};
+			}
+
+			var decryptComplete = function(){
+				if(add !== undefined && add !== null){
+					if(!add.hidden){
+						add.hidden = true;
+						save.hidden = false;
+						saveSpinner.active = false;
+						saveDialog.close();
+					}else{
+
+					}
+				}
+			}
+
+			if(eKeys.length === dKeys.length){
+				var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+
+				cipherDialog.close();
+				decryptProgress.value = 0;
+				decryptSpinner.active = false;
+				this.buildGeoji(this.decryptedObj);
+
+				console.log("ALL DATA SHOULD BE DECRYPTED.");
+
+			}else{
+				switch(keys[i]){
+					case "id":
+						if(self.encryptedObj.id !== null && self.encryptedObj.id !== undefined){
+							self.decryptedObj.id = self.encryptedObj.id;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
+					case "title":
+						console.log("decrypt title");
+
+						self.decryptMainKey(keys[i], self.encryptedObj.title, this.cipherKey, i);
+						break;
+					case "private":
+
+						if(self.encryptedObj.private !== null && self.encryptedObj.private !== undefined){
+							self.decryptedObj.private = self.encryptedObj.private;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
+					case "encrypted":
+						console.log("decrypt encrypted");
+
+						if(self.encryptedObj.encrypted !== null && self.encryptedObj.encrypted !== undefined){
+							self.decryptedObj.encrypted = true;
+							self.decrypt_MainObj(i+1, this.cipherKey);
+						}
+						break;
+					case "emailList":
+						console.log("decrypt email list");
+
+						if(self.encryptedObj.emailList !== null && self.encryptedObj.emailList !== undefined){
+							self.decryptedObj.emailList = [];
+							self.decryptArray(keys[i], self.encryptedObj.emailList, this.cipherKey, i, 0);
+						}
+							
+							break;
+					default:
+						console.log("decrypt default");
+						console.log(keys[i]);
+						console.log("--------------------");
+
+						if(typeof self.encryptedObj[keys[i]]==="object"){
+							console.log("decrypting innerObj");
+							self.decryptedObj[keys[i]] = {};
+							self.decryptInnerObj(keys[i], self.encryptedObj[keys[i]], this.cipherKey, i, 0);
+						}
+							
+						break;
+				}
+			}
+
+		},
 		_closeMap: function(){
-			console.log(app.lastRoute);
+			var back = this.getElem(this.ctrls.backLink);
+			this.fireJMouseEvent(this.ctrls.backLink, "click");
+		},
+		_closeTxt: function(){
+			var e = this.getElem(this.ctrls.txtDialog);
+			e.toggle();
+		},
+		_closeImg: function(){
+			var e = this.getElem(this.ctrls.imgDialog);
+			e.toggle();
+		},
+		_closeVid: function(){
+			var e = this.getElem(this.ctrls.vidDialog);
+			e.toggle();
 		}
 
 	});
