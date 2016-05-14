@@ -152,8 +152,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     }else{
 
-      return null;
       console.log("web component "+ component + " doesn't exist and cant be wired.");
+      return null;
 
     }
   }
@@ -282,19 +282,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   app.launch = function(){
-    console.log("LAUNCH APPPPPPPPPP");
+
     app.hide("loginUI");
     app.show("mainApp");
-    //force feed loads at login
-    // setTimeout(function(){
-    //   var feedSection = app.element("mainFeed");
-    //   var mineSection = app.element("mainCollection");
-    //   var feed = document.createElement('geoji-feed');
-    //   var mine = document.createElement('geoji-mine');
-
-    //   Polymer.dom(feedSection).appendChild(feed);
-    //   Polymer.dom(mineSection).appendChild(mine); 
-    // }, 1000);
     
   }
 

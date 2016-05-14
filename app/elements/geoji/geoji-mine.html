@@ -151,13 +151,15 @@ This is an element button used as a base for other buttons.
 
 			setTimeout(function(){
 				var mine = self.getElem(self.ctrls.geojiMine);
-				console.log("https://geoji.firebaseio.com/mine/"+app.data.uid);
 				self.mineURL = "https://geoji.firebaseio.com/mine/"+app.data.uid;
 		    }, 2000);;
 			
 		},
+		refresh: function(){
+			this.mineURL = "";
+			this.mineURL = "https://geoji.firebaseio.com/mine/"+app.data.uid;
+		},
 		dataHandler: function(){
-			console.log(app.getUser());
 			var user = app.getUser();
 			var mainObj = {};
 			var subObj = {};
@@ -165,7 +167,6 @@ This is an element button used as a base for other buttons.
 			mainObj.data = subObj;
 			user.customData = mainObj;
 			this.$.firebasePublicData.add(mainObj);
-			console.log(this.publicData);
 		},
 		editHandler: function(e){
 			var editor = app.editor();
@@ -184,18 +185,6 @@ This is an element button used as a base for other buttons.
 			var private = false;
 			var card = e.target.parentNode.parentNode.parentNode;
 
-
-			// publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-			// 	console.log(snapshot.val());
-			// 	var obj = snapshot.val()
-			// });
-
-			// privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-			// 	console.log(snapshot.val());
-			// 	var obj = snapshot.val()
-			// 	private = true;
-			// });
-
 			if(card.name.includes("encrypted")>0){
 
 				editor.loadEncrypted(id);
@@ -208,8 +197,6 @@ This is an element button used as a base for other buttons.
 
 		},
 		_computeData: function(data){
-			console.log("mine compute data");
-			console.log(data);
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -228,8 +215,6 @@ This is an element button used as a base for other buttons.
 			
 		},
 		_computeTitle: function(id){
-			console.log("mine compute title");
-			console.log(id);
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -269,8 +254,6 @@ This is an element button used as a base for other buttons.
 			
 		},
 		_computeImg: function(id){
-			console.log("mine compute img");
-			console.log(id);
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -293,7 +276,7 @@ This is an element button used as a base for other buttons.
 							card.image = obj.coverImg;
 
 						}else{
-							card.image = "/images/mascot-mine.png";
+							card.image = "/images/mascot-default.png";
 
 						}
 					}
@@ -312,7 +295,7 @@ This is an element button used as a base for other buttons.
 							card.image = obj.coverImg;
 						}else{
 
-							card.image = "/images/mascot-mine.png";
+							card.image = "/images/mascot-default.png";
 						}
 					}
 

@@ -262,19 +262,14 @@ addEventListener('WebComponentsReady', function() {
     dataCallBack: function(){
       var feed = app.element("feedList");
       if(this.userData !== null){
-        console.log(this.userData);
         if(this.userData.customName !== undefined){
-          console.log("has a custom name.");
           app.data.userName = this.userData.customName;
         }else{
-          console.log("no custom name.");
           app.data.userName = this.userData.name;
         }
         if(this.userData.customProfileImg !== undefined){
-          console.log("has a custom profile image.");
           app.data.profileImg = this.userData.customProfileImg;
         }else{
-          console.log("no custom profile image.");
           app.data.profileImg = this.userData.profileImg;
         }
         app.data.uid = this.user.auth.uid;
@@ -289,6 +284,7 @@ addEventListener('WebComponentsReady', function() {
           if(feed!==null&&feed!==undefined){
             feed.publicURL = "https://geoji.firebaseio.com/public/";
             feed.privateURL = "https://geoji.firebaseio.com/private/";
+            feed.mineURL = "https://geoji.firebaseio.com/mine/"+app.data.uid;
             feed.feedURL = "https://geoji.firebaseio.com/feed/"+app.data.uid;
           }
           if(mine!==null&&mine!==undefined){
@@ -308,9 +304,6 @@ addEventListener('WebComponentsReady', function() {
         data.email = this.user.password.email;
         data.profileImg = this.$.firebasLogin.user.password.profileImageURL;
       }else if (this.provider === "google"){
-        console.log("providerData");
-        console.log(this.user);
-        console.log("providerData");
         data.name = this.$.firebaseLogin.user.google.displayName;
         data.email = this.$.firebaseLogin.user.google.email;
         data.profileImg = this.$.firebaseLogin.user.google.profileImageURL;
@@ -322,15 +315,12 @@ addEventListener('WebComponentsReady', function() {
     },
     errorHandler: function(e) {
       this.message = 'Error: ' + e.detail.message;
-      console.log(this.message);
     },
     userExistsHandler: function(e) {
       this.message = e.type + ' success!';
-      console.log(this.message);
     },
     userSuccessHandler: function(e) {
       this.message = e.type + ' success!';
-      console.log(this.message);
     },
     createUserHandler: function(e) {
       if(this.provider === "password"){

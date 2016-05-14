@@ -143,6 +143,9 @@ This depends on j-button element which is a generic button.
 		        },
 		        parentElement: {
 		          type: String
+		        },
+		        processVal: {
+		        	type: Object
 		        }
 			},
 
@@ -190,11 +193,11 @@ This depends on j-button element which is a generic button.
 				  for (var i = 0; i != sourceInfos.length; ++i) {
 				    var sourceInfo = sourceInfos[i];
 				    if (sourceInfo.kind === 'audio') {
-				      console.log(sourceInfo.id, sourceInfo.label || 'microphone');
+				      //console.log(sourceInfo.id, sourceInfo.label || 'microphone');
 
 				      audioSource = sourceInfo.id;
 				    } else if (sourceInfo.kind === 'video') {
-				      console.log(sourceInfo.id, sourceInfo.label || 'camera');
+				      //console.log(sourceInfo.id, sourceInfo.label || 'camera');
 				      var item = document.createElement('paper-item');
 				      Polymer.dom(videoList).appendChild(item);
 				      item.innerHTML = sourceInfo.label;
@@ -297,8 +300,9 @@ This depends on j-button element which is a generic button.
 		        this.process.error = e.detail;
 		        this.process.state = 'error';
 		    },
-		    handleYouTubeProcessingPoll: function() {
+		    handleYouTubeProcessingPoll: function(e) {
 		        this.process.processingEllipses += '.';
+		        console.log(e);
 		    },
 		    handleYouTubeProcessingComplete: function() {
 		    	console.log("video process complete.");

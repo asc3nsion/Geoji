@@ -114,6 +114,7 @@ This is an element button used as a base for other buttons.
 
 		  <div class="card-actions">
 		    <paper-button on-tap="refresh">Refresh</paper-button>
+		    <div class="center">{{date}}</div>
 		  </div>
 		</paper-card>
 
@@ -143,7 +144,6 @@ This is an element button used as a base for other buttons.
 			 width="100%"
 			 rel="0"
 			 autoplay="0"
-			 hidden="true"
 			 ></google-youtube>
 		</paper-dialog>
 
@@ -178,6 +178,9 @@ This is an element button used as a base for other buttons.
 				type: String,
 				value: ""
 			},
+			date: {
+				type: String
+			},
 			description: {
 				type: String,
 				value: ""
@@ -189,6 +192,9 @@ This is an element button used as a base for other buttons.
 			markerImg: {
 				type: String,
 				value: ""
+			},
+			vidId: {
+				type: String
 			},
 			geoji: {
 				type: Object,
@@ -246,9 +252,7 @@ This is an element button used as a base for other buttons.
 			var marker = document.createElement('google-map-marker');
 			marker.setAttribute('latitude', lat);
 			marker.setAttribute('longitude', long);
-			marker.setAttribute('drag-events', true);
 			marker.setAttribute('click-events', true);
-			marker.draggable = true;
 			marker.animation = "DROP";
 			marker.id = this.addCtrl(id);
 
@@ -264,9 +268,7 @@ This is an element button used as a base for other buttons.
 			target.setAttribute('name', "targetMarker");
 			target.setAttribute('latitude', lat);
 			target.setAttribute('longitude', long);
-			target.setAttribute('drag-events', true);
 			target.setAttribute('click-events', true);
-			target.draggable = true;
 			target.animation = "DROP";	
 
 			target.icon = "/images/marker-target.png";
@@ -350,12 +352,6 @@ This is an element button used as a base for other buttons.
 					var data = geoji[marker.id];
 					var pos = this.position;
 
-				    setTimeout(function(){
-				        if(data !== undefined || data !== null){
-					    	data.longitude = e.target.longitude;
-					    	data.latitude = e.target.latitude;
-					    }
-				    }, 50);
 				};
 
 			Polymer.dom(map).appendChild(marker);
@@ -399,15 +395,7 @@ This is an element button used as a base for other buttons.
 				    }
 				};
 			var onDragEnd = function(e) {
-					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
-				    var data = geoji[marker.id];
-				    
-				    setTimeout(function(){
-				        if(data !== undefined || data !== null){
-					    	data.longitude = e.target.longitude;
-					    	data.latitude = e.target.latitude;
-					    }
-				    }, 50);
+					
 				};
 				
 			Polymer.dom(map).appendChild(marker);
@@ -438,56 +426,19 @@ This is an element button used as a base for other buttons.
 				};
 			var dblClick = function(e) {
 				    self.toggleDialog(e);
+				    var vidUrl = self.geoji[e.target.id].link;
+
 				    self.selectedMarker = e.target.id;
-				    if(self.geoji[e.target.id]!==null && self.geoji[e.target.id]!==undefined){
-
-				    	var marker = self.geoji[e.target.id];
-				    	var vidTitle = self.getElem(self.ctrls.vidTitle);
-				    	var vidTitleInput = self.getElem(self.ctrls.vidTitleInput);
-				    	var vidId = self.getElem(self.ctrls.vidUrlInput);
-				    	var vidIcon = self.getElem(self.ctrls.vidIcon);
-				    	var player = self.getElem(self.ctrls.youtubePlayer);
-				    	console.log(marker);
-
-
-				    	if(marker.link !== null && marker.link !== undefined && marker.link !== ""){
-				    		vidTitle.hidden = true;
-
-					    	if(vidId !== null && vidId !== undefined){
-					    		vidId.value = marker.link;
-					    		self.vidUrl = marker.link;
-					    		self.vidId = marker.link.replace("https://youtu.be/", "");
-					    	}
-
-				    		vidIcon.hidden = true;
-				    		player.hidden = false;
-				    	}else{
-				    		vidTitle.hidden = false;
-				    		vidTitleInput.focus();
-				    		vidTitleInput.value = "new video";
-				    		vidTitleInput.blur();
-
-				    		if(vidId !== null && vidId !== undefined){
-					    		vidId.value = "";
-					    		self.vidUrl = "";
-					    	}
-
-				    		vidIcon.hidden = false;
-				    		player.hidden = true;
-				    	}
+				    if(vidUrl !== null && vidUrl !== undefined){
+				    	self.vidId = vidUrl;
+				    }else{
 
 				    }
 				};
 			var onDragEnd = function(e) {
 					var latLng = self.pixelOffsetToLatLng(e.detail.pixel.x, e.detail.pixel.y);
 				    var data = geoji[marker.id];
-				    
-				    setTimeout(function(){
-				        if(data !== undefined || data !== null){
-					    	data.longitude = e.target.longitude;
-					    	data.latitude = e.target.latitude;
-					    }
-				    }, 50);
+
 				};
 				
 			Polymer.dom(map).appendChild(marker);
@@ -583,6 +534,7 @@ This is an element button used as a base for other buttons.
 					var emailInput = self.getElem(self.ctrls.emailInput);
 
 					self.private = obj.private;
+					self.date = obj.date;
 					map.clear();
 					target = self.targetMarker(obj.target.longitude, obj.target.latitude, target.id);
 

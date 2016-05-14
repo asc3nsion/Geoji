@@ -24,6 +24,30 @@ google-map {
   height: 300px;
 }
 
+.top5{
+  margin-top: 5%;
+}
+
+.top10{
+  margin-top: 10%;
+}
+
+.top20{
+  margin-top: 20%;
+}
+
+.top30{
+  margin-top: 30%;
+}
+
+.top40{
+  margin-top: 40%;
+}
+
+.top50{
+  margin-top: 50%;
+}
+
 body {
   background-color: #F0F4C3;
   font-family: 'Droid Sans Mono', 'Helvetica Neue', Helvetica, Arial, sans-serif;

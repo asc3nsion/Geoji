@@ -39,6 +39,13 @@ This is an element button used as a base for other buttons.
 <dom-module id= "geoji-feed">
 	<template>
 
+		<firebase-collection
+	    	id= "{{assignCtrl('geojiMine')}}"
+			limit-to-first="100"
+		    location="{{mineURL}}"
+		    data="{{mineFeed}}">
+		</firebase-collection>
+
 	    <firebase-collection
 	    	id= "{{assignCtrl('feed')}}"
 			limit-to-first="100"
@@ -60,13 +67,18 @@ This is an element button used as a base for other buttons.
 		    data="{{privateFeed}}">
 		</firebase-collection>
 
+
 		<template is="dom-repeat" items="{{publicFeed}}" as="public">
 			<div name="[[_computeData(public)]]" hidden="true"></div>
 		</template>
 
-		<!-- <template is="dom-repeat" items="{{privateFeed}}" as="private">
+		<template is="dom-repeat" items="{{privateFeed}}" as="private">
 			<div name="[[_computeData(private)]]" hidden="true"></div>
-		</template> -->
+		</template>
+
+		<template is="dom-repeat" items="{{mineFeed}}" as="mine">
+			<!-- <div name="[[_computeMine(mine)]]" hidden="true"></div> -->
+		</template>
 		
 
 		<template id="feedList" is="dom-repeat" items="{{mainFeed}}" as="data">
@@ -122,6 +134,9 @@ This is an element button used as a base for other buttons.
 			feedURL: {
 		        type: String
 	      	},
+	      	mineURL: {
+		        type: String
+	      	},
 	      	privateURL: {
 		        type: String
 	      	},
@@ -130,6 +145,10 @@ This is an element button used as a base for other buttons.
 	      	},
 	      	privateURL: {
 		        type: String
+	      	},
+	      	mineFeed: {
+	      		type: Array,
+	      		value: []
 	      	},
 	      	publicFeed: {
 	      		type: Array,
@@ -163,7 +182,6 @@ This is an element button used as a base for other buttons.
 		 StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
 
 		ready: function(){
-			console.log("geoFeed ready");
 			this.feedReady = true;
 		},
 		attached: function(){
@@ -171,22 +189,13 @@ This is an element button used as a base for other buttons.
 
 			this.uid = app.data.uid;
 
-			console.log("geoFeed ATTACHEDDDDD");
-
-
 			setTimeout(function(){
 				var feed = self.getElem(self.ctrls.feed);
 				var location = self.getElem("geoLocation");
 
-				console.log("https://geoji.firebaseio.com/feed/"+app.data.uid);
-				// feed.location = "https://geoji.firebaseio.com/feed/"+app.data.uid;
 		        self.currentLongitude = location.longitude;
 		        self.currentLatitude = location.latitude;
-
-		        console.log("self.publicFeed");
-		        console.log(self.publicFeed);
-
-
+		        
 		    }, 2000);
 
 		    this._updateLocation();
@@ -203,7 +212,6 @@ This is an element button used as a base for other buttons.
 			this.$.feedList.render();
 		},
 		clearFeed: function(){
-			console.log("SHOULD CLEAR THE FEED...");
 			var feed = this.getElem(this.ctrls.feed);
 			feed.location = "https://geoji.firebaseio.com/feed/";
 			feed.removeByKey(app.data.uid);
@@ -223,14 +231,35 @@ This is an element button used as a base for other buttons.
 				}
 
 				if(!data.encrypted){
+
 					if(self._inRange(data)){
 						if(lookup[data.id] === null || lookup[data.id] === undefined){
-							feed.add(data);
-							self.$.feedList.render()
+							if(self._computeMine(data)){
+								feed.add(data);
+								self.$.feedList.render()
+							}else{
+								feed.removeByKey(data.__firbaseKey__);
+								self.$.feedList.render()
+							}
 						}
 					}
 				}
 		    }, 2000);
+
+		},
+		_computeMine: function(data){
+			var self = this;
+			var lookup = {};
+
+			for (i in this.mineFeed) {
+				lookup[this.mineFeed[i].id] = this.mineFeed[i];
+			}
+
+			if(lookup[data.id] === null || lookup[data.id] === undefined){
+				return true;
+			}else{
+				return false;
+			}
 
 		},
 		_inRange: function(data){
@@ -272,7 +301,11 @@ This is an element button used as a base for other buttons.
 			if(data.coverImg !== null && data.coverImg !== undefined){
 				return data.coverImg;
 			}else{
-				return "/images/mascot-mine.png";
+				if(data.encrypted === false || data.encrypted === null || data.encrypted === undefined){
+					return "/images/mascot-default.png";
+				}else if(data.encrypted){
+					return "/images/mascot-encrypted.png";
+				}
 			}
 		},
 		_locationChange: function(){
@@ -305,6 +338,19 @@ This is an element button used as a base for other buttons.
 		    					feedList.render();
 		    				}else if(self._inRange(self.publicFeed[i])){
 		    					self._computeData(self.publicFeed[i]);
+		    				}
+		    			}
+		    		}
+
+		    	}
+		    	for(i in self.privateFeed){
+		    		for(j in self.mainFeed){
+		    			if(self.privateFeed[i].id === self.mainFeed[j].id){
+		    				if(!self._inRange(self.privateFeed[i])){
+		    					feed.remove(self.privateFeed[i]);
+		    					feedList.render();
+		    				}else if(self._inRange(self.privateFeed[i])){
+		    					self._computeData(self.privateFeed[i]);
 		    				}
 		    			}
 		    		}
