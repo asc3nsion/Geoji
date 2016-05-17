@@ -23,172 +23,172 @@ encryption installed.
  				value: []
  			}
  		},
-		attached: function(){
+ 		attached: function() {
 
-		},
-		decryptMainKey: function(key, data, cipher, i){
-			var self = this;
+ 		},
+ 		decryptMainKey: function(key, data, cipher, i) {
+ 			var self = this;
 
-			if(data.toString()==="true" || data.toString()==="false"){
-				data = data.toString();
-			}
+ 			if (data.toString() === "true" || data.toString() === "false") {
+ 				data = data.toString();
+ 			}
 
-			triplesec.decrypt ({
+ 			triplesec.decrypt({
 
-				data:          new triplesec.Buffer(data, "hex"),
-				key:           new triplesec.Buffer(cipher),
-				progress_hook: function (obj) { /* ... */ }
+ 				data: new triplesec.Buffer(data, "hex"),
+ 				key: new triplesec.Buffer(cipher),
+ 				progress_hook: function(obj) { /* ... */ }
 
-			}, function(err, buff) {
+ 			}, function(err, buff) {
 
-				if (! err) {
-					var ciphertext = buff.toString();
-					var dKeys = Object.keys(self.decryptedObj);
-					var eKeys = Object.keys(self.encryptedObj);
+ 				if (!err) {
+ 					var ciphertext = buff.toString();
+ 					var dKeys = Object.keys(self.decryptedObj);
+ 					var eKeys = Object.keys(self.encryptedObj);
 
-					if(!isNaN(parseFloat(ciphertext))){
-						ciphertext = parseFloat(ciphertext);
-					}
+ 					if (!isNaN(parseFloat(ciphertext))) {
+ 						ciphertext = parseFloat(ciphertext);
+ 					}
 
-					self.decryptedObj[key] = ciphertext;
+ 					self.decryptedObj[key] = ciphertext;
 
-					if(dKeys.length === eKeys.length){
-						console.log("OBJECT SHOULD BE DECRYPTED");
-					}else{
-						self.decryptCallback(i+1, cipher);
-					}
-				}else{
-					console.log(err);
-				}
+ 					if (dKeys.length === eKeys.length) {
+ 						console.log("OBJECT SHOULD BE DECRYPTED");
+ 					} else {
+ 						self.decryptCallback(i + 1, cipher);
+ 					}
+ 				} else {
+ 					console.log(err);
+ 				}
 
-			});
+ 			});
 
-		},
-		decryptInnerData: function(key, obj, innerKey, data, cipher, i, j){
-			var keys = Object.keys(obj);
-			var self = this;
+ 		},
+ 		decryptInnerData: function(key, obj, innerKey, data, cipher, i, j) {
+ 			var keys = Object.keys(obj);
+ 			var self = this;
 
-			if(!this.skipKey(innerKey)){
+ 			if (!this.skipKey(innerKey)) {
 
-				triplesec.decrypt ({
+ 				triplesec.decrypt({
 
-					data:          new triplesec.Buffer(data, "hex"),
-					key:           new triplesec.Buffer(cipher),
-					progress_hook: function (obj) { /* ... */ }
+ 					data: new triplesec.Buffer(data, "hex"),
+ 					key: new triplesec.Buffer(cipher),
+ 					progress_hook: function(obj) { /* ... */ }
 
-				}, function(err, buff) {
+ 				}, function(err, buff) {
 
-					if (! err) {
-							var ciphertext = buff.toString();
-							var keys = Object.keys(obj);
-							var dKeys = Object.keys(self.decryptedObj[key]);
-							var eKeys = Object.keys(self.encryptedObj[key]);
+ 					if (!err) {
+ 						var ciphertext = buff.toString();
+ 						var keys = Object.keys(obj);
+ 						var dKeys = Object.keys(self.decryptedObj[key]);
+ 						var eKeys = Object.keys(self.encryptedObj[key]);
 
-							if(!isNaN(parseFloat(ciphertext))){
-								ciphertext = parseFloat(ciphertext);
-							}
+ 						if (!isNaN(parseFloat(ciphertext))) {
+ 							ciphertext = parseFloat(ciphertext);
+ 						}
 
-							self.decryptedObj[key][innerKey] = ciphertext;
-							
-							if(eKeys.length === j+1){
-								self.decryptCallback(i+1, cipher);
+ 						self.decryptedObj[key][innerKey] = ciphertext;
 
-							}else if(eKeys.length > j+1){
+ 						if (eKeys.length === j + 1) {
+ 							self.decryptCallback(i + 1, cipher);
 
-								self.decryptInnerObj(key, obj, cipher, i, j+1);
-							}
+ 						} else if (eKeys.length > j + 1) {
 
-						}else{
-							console.log(err);
-						}
+ 							self.decryptInnerObj(key, obj, cipher, i, j + 1);
+ 						}
 
-				});
+ 					} else {
+ 						console.log(err);
+ 					}
 
-			}else{
-				var keys = Object.keys(obj);
-				var dKeys = Object.keys(self.decryptedObj[key]);
-				var eKeys = Object.keys(self.encryptedObj[key]);
+ 				});
 
-				this.decryptedObj[key][innerKey] = data;
+ 			} else {
+ 				var keys = Object.keys(obj);
+ 				var dKeys = Object.keys(self.decryptedObj[key]);
+ 				var eKeys = Object.keys(self.encryptedObj[key]);
 
-				if(eKeys.length === j+1){
-					self.decryptCallback(i+1, cipher);
+ 				this.decryptedObj[key][innerKey] = data;
 
-				}else if(eKeys.length > j+1){
-					self.decryptInnerObj(key, obj, cipher, i, j+1);
-				}
+ 				if (eKeys.length === j + 1) {
+ 					self.decryptCallback(i + 1, cipher);
 
-			}
+ 				} else if (eKeys.length > j + 1) {
+ 					self.decryptInnerObj(key, obj, cipher, i, j + 1);
+ 				}
 
-		},
-		decryptInnerObj: function(key, obj, cipher, i, j){
-			var keys = Object.keys(obj);
+ 			}
 
-			this.decryptInnerData(key, obj, keys[j], obj[keys[j]], cipher, i, j);
+ 		},
+ 		decryptInnerObj: function(key, obj, cipher, i, j) {
+ 			var keys = Object.keys(obj);
 
-		},
-		decryptArrayElem: function(key, array, cipher, i, j){
-			self = this;
-			var data = array[j];
+ 			this.decryptInnerData(key, obj, keys[j], obj[keys[j]], cipher, i, j);
 
-			triplesec.decrypt ({
+ 		},
+ 		decryptArrayElem: function(key, array, cipher, i, j) {
+ 			self = this;
+ 			var data = array[j];
 
-				data:          new triplesec.Buffer(data, "hex"),
-				key:           new triplesec.Buffer(cipher),
-				progress_hook: function (obj) { /* ... */ }
+ 			triplesec.decrypt({
 
-			}, function(err, buff) {
+ 				data: new triplesec.Buffer(data, "hex"),
+ 				key: new triplesec.Buffer(cipher),
+ 				progress_hook: function(obj) { /* ... */ }
 
-				if (! err) {
-					var ciphertext = buff.toString();
-					var eKeys = Object.keys(self.decryptedObj);
-					var gKeys = Object.keys(self.encryptedObj);
+ 			}, function(err, buff) {
 
-					if(self.decryptedObj[key]===null || self.decryptedObj[key]===undefined){
-						self.decryptedObj[key] = [];
-					}
+ 				if (!err) {
+ 					var ciphertext = buff.toString();
+ 					var eKeys = Object.keys(self.decryptedObj);
+ 					var gKeys = Object.keys(self.encryptedObj);
 
-					if(!isNaN(parseFloat(ciphertext))){
-						ciphertext = parseFloat(ciphertext);
-					}
+ 					if (self.decryptedObj[key] === null || self.decryptedObj[key] === undefined) {
+ 						self.decryptedObj[key] = [];
+ 					}
 
-					self.decryptedObj[key].push(ciphertext);
+ 					if (!isNaN(parseFloat(ciphertext))) {
+ 						ciphertext = parseFloat(ciphertext);
+ 					}
+
+ 					self.decryptedObj[key].push(ciphertext);
 
 
-					if(j+1 === array.length){
+ 					if (j + 1 === array.length) {
 
-						self.decryptCallback(i+1, cipher);
+ 						self.decryptCallback(i + 1, cipher);
 
-					}else if(array.length > j+1){
-						self.decryptArray(key, array, cipher, i, j+1);
-					}
+ 					} else if (array.length > j + 1) {
+ 						self.decryptArray(key, array, cipher, i, j + 1);
+ 					}
 
-				}else{
-					console.log(err);
-				}
+ 				} else {
+ 					console.log(err);
+ 				}
 
-			});
-		},
-		decryptArray: function(key, array, cipher, i, j){
-			var self = this;
+ 			});
+ 		},
+ 		decryptArray: function(key, array, cipher, i, j) {
+ 			var self = this;
 
-			if(array.constructor === Array){
-				self.decryptArrayElem(key, array, cipher, i, j);
-			}else{
-				console.log("Must be type of array to encrypt.")
-			}
+ 			if (array.constructor === Array) {
+ 				self.decryptArrayElem(key, array, cipher, i, j);
+ 			} else {
+ 				console.log("Must be type of array to encrypt.")
+ 			}
 
-		},
-		skipKey: function(key){
-			var result = false;
-			for(i in this.skipKeys){
-				if(this.skipKeys[i]===key){
-					result = true;
-				}
-			}
+ 		},
+ 		skipKey: function(key) {
+ 			var result = false;
+ 			for (i in this.skipKeys) {
+ 				if (this.skipKeys[i] === key) {
+ 					result = true;
+ 				}
+ 			}
 
-			return result;
-		}
+ 			return result;
+ 		}
  	};
  	
  </script>

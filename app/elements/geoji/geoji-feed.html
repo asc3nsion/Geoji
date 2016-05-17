@@ -27,10 +27,19 @@ This is an element button used as a base for other buttons.
 	paper-card.collection{
 		--paper-card-background-color: white;
 		--paper-card-background-size: cover;
-		width: 50vw;
+		max-width: 100%;
+      	min-width: 100%;
 	    height: 50%;
 	    padding: 1%;
-        left: 15%;
+	    margin-left:-15%;
+
+	}
+
+	input.share {
+		padding: 1%;
+        margin: 0.5vw;
+		width: 100vw;
+	    height: 5%;
 	}
 	
 
@@ -88,19 +97,32 @@ This is an element button used as a base for other buttons.
 					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
 				</div>
 		      	<div class="card-actions">
-		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id"{{assignCtrl('Share')}}">Share</paper-button></template>  
-				  	<a id="{{assignCtrl('exploreLink')}}" href="{{baseUrl}}/geoji/{{data.id}}"><paper-button id"{{assignCtrl('Edit')}}" on-tap="exploreHandler" name="{{data.id}}exploreBtn">Explore</paper-button></a>
-				  	<paper-button id"{{assignCtrl('Keep')}}">Keep</paper-button>
+		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id="{{data.id}}_shareBtn" on-tap="shareHandler">Share</paper-button></template>  
+				  	<a id="{{data.id}}_exploreLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeExplore(data)}}"><paper-button id="{{data.id}}_exploreBtn" on-tap="exploreHandler" name="{{data.id}}_exploreBtn">Explore</paper-button></a>
+				  	<a id="{{data.id}}_decryptLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeEncrypted(data)}}"><paper-button id="{{data.id}}_decryptBtn" on-tap="decryptHandler">Decrypt</paper-button></a>
 		      	</div>
 		    </paper-card>
 		</template>
 
-		<!-- <paper-dialog id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
-			<h2>Enter Cipher</h2>
-			<input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="">
-			<paper-progress class="bar" id="{{assignCtrl('encryptProgress')}}"></paper-progress>
-			<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite>
-		</paper-dialog> -->
+		<paper-dialog class="decryptData" id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
+			<paper-progress class="bar" id="{{assignCtrl('decryptProgress')}}"></paper-progress>
+			<h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
+			<paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
+			  <input id="{{assignCtrl('decryptInput')}}" is="iron-input" class="txtData" bind-value="{{cipherKey}}"></input> 
+			</paper-input-container>
+			<paper-button id="{{assignCtrl('cancelDecryptBtn')}}" class="txtData theme" raised on-tap="toggleDecryptDialog">CANCEL</paper-button>
+			<paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
+		</paper-dialog>
+
+		<paper-dialog class="decryptData" id="{{assignCtrl('shareDialog')}}" modal role="alertdialog">
+			<h2>Share GEOJI<div class="topCorner"><paper-icon-button suffix class="closeShare" icon="clear" on-tap="closeShare" class="topCorner"></paper-icon-button></div></h2>
+			<paper-input-container id="{{assignCtrl('shareContainer')}}" class="txtData" bind-value="{{shareUrl}}" class="share">
+			  <input id="{{assignCtrl('shareInput')}}" is="iron-input" bind-value="{{shareUrl}}" class="share">
+			  <input id="cipherHidden" is="iron-input" bind-value="{{shareUrl}}" hidden="true">
+			  <paper-input-error>Enter or Generate cipher</paper-input-error>
+			  <paper-icon-button id="{{assignCtrl('shareCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button> 
+			</paper-input-container>
+		</paper-dialog>
 
 	</template>
 </dom-module>
@@ -108,7 +130,7 @@ This is an element button used as a base for other buttons.
 <script>
 	// I pass the button handler property from the base element, defined as the input
 	// The call back is made via document.querySelector on the input element name.
-	Polymer({		
+	Polymer({
 		is: "geoji-feed",
 		properties: {
 			cardImg: {
@@ -132,37 +154,37 @@ This is an element button used as a base for other buttons.
 				value: true
 			},
 			feedURL: {
-		        type: String
-	      	},
-	      	mineURL: {
-		        type: String
-	      	},
-	      	privateURL: {
-		        type: String
-	      	},
+				type: String
+			},
+			mineURL: {
+				type: String
+			},
+			privateURL: {
+				type: String
+			},
 			publicURL: {
-		        type: String
-	      	},
-	      	privateURL: {
-		        type: String
-	      	},
-	      	mineFeed: {
-	      		type: Array,
-	      		value: []
-	      	},
-	      	publicFeed: {
-	      		type: Array,
-	      		value: []
-	      	},
-	      	privateFeed: {
-	      		type: Array,
-	      		value: []
-	      	},
-	      	mainFeed: {
-	      		type: Array,
-	      		value: []
-	      	},
-	      	currentLongitude: {
+				type: String
+			},
+			privateURL: {
+				type: String
+			},
+			mineFeed: {
+				type: Array,
+				value: []
+			},
+			publicFeed: {
+				type: Array,
+				value: []
+			},
+			privateFeed: {
+				type: Array,
+				value: []
+			},
+			mainFeed: {
+				type: Array,
+				value: []
+			},
+			currentLongitude: {
 				type: String,
 				observer: "_locationChange",
 				notify: true
@@ -175,79 +197,114 @@ This is an element button used as a base for other buttons.
 			feedReady: {
 				type: Boolean,
 				value: false
+			},
+			shareUrl: {
+				type: String
 			}
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
-		 StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
+		behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+			StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil
+		],
 
-		ready: function(){
+		ready: function() {
 			this.feedReady = true;
 		},
-		attached: function(){
+		attached: function() {
 			var self = this;
 
 			this.uid = app.data.uid;
 
-			setTimeout(function(){
+			setTimeout(function() {
 				var feed = self.getElem(self.ctrls.feed);
 				var location = self.getElem("geoLocation");
 
-		        self.currentLongitude = location.longitude;
-		        self.currentLatitude = location.latitude;
-		        
-		    }, 2000);
+				self.currentLongitude = location.longitude;
+				self.currentLatitude = location.latitude;
 
-		    this._updateLocation();
+			}, 2000);
+
+			this._updateLocation();
 
 		},
-		exploreHandler: function(e){
+		shareHandler: function(e){
+			var shareDialog = this.getElem(this.ctrls.shareDialog);
+			var shareInput = this.getElem(this.ctrls.shareInput);
+			console.log(e);
+			var url = window.location.href;
+			var arr = url.split("/");
+			console.log(arr);
+			var base = arr[0]+"//"+arr[2];
+			var id = e.target.id.replace("_shareBtn", "");
+			console.log(base+"/geoji/"+id);
+			shareInput.value = base+"/geoji/"+id;
+			shareDialog.open();
+		},
+		closeShare: function(){
+			var shareDialog = this.getElem(this.ctrls.shareDialog);
+			shareDialog.close();
+		},
+		decryptHandler: function(){
+			var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+			// cipherDialog.open();
+		},
+		exploreHandler: function(e) {
 			var self = this;
 			var map = this.getElem("mainMap");
 			var id = e.target.name.replace("exploreBtn", "");
-			
-			map.loadGeoji(id);
+
 		},
-		refresh: function(){
+		refresh: function() {
 			this.$.feedList.render();
 		},
-		clearFeed: function(){
+		clearFeed: function() {
 			var feed = this.getElem(this.ctrls.feed);
 			feed.location = "https://geoji.firebaseio.com/feed/";
 			feed.removeByKey(app.data.uid);
-			feed.location = "https://geoji.firebaseio.com/feed/"+app.data.uid;
-			
+			feed.location = "https://geoji.firebaseio.com/feed/" + app.data.uid;
+
 		},
-		_computeData: function(data){
+		_computeEncrypted: function(data){
+			if(data.encrypted){
+				return false;
+			}else{
+				return true;
+			}
+		},
+		_computeExplore: function(data){
+			if(!data.encrypted){
+				return false;
+			}else{
+				return true;
+			}
+		},
+		_computeData: function(data) {
 			var self = this;
-			setTimeout(function(){
+			setTimeout(function() {
 				var feed = self.getElem(self.ctrls.feed);
 				var feedList = self.getElem("feedList");
 				var arr = [];
 				var lookup = {};
 
 				for (i in self.mainFeed) {
-				    lookup[self.mainFeed[i].id] = self.mainFeed[i];
+					lookup[self.mainFeed[i].id] = self.mainFeed[i];
 				}
 
-				if(!data.encrypted){
-
-					if(self._inRange(data)){
-						if(lookup[data.id] === null || lookup[data.id] === undefined){
-							if(self._computeMine(data)){
+				if (self._inRange(data)) {
+						if (lookup[data.id] === null || lookup[data.id] === undefined) {
+							if (self._computeMine(data)) {
 								feed.add(data);
 								self.$.feedList.render()
-							}else{
+							} else {
 								feed.removeByKey(data.__firbaseKey__);
 								self.$.feedList.render()
 							}
 						}
 					}
-				}
-		    }, 2000);
+			}, 2000);
 
 		},
-		_computeMine: function(data){
+		_computeMine: function(data) {
 			var self = this;
 			var lookup = {};
 
@@ -255,66 +312,79 @@ This is an element button used as a base for other buttons.
 				lookup[this.mineFeed[i].id] = this.mineFeed[i];
 			}
 
-			if(lookup[data.id] === null || lookup[data.id] === undefined){
+			if (lookup[data.id] === null || lookup[data.id] === undefined) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
 
 		},
-		_inRange: function(data){
+		_inRange: function(data) {
 			var self = this;
 			var feed = this.getElem(this.ctrls.feed);
 			var feedList = this.getElem(this.ctrls.feedList);
 			var location = this.getElem("geoLocation");
 			var target = data.target;
 			var dist = this.geoDistance(target.latitude, target.longitude, location.latitude, location.longitude, "M");
-			var postDec = dist.toString().split(".");
-			var chars = postDec[1].split("");
-			var places = [];
+			var postDec;
+			if(dist.toString().includes(".")){
+				var postDec = dist.toString().split(".");
+				var chars = postDec[1].split("");
+				var places = [];
 
-			for(char in chars){
-				if(parseFloat(chars[char])!==0){
-					break;	
+				if(dist !== null && dist !== undefined){
+					for (char in chars) {
+						if (parseFloat(chars[char]) !== 0) {
+							break;
+						}
+						places.push(chars[char]);
+					}
+
+					if (places.length >= 2) {
+						return true;
+					} else {
+						return false;
+					}
 				}
-				places.push(chars[char]);
-			}
-
-			if(places.length>=2){
-				return true;
 			}else{
 				return false;
 			}
+			
 
 		},
-		_computeTitle: function(data){
+		_computeTitle: function(data) {
+			var self = this;
 
-			if(data.title !== null && data.title !== undefined){
-				return data.title;
-			}else{
+			if (data.title !== null && data.title !== undefined) {
+				if(data.encrypted){
+					return "Encrypted Geoji";
+				}else{
+					return data.title;
+				}
+			} else {
 				return "GEOJI";
 			}
-	
-		},
-		_computeImg: function(data){
 
-			if(data.coverImg !== null && data.coverImg !== undefined){
+		},
+		_computeImg: function(data) {
+
+			if (data.coverImg !== null && data.coverImg !== undefined) {
 				return data.coverImg;
-			}else{
-				if(data.encrypted === false || data.encrypted === null || data.encrypted === undefined){
+			} else {
+				if (data.encrypted === false || data.encrypted === null || data.encrypted === undefined) {
 					return "/images/mascot-default.png";
-				}else if(data.encrypted){
+				} else if (data.encrypted) {
 					return "/images/mascot-encrypted.png";
 				}
 			}
 		},
-		_locationChange: function(){
+		_locationChange: function() {
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
 
 		},
-		_updateLocation: function(){
+		_updateLocation: function() {
 			var self = this;
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var privateDB = this.getElem(this.ctrls.geojiPrivate);
@@ -322,41 +392,41 @@ This is an element button used as a base for other buttons.
 			var feedList = this.getElem("feedList");
 			var location = this.getElem("geoLocation");
 
-			setInterval(function(){
+			setInterval(function() {
 				var feed = self.getElem(self.ctrls.feed);
 				var location = self.getElem("geoLocation");
 
-		    	self.currentLongitude = location.longitude;
-		    	self.currentLatitude = location.latitude;
+				self.currentLongitude = location.longitude;
+				self.currentLatitude = location.latitude;
 
 
-		    	for(i in self.publicFeed){
-		    		for(j in self.mainFeed){
-		    			if(self.publicFeed[i].id === self.mainFeed[j].id){
-		    				if(!self._inRange(self.publicFeed[i])){
-		    					feed.remove(self.publicFeed[i]);
-		    					feedList.render();
-		    				}else if(self._inRange(self.publicFeed[i])){
-		    					self._computeData(self.publicFeed[i]);
-		    				}
-		    			}
-		    		}
+				for (i in self.publicFeed) {
+					for (j in self.mainFeed) {
+						if (self.publicFeed[i].id === self.mainFeed[j].id) {
+							if (!self._inRange(self.publicFeed[i])) {
+								feed.remove(self.publicFeed[i]);
+								feedList.render();
+							} else if (self._inRange(self.publicFeed[i])) {
+								self._computeData(self.publicFeed[i]);
+							}
+						}
+					}
 
-		    	}
-		    	for(i in self.privateFeed){
-		    		for(j in self.mainFeed){
-		    			if(self.privateFeed[i].id === self.mainFeed[j].id){
-		    				if(!self._inRange(self.privateFeed[i])){
-		    					feed.remove(self.privateFeed[i]);
-		    					feedList.render();
-		    				}else if(self._inRange(self.privateFeed[i])){
-		    					self._computeData(self.privateFeed[i]);
-		    				}
-		    			}
-		    		}
+				}
+				for (i in self.privateFeed) {
+					for (j in self.mainFeed) {
+						if (self.privateFeed[i].id === self.mainFeed[j].id) {
+							if (!self._inRange(self.privateFeed[i])) {
+								feed.remove(self.privateFeed[i]);
+								feedList.render();
+							} else if (self._inRange(self.privateFeed[i])) {
+								self._computeData(self.privateFeed[i]);
+							}
+						}
+					}
 
-		    	}
-		    }, 3000);
+				}
+			}, 3000);
 		}
 
 	});

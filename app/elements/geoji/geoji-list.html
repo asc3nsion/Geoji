@@ -72,7 +72,7 @@ This is an element button used as a base for other buttons.
 <script>
 	// I pass the button handler property from the base element, defined as the input
 	// The call back is made via document.querySelector on the input element name.
-	Polymer({		
+	Polymer({
 		is: "geoji-list",
 		properties: {
 			data: {
@@ -83,48 +83,49 @@ This is an element button used as a base for other buttons.
 			}
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
-		 StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil],
+		behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+			StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil
+		],
 
-		ready: function(){
+		ready: function() {
 
 		},
-		attached: function(){
+		attached: function() {
 			var self = this;
 			this.uid = app.data.uid;
 			console.log("GGGGGGGGGGGGGGGGEEEEEEEEEEEEEEEEEEEEEEEEEEEEOOOOOOOOOOOOOOOOOOOOOOOJJJJJJJJJJJJJJJJJJJJJJJJJIIIIIIIIIIIIIIIIIIIIIIII");
 
-			setTimeout(function(){
+			setTimeout(function() {
 				console.log("GHGJHUIGGGGGGGGKJN<N<>:LKJLKJ");
 				console.log(self.data);
-		    }, 2000);
+			}, 2000);
 
 		},
-		renderFeed: function(){
+		renderFeed: function() {
 			this.$.feed_List.render();
 		},
-		_computeTitle: function(data){
+		_computeTitle: function(data) {
 			console.log("computeTitle....");
 			console.log(data);
 
-			if(data.title !== null && data.title !== undefined){
+			if (data.title !== null && data.title !== undefined) {
 				return data.title;
-			}else{
+			} else {
 				return "GEOJI";
 			}
-	
+
 		},
-		_computeImg: function(data){
+		_computeImg: function(data) {
 			console.log("computeImg....");
 			console.log(data);
 
-			if(data.coverImg !== null && data.coverImg !== undefined){
+			if (data.coverImg !== null && data.coverImg !== undefined) {
 				return data.coverImg;
-			}else{
+			} else {
 				return "/images/mascot-mine.png";
 			}
 		},
-		_dataSet: function(){
+		_dataSet: function() {
 			console.log("DATA IS SET!!!!!!!!!!!!!!!!!!!!!");
 			console.log(this.data);
 

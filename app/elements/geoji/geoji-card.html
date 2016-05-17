@@ -53,7 +53,7 @@ This is an element button used as a base for other buttons.
 <script>
 	// I pass the button handler property from the base element, defined as the input
 	// The call back is made via document.querySelector on the input element name.
-	Polymer({		
+	Polymer({
 		is: "geoji-card",
 		properties: {
 			id: {
@@ -87,16 +87,17 @@ This is an element button used as a base for other buttons.
 			myCard: {
 				type: Boolean,
 				value: false
-			}	
+			}
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
-		 UtilityBehaviors.JUtil, CryptoBehaviors.JEncrypt, CryptoBehaviors.JDecrypt],
+		behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
+			UtilityBehaviors.JUtil, CryptoBehaviors.JEncrypt, CryptoBehaviors.JDecrypt
+		],
 
-		ready: function(){
+		ready: function() {
 
 		},
-		attached: function(){
+		attached: function() {
 
 		}
 

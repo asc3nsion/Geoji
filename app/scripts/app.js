@@ -41,15 +41,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   //References to data used by the app
   app.data = {
-    uid:"",
-    userName:"",
-    email:"",
+    uid: "",
+    userName: "",
+    email: "",
     profileImg: ""
   }
 
   // Sets app default base URL
   app.baseUrl = '/';
-  if (window.location.port === '') {  // if production
+  if (window.location.port === '') { // if production
     // Uncomment app.baseURL below and
     // set app.baseURL to '/your-pathname/' if running from folder in production
     // app.baseUrl = '/polymer-starter-kit/';
@@ -57,9 +57,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   //user data
   app.user = {
-      hideLogin: false,
-      noAccess: true,
-      test: "sadasdasdasdcmsdn"
+    hideLogin: false,
+    noAccess: true,
+    test: "sadasdasdasdcmsdn"
   }
 
   app.displayInstalledToast = function() {
@@ -72,12 +72,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // Listen for template bound event to know when bindings
   // have resolved and content has been stamped to the page
   app.addEventListener('dom-change', function() {
-    
+
     console.log('Geoji ready to rock!');
     // Need to hide with delay, because all element done load unless
     // it's done like this.
-    setTimeout(function(){
-        app.hide("mainApp");
+    setTimeout(function() {
+      app.hide("mainApp");
     }, 50);
 
     // setTimeout(function(){
@@ -95,7 +95,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // See https://github.com/Polymer/polymer/issues/1381
   window.addEventListener('WebComponentsReady', function() {
     // imports are loaded and elements have been registered
-    
+
 
   });
 
@@ -129,68 +129,68 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   app.lastRoute = ["home", "home"];
 
-  app.setLastRoute = function(route){
+  app.setLastRoute = function(route) {
     app.lastRoute.unshift(route);
-    if(app.lastRoute.length > 2){
+    if (app.lastRoute.length > 2) {
       app.lastRoute.pop();
     }
   }
 
-  app.getLastRoute = function(){
+  app.getLastRoute = function() {
     return app.lastRoute[1];
   }
 
   //get a hook into a web component on the dom
   //returns a reference to that component.
-  app.component = function(component){
+  app.component = function(component) {
 
     var c = document.querySelector(component);
 
-    if(c !== null){
+    if (c !== null) {
 
       return c;
 
-    }else{
+    } else {
 
-      console.log("web component "+ component + " doesn't exist and cant be wired.");
+      console.log("web component " + component + " doesn't exist and cant be wired.");
       return null;
 
     }
   }
 
-  app.element = function(id){
-    return document.querySelector("#"+id);
+  app.element = function(id) {
+    return document.querySelector("#" + id);
   }
 
-  app.feed = function(){
+  app.feed = function() {
     return app.element(app.elements.feed);
   }
 
-  app.editor = function(){
+  app.editor = function() {
     return app.element(app.elements.editor);
   }
 
-  app.create = function(){
+  app.create = function() {
     return app.element(app.elements.create);
   }
 
-  app.setAttr = function(id, attr, value){
+  app.setAttr = function(id, attr, value) {
     app.$[id][attr] = value;
   }
 
-  app.setStyle = function(id, attr, value){
+  app.setStyle = function(id, attr, value) {
     var elem = app.element(this.id);
-    elem.style[attr] = value; 
+    elem.style[attr] = value;
   }
 
   // Here we can call a function in any web component via string name.
   // Parameter(s) must be passed in array, if there is more than one.
-  app.call = function(id, method, params){
+  app.call = function(id, method, params) {
     var e = app.element(id);
     e[method](params);
   }
 
-  app.getProp = function(id, property){
+  app.getProp = function(id, property) {
     var e = app.element(id);
     return e[property];
   }
@@ -204,35 +204,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.paperDrawerPanel.closeDrawer();
   };
 
-  app.hide = function(id){
-      app.$[id].hidden = true;
+  app.hide = function(id) {
+    app.$[id].hidden = true;
   }
 
-  app.show = function(id){
+  app.show = function(id) {
     app.$[id].hidden = false;
   }
 
   // On load the geo-login isnt part of the dom.
   // We wait until is is then the bool is returned.
-  app.loginCtrl = function(){
+  app.loginCtrl = function() {
 
     var method = document.querySelector(app.components.login);
 
-    if(method === null){
+    if (method === null) {
 
-      setTimeout(function(){
+      setTimeout(function() {
         app.loginCtrl();
       }, 100);
 
-    }else{
+    } else {
 
-      var loggedIn =  method.getLoggedIn();
+      var loggedIn = method.getLoggedIn();
 
-      if(loggedIn){
+      if (loggedIn) {
 
         return false;
 
-      }else{
+      } else {
 
         return true;
 
@@ -240,55 +240,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   }
 
-  app.getUser = function(){
+  app.getUser = function() {
     return app.element(app.elements.login).user;
   }
 
-  app.setUserData = function(key, val){
-    console.log("setting user data: "+key+" to "+ val);
+  app.setUserData = function(key, val) {
+    console.log("setting user data: " + key + " to " + val);
     var e = app.element(app.elements.userData);
     var data = {};
     data[key] = val;
 
-    if(e !== null){
+    if (e !== null) {
       console.log(e.data);
       e.data = data;
     }
   }
 
-  app.logout = function(){
+  app.logout = function() {
     app.component("geoji-feed").clearFeed();
     app.element(app.elements.login).logout();
     app.close();
     location.reload();
   }
 
-  app.mainMap = function(on){
-    if(on){
+  app.mainMap = function(on, id) {
+    var map = app.element("mainMap");
+    var login = app.element("mainLogin");
+    
+    if (on) {
       app.show("mainMap");
-    }else{
+      map.id = id;
+      map.loadGeoji(id);
+    } else {
       app.hide("mainMap");
     }
   }
 
-  app.geoji = function(on){
-    if(on){
+  app.geoji = function(on) {
+    if (on) {
       app.hide("mainApp");
       app.show("geoji");
-    }else{
+    } else {
       app.hide("geoji");
       app.show("mainApp");
     }
   }
 
-  app.launch = function(){
+  app.launch = function() {
 
     app.hide("loginUI");
     app.show("mainApp");
-    
+
   }
 
-  app.close = function(){
+  app.close = function() {
     app.hide("mainApp");
     app.show("loginUI");
   }

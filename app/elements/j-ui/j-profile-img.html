@@ -15,58 +15,60 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 
-<style is="custom-style">
-
+<style>
+	iron-image.profileImg {
+		
+	}
 </style>	
 
 <dom-module id= "j-profile-img">
 	<template>
-		<iron-image d="{{assignCtrl('img')}}" alt="Profile Pic" src="{{url}}" class="fit"></iron-image>
+		<iron-image d="{{assignCtrl('img')}}" alt="Profile Pic" src="{{url}}" class="profileImg"></iron-image>
 	</template>
 </dom-module>
 
 <script>
 	// I pass the button handler property from the base element, defined as the input
 	// The call back is made via document.querySelector on the input element name.
-	Polymer({		
+	Polymer({
 		is: "j-profile-img",
 		properties: {
-			url:{
+			url: {
 				type: String,
-				value:""
+				value: ""
 			},
-			provider:{
+			provider: {
 				type: String,
-				value:"",
+				value: "",
 				observer: "providerStyle",
-        		notify: true
+				notify: true
 			},
-			text:{
+			text: {
 				type: String,
-				value:""
+				value: ""
 			},
-			icon:{
+			icon: {
 				type: String,
-				value:""
+				value: ""
 			},
-			input:{
+			input: {
 				type: String,
-				value:""
+				value: ""
 			}
 		},
 
-		behaviors:[StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
+		behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId],
 
-		ready: function(){
+		ready: function() {
 
 		},
-		attached: function(){
-			
+		attached: function() {
+
 		},
-		setURL: function(url){
+		setURL: function(url) {
 			this.url = url;
 		},
-		providerStyle: function(){
+		providerStyle: function() {
 			this.addClass(this.provider);
 		}
 
