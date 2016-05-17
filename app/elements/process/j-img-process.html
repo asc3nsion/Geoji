@@ -35,6 +35,14 @@ fixedSize = it the size of the cropped square in pixels.
 <dom-module id="j-img-process">
   <template>
     <style>
+      paper-button.imgData{
+
+        float: right;
+        margin: 50px 10px 10px 10px;
+        font-size: 1.8vw;
+        position:relative;
+
+       }
       :host {
         display: block;
         margin: 5px;
@@ -165,13 +173,13 @@ fixedSize = it the size of the cropped square in pixels.
     </div>
 
     <div class="upload layout horizontal">
-        <paper-button class="theme" id="{{assignCtrl('closeBtn')}}" raised class="red center" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
+        <paper-button class="theme" id="{{assignCtrl('closeBtn')}}" raised class="red center imgData" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
           Cancel
         </paper-button>
-        <paper-button class="theme" id="{{assignCtrl('chooseBtn')}}" raised class="blue center" on-tap="on_upload_dialog" hidden="{{hideButtons}}">
+        <paper-button class="theme" id="{{assignCtrl('chooseBtn')}}" raised class="blue center imgData" on-tap="on_upload_dialog" hidden="{{hideButtons}}">
           Choose file
         </paper-button>
-        <paper-button class="theme" id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class='' disabled$='{{!file}}' hidden="{{hideButtons}}">
+        <paper-button class="theme" id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class="imgData" disabled$='{{!file}}' hidden="{{hideButtons}}">
           <iron-icon icon='file-upload'></iron-icon>
           Upload
         </paper-button>

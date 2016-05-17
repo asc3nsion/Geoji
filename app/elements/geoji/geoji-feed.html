@@ -27,19 +27,21 @@ This is an element button used as a base for other buttons.
 	paper-card.collection{
 		--paper-card-background-color: white;
 		--paper-card-background-size: cover;
-		max-width: 100%;
-      	min-width: 100%;
+		max-width: 40%;
+      	min-width: 300px;
 	    height: 50%;
 	    padding: 1%;
-	    margin-left:-15%;
+	    margin:1%;
 
 	}
 
-	input.share {
-		padding: 1%;
-        margin: 0.5vw;
-		width: 100vw;
-	    height: 5%;
+	paper-button.collection{
+		max-width: 25%;
+      	min-width: 50px;
+	}
+
+	p.linkText {
+		font-size: 2vw;
 	}
 	
 
@@ -97,9 +99,9 @@ This is an element button used as a base for other buttons.
 					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
 				</div>
 		      	<div class="card-actions">
-		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id="{{data.id}}_shareBtn" on-tap="shareHandler">Share</paper-button></template>  
-				  	<a id="{{data.id}}_exploreLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeExplore(data)}}"><paper-button id="{{data.id}}_exploreBtn" on-tap="exploreHandler" name="{{data.id}}_exploreBtn">Explore</paper-button></a>
-				  	<a id="{{data.id}}_decryptLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeEncrypted(data)}}"><paper-button id="{{data.id}}_decryptBtn" on-tap="decryptHandler">Decrypt</paper-button></a>
+		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button  on-tap="shareHandler" class="collection"><p id="{{data.id}}_shareBtn" class="linkText">Share</p></paper-button></template>  
+				  	<a href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeExplore(data)}}"><paper-button id="{{data.id}}_exploreBtn" on-tap="exploreHandler" name="{{data.id}}_exploreBtn"><p id="{{data.id}}_exploreLink" class="linkText" class="collection">Explore</p></paper-button></a>
+				  	<a id="{{data.id}}_decryptLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeEncrypted(data)}}"><paper-button id="{{data.id}}_decryptBtn" on-tap="decryptHandler"><p class="linkText">Decrypt</p></paper-button></a>
 		      	</div>
 		    </paper-card>
 		</template>

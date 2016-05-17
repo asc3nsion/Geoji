@@ -3,6 +3,16 @@
 
 > Location Based Content
 
+### Overview
+This site incorparates google-maps api, google-youtube api, imgur-api into a single site.  Allowing users to place text based messages, images, or videos on a map.
+Maps can be saved, and shared via a custom link.  The main feed is populated based on any nearby maps.  It also includes the ability to encrypt the map data client
+side via triple-sec encryption.
+
+Here is a [demo video.](https://youtu.be/b6FF6tA3CL4)
+
+This site was built on top of the yeo-man polymer web app.  It includes some third party web components including:
+geo-location
+jv-datepicker
 
 
 ### Install dependencies

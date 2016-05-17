@@ -23,14 +23,7 @@ This is an element button used as a base for other buttons.
 
 <style>
 
-	paper-card.collection{
-		--paper-card-background-color: white;
-		--paper-card-background-size: cover;
-		width: 50vw;
-	    height: 50%;
-	    padding: 1%;
-        margin: 1%;
-	}
+
 	
 
 </style>	
@@ -71,9 +64,9 @@ This is an element button used as a base for other buttons.
 					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
 				</div>
 		      	<div class="card-actions">
-		      	  	<template  is="dom-if" if="{{canShare}}"><paper-button id="{{data.id}}_shareBtn">Share</paper-button></template>  
-				  	<a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" name="{{data.id}}editBtn">Edit</paper-button></a>
-				  	<paper-button id="{{data.id}}_deleteBtn" on-tap="dataDelete">Delete</paper-button>
+		      	  	<paper-button on-tap="shareHandler" class="collection"><p id="{{data.id}}_shareBtn" class="linkText">Share</p></paper-button>
+				  	<a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" name="{{data.id}}editBtn" class="collection"><p class="linkText">Edit</p></paper-button></a>
+				  	<paper-button id="{{data.id}}_deleteBtn" on-tap="dataDelete" class="collection"><p class="linkText">Delete</p></paper-button>
 		      	</div>
 		    </paper-card>
 		</template>
@@ -83,6 +76,16 @@ This is an element button used as a base for other buttons.
 			<input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="">
 			<paper-progress class="bar" id="{{assignCtrl('encryptProgress')}}"></paper-progress>
 			<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite>
+		</paper-dialog>
+
+		<paper-dialog class="decryptData" id="{{assignCtrl('shareDialog')}}" modal role="alertdialog">
+			<h2>Share GEOJI<div class="topCorner"><paper-icon-button suffix class="closeShare" icon="clear" on-tap="closeShare" class="topCorner"></paper-icon-button></div></h2>
+			<paper-input-container id="{{assignCtrl('shareContainer')}}" class="txtData" bind-value="{{shareUrl}}" class="share">
+			  <input id="{{assignCtrl('shareInput')}}" is="iron-input" bind-value="{{shareUrl}}" class="share">
+			  <input id="cipherHidden" is="iron-input" bind-value="{{shareUrl}}" hidden="true">
+			  <paper-input-error>Enter or Generate cipher</paper-input-error>
+			  <paper-icon-button id="{{assignCtrl('shareCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button> 
+			</paper-input-container>
 		</paper-dialog>
 
 	</template>
@@ -195,6 +198,23 @@ This is an element button used as a base for other buttons.
 				});
 			}
 
+		},
+		shareHandler: function(e){
+			var shareDialog = this.getElem(this.ctrls.shareDialog);
+			var shareInput = this.getElem(this.ctrls.shareInput);
+			console.log(e);
+			var url = window.location.href;
+			var arr = url.split("/");
+			console.log(arr);
+			var base = arr[0]+"//"+arr[2];
+			var id = e.target.id.replace("_shareBtn", "");
+			console.log(base+"/geoji/"+id);
+			shareInput.value = base+"/geoji/"+id;
+			shareDialog.open();
+		},
+		closeShare: function(){
+			var shareDialog = this.getElem(this.ctrls.shareDialog);
+			shareDialog.close();
 		},
 		dataHandler: function() {
 			var user = app.getUser();

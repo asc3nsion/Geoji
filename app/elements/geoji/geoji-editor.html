@@ -29,8 +29,8 @@ This is an element button used as a base for other buttons.
 <style>
 
 google-map {
-    height: 30vh;
-    width: 60vw;
+    height: 40vh;
+    width: 80vw;
 }
 
 paper-icon-button.createMarker #icon {
@@ -121,14 +121,16 @@ paper-icon-button.createMarker #icon {
  paper-dialog.imgData{
 
  	width: 35vw;
- 	height: 50%;
+ 	max-height: 70%;
+ 	min-height: 50%;
  	font-size: 1vw;
 
  }
  paper-dialog.vidData{
 
  	width: 45vw;
- 	height: 75%;
+ 	max-height: 90%;
+ 	min-height: 70%;
  	font-size: 1.8vw;
 
  }
@@ -282,8 +284,6 @@ paper-icon-button.createMarker #icon {
 			<paper-input-container id="{{assignCtrl('vidTitle')}}" class="vidInput" bind-value="{{vidTitle}}">
 			  <label>Title</label>
 			  <input id="{{assignCtrl('vidTitleInput')}}" is="iron-input" bind-value="">
-			  <label>Link</label>
-			  <input id="{{assignCtrl('vidUrlInput')}}" is="iron-input" bind-value="{{vidUrl}}">
 			</paper-input-container>
 			<paper-input-container id="{{assignCtrl('vidUrl')}}" class="vidInput unselectable" bind-value="{{vidTitle}}">
 			  <label>Link</label>

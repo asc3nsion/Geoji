@@ -70,6 +70,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var map = app.element("mainMap");
       app.route = 'geoji';
       app.setLastRoute('geoji');
+      console.log(data);
+      console.log(data.params.id);
       app.mainMap(true, data.params.id);
     });
 
@@ -79,9 +81,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var map = app.element("mainMap");
         var arr = window.location.href.split("/");
         var id = arr[arr.length-1];
-        console.log("routing");
-        console.log(arr);
-        console.log(id);
         app.route = 'geoji';
         app.setLastRoute('geoji');
         app.mainMap(true, id);

@@ -28,7 +28,6 @@ This is an element button used as a base for other buttons.
 
 <style>
 	paper-card.mainMap{
-		z-index:1000
 		height: 100vh;
 	    width: 100vw;
 	    position:absolute
@@ -66,6 +65,10 @@ This is an element button used as a base for other buttons.
 	 	height: 55%;
 
 	}
+	paper-dialog.decryptData{
+	 	z-index: 1000;
+
+	}
 
 </style>	
 
@@ -92,7 +95,7 @@ This is an element button used as a base for other buttons.
 		    limitToFirst= "100">
 		</firebase-collection>
 
-		<paper-card id="{{assignCtrl('geojiCard')}}" heading="{{heading}}" image="{{cardImage}}" class="mainMap">
+		<paper-card id="{{assignCtrl('geojiMap')}}" heading="{{heading}}" image="{{cardImage}}" class="mainMap">
 		  <div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="_closeMap" class="topCorner"></paper-icon-button></div>
 		  <a id="{{assignCtrl('backLink')}}" data-route="home" href="/" hidden="true"></a>
 		  
@@ -253,9 +256,6 @@ This is an element button used as a base for other buttons.
 		},
 		refresh: function() {
 			var map = this.getElem(this.ctrls.map);
-			// if(this.id !== null && this.id !== undefined){
-			// 	this.loadGeoji(this.id);
-			// }
 			map.resize();
 		},
 		toggleDialog: function(event) {
@@ -355,9 +355,7 @@ This is an element button used as a base for other buttons.
 			}
 
 			var onClick = function(e) {
-				console.log(e);
-				console.log(self.geoji);
-				//console.log(e.target.latitude);
+			
 			};
 			var dblClick = function(e) {
 				var message = self.geoji[e.target.id].message;
@@ -489,6 +487,9 @@ This is an element button used as a base for other buttons.
 				var target = this.getElem(this.ctrls.targetMarker);
 				var email = self.getElem(self.ctrls.email);
 				var public = self.getElem(self.ctrls.public);
+				var mainMap = this.getElem(this.ctrls.geojiMap);
+
+				mainMap.hidden = false;
 
 				self.private = obj.private;
 				map.clear();
@@ -532,6 +533,9 @@ This is an element button used as a base for other buttons.
 			} else {
 				console.log("cannot load geoji with id: " + obj.id);
 			}
+			setTimeout(function() {
+		        self.refresh();
+		    }, 1000);
 		},
 		loadGeoji: function(id) {
 
@@ -541,6 +545,7 @@ This is an element button used as a base for other buttons.
 			var cipherDialog = this.getElem(this.ctrls.cipherDialog);
 			var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
 			var map = this.getElem(this.ctrls.map);
+			var mainMap = this.getElem(this.ctrls.geojiMap);
 			var target = this.getElem(this.ctrls.targetMarker);
 			var publicDB = this.getElem(this.ctrls.geojiPublic);
 			var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -620,8 +625,10 @@ This is an element button used as a base for other buttons.
 				console.log(snapshot.val());
 				var obj = snapshot.val()
 				if(!obj.encrypted){
+					mainMap.hidden = false;
 					doLoad(obj);
 				}else{
+					mainMap.hidden = true;
 					self.encryptedObj = obj;
 					self.decryptedObj = {};
 					cipherDialog.open();
@@ -635,8 +642,10 @@ This is an element button used as a base for other buttons.
 				var obj = snapshot.val()
 				private = true;
 				if(!obj.encrypted){
+					mainMap.hidden = false;
 					doLoad(obj);
 				}else{
+					mainMap.hidden = true;
 					self.encryptedObj = obj;
 					self.decryptedObj = {};
 					cipherDialog.open();					
@@ -754,9 +763,10 @@ This is an element button used as a base for other buttons.
 			e.toggle();
 		},
 		_closeMap: function() {
-			var back = this.getElem(this.ctrls.backLink);
+			var mainMap = this.getElem(this.ctrls.geojiMap);
 			var login = this.getElem("loginUI");
 			var main = this.getElem("mainApp");
+
 			if(!main.hidden){
 				app.hide("loginUI");
 			}else{
