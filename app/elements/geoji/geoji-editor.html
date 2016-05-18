@@ -195,7 +195,7 @@ paper-icon-button.createMarker #icon {
 			  <label>Add Email</label>
 			  <input id="{{assignCtrl('emailInput')}}" is="iron-input" type="email" autocomplete="on" bind-value="">
 			  <paper-input-error>Enter a valid email!</paper-input-error>
-			  <paper-icon-button suffix icon="clear" on-tap="addEmail"></paper-icon-button>
+			  <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
 			</paper-input-container>
 		  </div>
 		  <div id="{{assignCtrl('containerEncrypt')}}">
@@ -204,9 +204,9 @@ paper-icon-button.createMarker #icon {
 			  <label>Cipher Key</label>
 			  <input id="{{assignCtrl('cipherInput')}}" is="iron-input" bind-value="{{cipherKey}}">
 			  <input id="cipherHidden" is="iron-input" bind-value="{{cipherKey}}" hidden="true">
-			  <paper-input-error>Enter or Generate cipher</paper-input-error>
+			  <paper-input-error>8 characters minimum, with at least 1 capital, 1 number, and 1 symbol.</paper-input-error>
 			  <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
-			  <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button>
+			  <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden" hidden="true"></paper-icon-button>
 			</paper-input-container>
 		  </div>			
 			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
@@ -456,7 +456,10 @@ paper-icon-button.createMarker #icon {
 				type: String
 			},
 			cipherKey: {
-				type: String
+				type: String,
+				value: null,
+				observer: "_validateCipher",
+				notify: true
 			},
 			firebaseKey: {
 				type: String,
@@ -1475,14 +1478,20 @@ paper-icon-button.createMarker #icon {
 		},
 		createcipher: function() {
 			var symbols = ["!", "@", "$", "%", "^", "&", "*", "_"];
+			var caps = ["A", "B", "C", "D", "E", "F", "G", "H", "I",
+			 "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", 
+			 "U", "V", "W", "X", "Y", "Z"];
 			var sym1 = symbols[this.getRandomInt(0, symbols.length)];
 			var sym2 = symbols[this.getRandomInt(0, symbols.length)];
-			var randomString = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8) + sym1 + sym2;
+			var cap1 = caps[this.getRandomInt(0, caps.length)];
+			var cap2 = caps[this.getRandomInt(0, caps.length)];
+			var randomString = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8) + sym1 + sym2 + cap1 + cap2;
 			randomString = this.shuffleString(randomString);
 
 			var cipherInput = this.getElem(this.ctrls.cipherInput);
 
 			cipherInput.value = randomString;
+			this.cipherKey = randomString;
 		},
 		copycipher: function() {
 			var cipherInput = this.getElem(this.ctrls.cipherInput);
@@ -1980,6 +1989,20 @@ paper-icon-button.createMarker #icon {
 
 			}
 
+
+		},
+		_validateCipher: function(){
+			var input = this.getElem(this.ctrls.cipherInput);
+			var cipher = this.getElem(this.ctrls.cipher);
+			var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+
+			if(cipher !== null && cipher !== undefined
+			 && input !== null && input !== undefined
+			 && this.cipherKey !== null && this.cipherKey !== undefined){
+			 	console.log("HAHAHAHAHAHA");
+			 	console.log(re.test(this.cipherKey));
+				cipher.invalid = !re.test(this.cipherKey);
+			}
 
 		},
 		_storeEmails: function() {
