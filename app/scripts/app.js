@@ -52,7 +52,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   if (window.location.port === '') { // if production
     // Uncomment app.baseURL below and
     // set app.baseURL to '/your-pathname/' if running from folder in production
-    // app.baseUrl = '/polymer-starter-kit/';
+    app.baseUrl = '/geoji/';
   }
 
   //user data
@@ -269,8 +269,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     
     if (on) {
       app.show("mainMap");
-      map.id = id;
       map.loadGeoji(id);
+      setTimeout(function() {
+        map.refresh();
+      }, 1000);
     } else {
       app.hide("mainMap");
     }

@@ -10,10 +10,7 @@ This is an element button used as a base for other buttons.
 -->
 <!-- components: -->
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../elements/j-ui/j-button.html">
-<link rel="import" href="../../elements/j-ui/j-profile-img.html">
-<link rel="import" href="../../elements/j-ui/j-dialog.html">
-<link rel="import" href="../../elements/api/imgur-upload.html">
+
 <!-- behaviors: -->
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
@@ -65,8 +62,8 @@ This is an element button used as a base for other buttons.
 				</div>
 		      	<div class="card-actions">
 		      	  	<paper-button on-tap="shareHandler" class="collection"><p id="{{data.id}}_shareBtn" class="linkText">Share</p></paper-button>
-				  	<a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" name="{{data.id}}editBtn" class="collection"><p class="linkText">Edit</p></paper-button></a>
-				  	<paper-button id="{{data.id}}_deleteBtn" on-tap="dataDelete" class="collection"><p class="linkText">Delete</p></paper-button>
+				  	<a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" class="collection"><p name="{{data.id}}editBtn"  class="linkText">Edit</p></paper-button></a>
+				  	<paper-button on-tap="dataDelete" class="collection"><p id="{{data.id}}_deleteBtn" class="linkText">Delete</p></paper-button>
 		      	</div>
 		    </paper-card>
 		</template>
@@ -240,7 +237,7 @@ This is an element button used as a base for other buttons.
 			var obj = null;
 			var privateRef = privateAuth.ref;
 			var private = false;
-			var card = e.target.parentNode.parentNode.parentNode;
+			var card = e.target.parentNode.parentNode.parentNode.parentNode;
 
 			if(card !== null && card !== undefined){
 				if (card.name.includes("encrypted") > 0) {
