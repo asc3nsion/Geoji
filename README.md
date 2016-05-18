@@ -4,7 +4,7 @@
 > Location Based Content
 
 ### Overview
-This site incorparates google-maps api, google-youtube api, imgur-api into a single site.  Allowing users to place text based messages, images, or videos on a map.
+This site uses google-maps api, google-youtube api, imgur-api into a single site.  Allowing users to place text based messages, images, or videos on a map.
 Maps can be saved, and shared via a custom link.  The main feed is populated based on any nearby maps.  It also includes the ability to encrypt the map data client
 side via triple-sec encryption.
 
