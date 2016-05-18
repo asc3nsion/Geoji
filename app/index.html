@@ -71,13 +71,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <section id="mainApp">
       <!-- <paper-drawer-panel id="paperDrawerPanel" ng-show="false" class="ng-hide"> -->
-      <paper-drawer-panel id="paperDrawerPanel">
+      <paper-drawer-panel id="paperDrawerPanel" force-narrow>
         <!-- Drawer Scroll Header Panel -->
         <paper-scroll-header-panel drawer fixed >
 
           <!-- Drawer Toolbar -->
           <paper-toolbar id="drawerToolbar">
             <span class="menu-name">Menu</span>
+            <paper-icon-button icon="chevron-left" class="floatRight" on-tap="closeDrawer"></paper-icon-button>
           </paper-toolbar>
 
           <span class="space"></span>
