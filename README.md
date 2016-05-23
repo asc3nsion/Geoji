@@ -13,6 +13,7 @@ Here is a [demo video.](https://youtu.be/b6FF6tA3CL4)
 This site was built on top of the yeo-man polymer web app.  It includes some third party web components including:
 - geo-location
 - jv-datepicker
+- imgur-upload
 
 
 ### Install dependencies

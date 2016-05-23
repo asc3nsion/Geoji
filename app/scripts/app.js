@@ -201,7 +201,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   };
 
   app.closeDrawer = function() {
-    console.log("wtf");
     app.$.paperDrawerPanel.closeDrawer();
   };
 

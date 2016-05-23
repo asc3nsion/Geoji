@@ -28,7 +28,8 @@
     "paper-date-picker": "polymer-paper-date-picker#^1.1.4",
     "jv-datepicker": "^2.4.4",
     "facebook-button": "^0.2.1",
-    "twitter-button": "^0.2.1"
+    "twitter-button": "^0.2.1",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.2.1"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
