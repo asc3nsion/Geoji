@@ -100,14 +100,14 @@ This is an element button for google auth using firebase api
                   <li class="center-horiz">
                     <paper-input-container id="{{assignCtrl('emailContainer')}}">
                       <input id="{{assignCtrl('emailInput')}}" type="email" autocomplete="on"  placeholder="email" value="{{email::input}}" name="email" bind-value="{{email}}" autofocus="true">></input>
-                      <label for="{{getCtrl('emailInput')}}"></label>
+                      <label for="{{getCtrl('emailInput')}}">email</label>
                       <paper-input-error>{{emailError}}</paper-input-error>
                     </paper-input-container>
                   </li>
                   <li class="center-horiz">
                     <paper-input-container id="{{assignCtrl('passwordContainer')}}">
                       <input id="{{assignCtrl('passwordInput')}}"  type="password" autocomplete="on" placeholder="password" value="{{password::input}}" name="password" bind-value="{{password}}"></input>
-                      <label for="{{getCtrl('passwordInput')}}"></label>
+                      <label for="{{getCtrl('passwordInput')}}">password</label>
                       <paper-input-error>{{passwordError}}</paper-input-error>
                     </paper-input-container>
                   </li>
@@ -127,20 +127,20 @@ This is an element button for google auth using firebase api
                   <li class="center-horiz">
                     <paper-input-container id="{{assignCtrl('regNameContainer')}}">
                       <input id="{{assignCtrl('regNameInput')}}" type="text" autocomplete="on" placeholder="name" name="registerName" bind-value="{{name}}" autofocus="true" required="true"></input>
-                      <label for="{{getCtrl('regNameInput')}}"></label>
+                      <label for="{{getCtrl('regNameInput')}}">register name</label>
                     </paper-input-container>
                   </li>
                   <li class="center-horiz">
                     <paper-input-container id="{{assignCtrl('regEmailContainer')}}">
                       <input id="{{assignCtrl('regEmailInput')}}" type="email" autocomplete="on" placeholder="email" name="registerEmail" value="{{email::input}}" bind-value="{{email}}"></input>
-                      <label for="{{getCtrl('regEmailInput')}}"></label>
+                      <label for="{{getCtrl('regEmailInput')}}">register email</label>
                       <paper-input-error>{{emailError}}</paper-input-error>
                     </paper-input-container>
                   </li>
                   <li class="center-horiz">
                     <paper-input-container id="{{assignCtrl('regPasswordContainer')}}">
                       <input id="{{assignCtrl('regPasswordInput')}}" type="password" autocomplete="on" placeholder="password" name="registerPassword" value="{{password::input}}" bind-value="{{password}}"></input>
-                      <label for="{{getCtrl('regPasswordInput')}}"></label>
+                      <label for="{{getCtrl('regPasswordInput')}}">register password</label>
                       <paper-input-error>{{passwordError}}</paper-input-error>
                     </paper-input-container>
                   </li>
