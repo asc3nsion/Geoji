@@ -15,6 +15,8 @@ This site was built on top of the yeo-man polymer web app.  It includes some thi
 - jv-datepicker
 - imgur-upload
 
+j-img-process is a modified version of exoer/polymer-img-crop
+
 
 ### Install dependencies
 

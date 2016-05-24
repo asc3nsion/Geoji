@@ -54,7 +54,7 @@ paper-icon-button.createMarker #icon {
  input.createMarker{
  	margin: 1% 0;
     bottom:10%;
-    width: 50%;
+    width: 40%;
  }
 
  input.vidInput{
@@ -78,7 +78,7 @@ paper-icon-button.createMarker #icon {
 
  paper-input-container.createMarker{
 
- 	width: 45%;
+ 	width: 30%;
  	margin: 10px 10px 10px 10px;
  	display: inline-block;
  }
@@ -193,7 +193,7 @@ paper-icon-button.createMarker #icon {
 		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}">
 			<paper-input-container class="createMarker">
 			  <label>Title</label>
-			  <input id="{{assignCtrl('title')}}" autofocus="true" class="createMarker" is="iron-input" bind-value="{{title}}">
+			  <input id="{{assignCtrl('title')}}" type="text" autofocus="true" class="createMarker" is="iron-input" bind-value="{{title}}">
 			  <paper-icon-button suffix icon="clear"></paper-icon-button>
 			</paper-input-container>
 			<paper-input-container class="inlineOneEighth">
@@ -232,6 +232,7 @@ paper-icon-button.createMarker #icon {
 			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
 		  </div>
 		  <google-map 
+		  map="{{map}}"
 		  id="{{assignCtrl('map')}}"
 		  latitude="{{currentLatitude}}" 
 		  longitude="{{currentLongitude}}" 
@@ -244,9 +245,15 @@ paper-icon-button.createMarker #icon {
           fitToMarkers="true"
           zoom="20"
           drag-events="true">
+          	<input id="{{assignCtrl('search')}}" autocomplete="true" type="text" list="addressList" placeholder="Search by name" class="bottomLeftCorner margin1pct" value="{{query::input}}">
 			  <google-map-marker id="{{assignCtrl('targetMarker')}}" name="targetMarker" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"
 			                     draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker>
-			  <paper-icon-button class="topCorner" icon="autorenew" on-tap="refreshMap" style="background:white;"></paper-icon-button>
+			  <paper-icon-button class="topCorner margin1pct" icon="autorenew" on-tap="refreshMap" style="background:white;"></paper-icon-button>
+			  <datalist id="addressList">
+				  <template is="dom-repeat" items="{{mapResult}}" as="result">
+			        <option data-value="{{result.name}}">{{result.name}} {{result.formatted_address}}</option>
+			      </template>
+			  </datalist>
 		  </google-map>
 
 		  <div class="card-actions">
@@ -352,6 +359,8 @@ paper-icon-button.createMarker #icon {
 		  		<jv-datepicker id="{{assignCtrl('endPicker')}}" class="top10" date={{end}} modal></jv-datepicker>
 			</paper-card>
 		</paper-dialog>
+
+		<google-map-search map="{{map}}" query="{{query}}" results="{{mapResult}}">
 
 	</template>
 </dom-module>
@@ -502,7 +511,16 @@ paper-icon-button.createMarker #icon {
 			},
 			uid: {
 				type: String
-			}
+			},
+			query: {
+				type: String
+			},
+			mapResult: {
+				type: Array,
+				value: [],
+				observer: "_mapSearch",
+				notify: true
+			},
 
 		},
 
@@ -2134,6 +2152,20 @@ paper-icon-button.createMarker #icon {
 			var player = this.getElem(this.ctrls.youtubePlayer);
 			var selected = this.getElem(this.selectedMarker);
 
+		},
+		_mapSearch: function() {
+			var addressList = this.getElem("addressList");
+
+			if(addressList !== null && addressList !== undefined){
+				var child = addressList.children[0];
+				var target = this.getElem(this.ctrls.targetMarker);
+
+				console.log(this.mapResult);
+				console.log(this.mapResult[0]);
+
+				target.longitude = this.mapResult[0].longitude;
+				target.latitude = this.mapResult[0].latitude;
+			}
 		},
 		_setVidPrivate: function() {
 

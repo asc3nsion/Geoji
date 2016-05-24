@@ -101,6 +101,9 @@ li.userDataInput{
   height: 25%;
 }
 
+.margin1pct{
+  margin:1%;
+}
 .left3pct {
   margin-left: 3%;
 }
