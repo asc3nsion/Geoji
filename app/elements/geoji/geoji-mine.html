@@ -58,9 +58,6 @@ This is an element button used as a base for other buttons.
 		<template id="mineFeed" is="dom-repeat" items="{{mineData}}" as="data">
 		    <paper-card id="[[assignCtrl(data.id)]]_myCard" heading="[[_computeTitle(data.id)]]" image="" class="collection">
 		    	<div class="topCorner"><img id="[[assignCtrl(data.id)]]_cardProfile" src="" alt="profile" class="cardProfile topCorner"></div>
-				<div class="card-content">
-					<!-- <template is="dom-repeat" items="[[_computeData(data)]]" as="item"></template> -->
-				</div>
 		      	<div class="card-actions">
 		      	  	<paper-button on-tap="shareHandler" class="collection"><p id="{{data.id}}_shareBtn" class="linkText">Share</p></paper-button>
 				  	<a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create"><paper-button id"{{assignCtrl('Edit')}}" on-tap="editHandler" class="collection"><p name="{{data.id}}editBtn"  class="linkText">Edit</p></paper-button></a>
@@ -191,7 +188,6 @@ This is an element button used as a base for other buttons.
 
 				mineRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
 					var child = mineRef.child(snapshot.key());
-
 					child.remove();
 				});
 			}
@@ -200,13 +196,11 @@ This is an element button used as a base for other buttons.
 		shareHandler: function(e){
 			var shareDialog = this.getElem(this.ctrls.shareDialog);
 			var shareInput = this.getElem(this.ctrls.shareInput);
-			console.log(e);
 			var url = window.location.href;
 			var arr = url.split("/");
-			console.log(arr);
 			var base = arr[0]+"//"+arr[2];
 			var id = e.target.id.replace("_shareBtn", "");
-			console.log(base+"/geoji/"+id);
+
 			shareInput.value = base+"/geoji/"+id;
 			shareDialog.open();
 		},
@@ -251,24 +245,6 @@ This is an element button used as a base for other buttons.
 
 				}
 			}
-
-		},
-		_computeData: function(data) {
-			var self = this;
-			var publicDB = this.getElem(this.ctrls.geojiPublic);
-			var publicAuth = this.getElem(this.ctrls.publicAuth);
-			var publicRef = publicAuth.ref;
-			var privateDB = this.getElem(this.ctrls.geojiPrivate);
-			var privateAuth = this.getElem(this.ctrls.privateAuth);
-			var privateRef = privateAuth.ref;
-
-
-			publicRef.orderByChild("id").equalTo(data.id).on("child_added", function(snapshot) {
-				var obj = snapshot.val();
-
-				return obj;
-			});
-
 
 		},
 		_computeTitle: function(id) {

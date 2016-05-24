@@ -356,8 +356,9 @@ addEventListener('WebComponentsReady', function() {
           if(mine!==null&&mine!==undefined){
             mine.mineURL = "https://geoji.firebaseio.com/mine/"+app.data.uid;
           }
-
-          app.data.userName = this.userData.name;
+          if(this.userData.customName === undefined){
+            app.data.userName = this.userData.name;
+          }
 
           app.launch();
       }
