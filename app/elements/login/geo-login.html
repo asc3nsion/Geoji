@@ -27,7 +27,7 @@ This is an element button for google auth using firebase api
         transform: translate(-5%, -0%);
       }
       paper-input-container.login{
-        width: 60%;
+        width: 80%;
         padding: 1%;
         margin: 0.5vw;
       }
@@ -44,6 +44,10 @@ This is an element button for google auth using firebase api
         font-size: 1.3vw;
         border-radius: 8px;
       }
+      paper-material.login{
+        width:80%;
+        max-width: 450px;
+      }
 
   </style>
 
@@ -59,13 +63,13 @@ This is an element button for google auth using firebase api
 
     <div class="container center-horiz center-vert">
 
-      <paper-material class="half box">
+      <paper-material class="half box login">
         <paper-tabs selected="0" on-iron-select="tabHandler">
           <paper-tab><iron-icon icon="social:public"></iron-icon></paper-tab>
           <paper-tab><iron-icon icon="social:person"></iron-icon></paper-tab>
           <paper-tab><iron-icon icon="social:person-add"></iron-icon></paper-tab>
         </paper-tabs>
-        <iron-pages selected="0">
+        <iron-pages selected="0" class="login">
             <div>     
              <ul>
                   <li class="center-horiz">

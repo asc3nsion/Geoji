@@ -14,6 +14,7 @@ This site was built on top of the yeo-man polymer web app.  It includes some thi
 - geo-location
 - jv-datepicker
 - imgur-upload
+- paper-time-picker
 
 j-img-process is a modified version of exoer/polymer-img-crop
 
