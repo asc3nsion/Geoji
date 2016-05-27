@@ -24,10 +24,10 @@ This is an element button used as a base for other buttons.
 google-map {
     height: 40vh;
     width: 80vw;
+    margin-top: 5%;
 }
 
 paper-icon-button.createMarker #icon {
-
 	left: 2vw;
   	padding: 5px;
     width: 100%;
@@ -77,9 +77,8 @@ paper-icon-button.createMarker #icon {
  }
 
  paper-input-container.createMarker{
-
  	width: 30%;
- 	margin: 10px 10px 10px 10px;
+ 	left:3%;
  	display: inline-block;
  }
   paper-input-container.createMarkerData{
@@ -120,6 +119,15 @@ paper-icon-button.createMarker #icon {
     min-width: 100px;
  	font-size: 25%;
  }
+ div.anonymousData{
+ 	width: 5%;
+ 	height: 5%;
+ 	max-height: 200px;
+    min-height: 50px;
+	max-width: 200px;
+    min-width: 50px;
+ 	font-size: 75%;
+ }
  paper-dialog.decryptData{
 
  	width: 45vw;
@@ -130,6 +138,22 @@ paper-icon-button.createMarker #icon {
  	width: 35vw;
  	max-height: 70%;
  	min-height: 50%;
+ 	font-size: 1vw;
+
+ }
+ paper-dialog.datePicker{
+
+ 	width: 100%;
+ 	max-width: 600px;
+    min-width: 50px;
+ 	font-size: 1vw;
+
+ }
+ paper-dialog.timePicker{
+
+ 	width: 100%;
+ 	max-width: 600px;
+    min-width: 50px;
  	font-size: 1vw;
 
  }
@@ -156,6 +180,41 @@ paper-icon-button.createMarker #icon {
  paper-progress.bar {
  	margin: auto;
  	width:80%;
+ }
+
+ paper-card.emailList{
+ 	margin-top: 13%;
+ 	height:10%;
+ 	max-width: 100%;
+ 	display: inline-block;
+ 	font-size: 60%;
+ }
+
+ paper-menu.editor{
+	width: 20%;
+	max-width: 20%;
+    min-width: 50px;
+ 	display: inline-block;
+ 	z-index: 100;
+ 	font-size: 60%;
+ }
+ div.datepicker{
+ 	width:1vw;
+ }
+
+ jv-datepicker.editor{
+	width: 50%;
+	max-width: 350px;
+    min-width: 50px;
+ 	z-index: 1000;
+ }
+
+ paper-time-picker.editor{
+	width: 100%;
+	max-width: 350px;
+    min-width: 50px;
+ 	z-index: 1000;
+
  }
 
 </style>	
@@ -190,46 +249,92 @@ paper-icon-button.createMarker #icon {
 		    limitToFirst= "100">
 		</firebase-collection>
 
-		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}">
-			<paper-input-container class="createMarker">
+		<paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}" class="relative">
+			<paper-input-container class="createMarker absolute z100">
 			  <label>Title</label>
-			  <input id="{{assignCtrl('title')}}" type="text" autofocus="true" class="createMarker" is="iron-input" bind-value="{{title}}">
+			  <input id="{{assignCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute" is="iron-input" bind-value="{{title}}">
 			  <paper-icon-button suffix icon="clear"></paper-icon-button>
 			</paper-input-container>
-			<paper-input-container class="inlineOneEighth">
-			  <label>Start</label>
-			  <input id="{{assignCtrl('date')}}" type="text" class="inlineOneEighth" is="iron-input" bind-value="{{date}}">
-			  <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setDate"></paper-icon-button>
-			</paper-input-container>
-			<paper-input-container class="inlineOneEighth">
-			  <label>End</label>
-			  <input id="{{assignCtrl('end')}}" type="text" class="inlineOneEighth" is="iron-input" bind-value="{{end}}">
-			  <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setEnd"></paper-icon-button>
-			</paper-input-container>
-			<div class="inlineBlock left3pct"><paper-toggle-button id="{{assignCtrl('includeProfile')}}" checked="{{include}}">Use Profile</paper-toggle-button></div>
 
-		  <div class="card-content">
-		  <div id="{{assignCtrl('containerPrivate')}}">
-		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}">Private</paper-toggle-button>
+			<paper-menu class="editor left55pct absolute">
+			  <paper-submenu>
+			    <paper-item class="menu-trigger">Date<paper-icon-button suffix icon="arrow-drop-down-circle"></paper-icon-button></paper-item>
+			    <paper-menu class="menu-content">
+			      <paper-item>
+			      	<paper-input-container class="inlineOneHalf">
+					  <label>Start</label>
+					  <input id="{{assignCtrl('date')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{date}}">
+					  <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setDate"></paper-icon-button>
+					</paper-input-container>
+			      </paper-item>
+			      <paper-item>
+			      	<paper-input-container class="inlineOneHalf">
+					  <label>End</label>
+					  <input id="{{assignCtrl('end')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{end}}">
+					  <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setEnd"></paper-icon-button>
+					</paper-input-container>
+			      </paper-item>
+			    </paper-menu>
+			  </paper-submenu>
+			</paper-menu>
+
+			<paper-menu class="editor left35pct absolute">
+				<paper-submenu>
+					<paper-item class="menu-trigger">Time<paper-icon-button suffix icon="arrow-drop-down-circle"></paper-icon-button></paper-item>
+			    	<paper-menu class="menu-content">
+				    	<paper-item>
+				    		<paper-input-container class="inlineOneHalf">
+							  <label>Start Time</label>
+							  <input id="{{assignCtrl('startTimeTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{startTime}}">
+							  <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setStartTime"></paper-icon-button>
+							</paper-input-container>
+				    	</paper-item>
+				        <paper-item>
+				        	<paper-input-container class="inlineOneHalf">
+							  <label>End Time</label>
+							  <input id="{{assignCtrl('endTimeTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{endTime}}">
+							  <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setEndTime"></paper-icon-button>
+							</paper-input-container>
+				        </paper-item>
+			    	</paper-menu>
+				</paper-submenu>
+			</paper-menu>
+
+			<paper-menu class="editor left70pct absolute">
+				<paper-submenu>
+					<paper-item class="menu-trigger">Anonymous<paper-icon-button suffix icon="arrow-drop-down-circle"></paper-icon-button></paper-item>
+			    	<paper-menu class="menu-content">
+				    	<paper-item>
+				    		<div class="anonymousData margin-left50pct"><paper-checkbox id="{{assignCtrl('includeProfile')}}" checked="{{anonymous}}"></paper-checkbox></div>
+				    	</paper-item>
+			    	</paper-menu>
+				</paper-submenu>
+			</paper-menu>
+
+		  <div class="card-content absolute">
+		  <div id="{{assignCtrl('containerPrivate')}}" class="editor margin-top80px">
+		  	<paper-toggle-button id="{{assignCtrl('public')}}"  checked="{{private}}" class="margin-left3pct">Users</paper-toggle-button>
 		  	<paper-input-container id="{{assignCtrl('email')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
 			  <label>Add Email</label>
 			  <input id="{{assignCtrl('emailInput')}}" autocomplete="on" type="email" is="iron-input" type="email" autocomplete="on" bind-value="">
+			  <span class="space"></span>
 			  <paper-input-error>Enter a valid email!</paper-input-error>
 			  <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
 			</paper-input-container>
 		  </div>
-		  <div id="{{assignCtrl('containerEncrypt')}}">
+		  <div id="{{assignCtrl('containerEncrypt')}}" class="editor margin-top80px">
 		  	<paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}">Encrypt</paper-toggle-button>
 		  	<paper-input-container id="{{assignCtrl('cipher')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
 			  <label>Cipher Key</label>
 			  <input id="{{assignCtrl('cipherInput')}}" type="text" is="iron-input" bind-value="{{cipherKey}}">
 			  <input id="cipherHidden" is="iron-input" type="text" bind-value="{{cipherKey}}" hidden="true">
+			  <span class="space"></span>
 			  <paper-input-error>8 characters minimum, with at least 1 capital, 1 number, and 1 symbol.</paper-input-error>
 			  <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
 			  <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden" hidden="true"></paper-icon-button>
 			</paper-input-container>
 		  </div>			
-			<paper-card id="{{assignCtrl('list')}}">{{emailString}}</paper-card>
+			<paper-card id="{{assignCtrl('list')}}" class="emailList">{{emailString}}</paper-card>
 		  </div>
 		  <google-map 
 		  map="{{map}}"
@@ -265,7 +370,7 @@ paper-icon-button.createMarker #icon {
 		  </div>
 		</paper-card>
 
-		<paper-dialog class="txtData" id="{{assignCtrl('txtDialog')}}" modal role="alertdialog">
+		<paper-dialog class="txtData z1000" id="{{assignCtrl('txtDialog')}}" modal role="alertdialog">
 			<h2>Geoji Message</h2>
 			<paper-icon-button suffix class="closeDialog" icon="clear" on-tap=""></paper-icon-button>
 			<paper-input-container id="{{assignCtrl('txtContainer')}}" type="text" class="txtData" bind-value="">
@@ -275,7 +380,7 @@ paper-icon-button.createMarker #icon {
 			<paper-button id="{{assignCtrl('saveTxt')}}" class="txtData theme" raised on-tap="saveTxt">SAVE</paper-button>
 		</paper-dialog>
 
-		<paper-dialog class="imgData" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
+		<paper-dialog class="imgData z1000" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
 			<h2>Geoji Image</h2>
 			<paper-toggle-button id="{{assignCtrl('coverImg')}}"  checked="{{coverSet}}" class="inlineBlock">Cover Image</paper-toggle-button>
 			<paper-spinner-lite id="{{assignCtrl('imgSpinner')}}"  class="orange createMarker"></paper-spinner-lite>
@@ -295,7 +400,7 @@ paper-icon-button.createMarker #icon {
 			></j-img-process>
 		</paper-dialog>
 
-		<paper-dialog class="vidData" id="{{assignCtrl('vidDialog')}}" modal role="alertdialog">
+		<paper-dialog class="vidData z1000" id="{{assignCtrl('vidDialog')}}" modal role="alertdialog">
 			<paper-progress class="bar" id="{{assignCtrl('vidProgress')}}"></paper-progress>
 			<paper-progress class="bar" id="{{assignCtrl('vidPocessProgress')}}"></paper-progress>
 			<h2 class="inlineBlock">Geoji Video</h2>
@@ -330,13 +435,13 @@ paper-icon-button.createMarker #icon {
 			 ></j-vid-process>
 		</paper-dialog>
 
-		<paper-dialog class="vidData" id="{{assignCtrl('saveDialog')}}" modal role="alertdialog">
+		<paper-dialog class="vidData z1000" id="{{assignCtrl('saveDialog')}}" modal role="alertdialog">
 			<h2>Saving Geoji</h2>
 			<paper-progress class="bar" id="{{assignCtrl('encryptProgress')}}"></paper-progress>
 			<paper-spinner-lite id="{{assignCtrl('saveSpinner')}}"  class="orange createMarker saveSpinner center"></paper-spinner-lite>
 		</paper-dialog>
 
-		<paper-dialog class="decryptData" id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
+		<paper-dialog class="decryptData z1000" id="{{assignCtrl('cipherDialog')}}" modal role="alertdialog">
 			<paper-progress class="bar" id="{{assignCtrl('decryptProgress')}}"></paper-progress>
 			<h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
 			<paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
@@ -346,17 +451,33 @@ paper-icon-button.createMarker #icon {
 			<paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
 		</paper-dialog>
 
-		<paper-dialog class="dateData" id="{{assignCtrl('dateDialog')}}" modal role="alertdialog">
+		<paper-dialog class="datePicker z1000" id="{{assignCtrl('dateDialog')}}" modal role="alertdialog">
 			<paper-card>
-		  		<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeDate" class="topCorner"></paper-icon-button></div>
-		  		<jv-datepicker id="{{assignCtrl('datePicker')}}" class="top10" date={{date}} modal></jv-datepicker>
+				<div class="datePicker">
+					<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeDate" class="topCorner"></paper-icon-button></div>
+		  			<jv-datepicker id="{{assignCtrl('datePicker')}}" class="top10" date={{date}} modal></jv-datepicker>
+				</div>
 			</paper-card>
 		</paper-dialog>
 
-		<paper-dialog class="endData" id="{{assignCtrl('endDialog')}}" modal role="alertdialog">
+		<paper-dialog class="datePicker z1000" id="{{assignCtrl('endDialog')}}" modal role="alertdialog">
 			<paper-card>
 		  		<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeEnd" class="topCorner"></paper-icon-button></div>
 		  		<jv-datepicker id="{{assignCtrl('endPicker')}}" class="top10" date={{end}} modal></jv-datepicker>
+			</paper-card>
+		</paper-dialog>
+
+		<paper-dialog class="timePicker z1000" id="{{assignCtrl('startTimeDialog')}}" modal role="alertdialog">
+			<paper-card>
+		  		<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeStartTime" class="topCorner"></paper-icon-button></div>
+		  		<paper-time-picker id="{{assignCtrl('startTimePicker')}}" narrow="true"></paper-time-picker>
+			</paper-card>
+		</paper-dialog>
+
+		<paper-dialog class="timePicker z1000" id="{{assignCtrl('endTimeDialog')}}" modal role="alertdialog">
+			<paper-card>
+		  		<div class="topCorner"><paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeEndTime" class="topCorner"></paper-icon-button></div>
+		  		<paper-time-picker id="{{assignCtrl('endTimePicker')}}" class="editor" narrow="true"></paper-time-picker>
 			</paper-card>
 		</paper-dialog>
 
@@ -390,11 +511,11 @@ paper-icon-button.createMarker #icon {
 				observer: "_setEncrypted",
 				notify: true
 			},
-			include: {
+			anonymous: {
 				type: Boolean,
 				value: false,
-				observer: "_setInclude",
-				notify: true
+				observer: "_setAnonymous",
+				notify: false
 			},
 			cardImg: {
 				type: String,
@@ -414,6 +535,12 @@ paper-icon-button.createMarker #icon {
 			end: {
 				type: String
 			},
+			startTime: {
+				type: String
+			},
+			endTime: {
+				type: String
+			},
 			coverSet: {
 				type: String,
 				observer: "_setCoverImg",
@@ -427,14 +554,10 @@ paper-icon-button.createMarker #icon {
 				value: ""
 			},
 			currentLongitude: {
-				type: String,
-				observer: "_locationChange",
-				notify: true
+				type: String
 			},
 			currentLatitude: {
-				type: String,
-				observer: "_locationChange",
-				notify: true
+				type: String
 			},
 			markerArray: {
 				type: Array,
@@ -466,9 +589,7 @@ paper-icon-button.createMarker #icon {
 			},
 			vidPrivacyStatus: {
 				type: String,
-				value: "public",
-				observer: "_setVidPrivate",
-				notify: true
+				value: "public"
 			},
 			vidId: {
 				type: String,
@@ -575,6 +696,19 @@ paper-icon-button.createMarker #icon {
 			var mine = this.getElem(this.ctrls.geojiMine);
 			var mineAuth = this.getElem(this.ctrls.mineAuth);
 
+			var sysDate = new Date();
+			var hours = sysDate.getHours();
+			var minutes = sysDate.getMinutes();
+			var timeOfDay = " AM";
+
+			if(hours > 12){
+				hours = hours - 12;
+				timeOfDay = " PM";
+			}
+
+			this.startTime = hours+":"+minutes+timeOfDay;
+			this.endTime = hours+":"+minutes+timeOfDay;
+
 			this.uid = app.data.uid;
 
 			add.hidden = false;
@@ -660,10 +794,6 @@ paper-icon-button.createMarker #icon {
 				var map = self.getElem(self.ctrls.map);
 				var location = self.getElem("geoLocation");
 				var pos;
-				var profile = {};
-
-				profile.name = "unknown";
-				profile.profileImg = "/images/mascot-unknown.png";
 
 				if(location.latitude === null || location.latitude === undefined){
 					if (navigator.geolocation) {
@@ -687,7 +817,8 @@ paper-icon-button.createMarker #icon {
 				self.geoji.id = self.generateUid("_");
 				self.geoji.date = self.date;
 				self.geoji.end = self.end;
-				self.geoji.profile = profile;
+				self.geoji.startTime = hours+":"+minutes+timeOfDay;
+				self.geoji.endTime = hours+":"+minutes+timeOfDay;
 
 				self.currentLongitude = location.longitude;
 				self.currentLatitude = location.latitude;
@@ -701,6 +832,20 @@ paper-icon-button.createMarker #icon {
 				map.resize();
 
 			}, 1000);
+
+			setTimeout(function() {
+				var profile = {};
+		      	if(app.data.userName !== undefined && app.data.profileImg !== undefined){
+					profile.name = app.data.userName;
+					profile.profileImg = app.data.profileImg;
+				}else{
+					profile.name = "unknown";
+					profile.profileImg = "/images/mascot-unknown.png";
+				}
+				self.geoji.profile = profile;
+				console.log("THIS IS THE PROFILE:::::");
+				console.log(profile);
+		    }, 2000);
 
 			this.clipboard.on('success', function(e) {
 				document.execCommand("copy", true, e.text);
@@ -851,6 +996,38 @@ paper-icon-button.createMarker #icon {
 			dialog.close();
 			end.enforceDateChange();
 			this.geoji.end = this.end;
+
+		},
+		setStartTime: function() {
+			var dialog = this.getElem(this.ctrls.startTimeDialog);
+
+			dialog.open();
+
+		},
+		closeStartTime: function() {
+			var dialog = this.getElem(this.ctrls.startTimeDialog);
+			var start = this.getElem(this.ctrls.startTimePicker);
+
+			this.startTime = start.time;
+			this.geoji.startTime = start.time;
+
+			dialog.close();
+
+		},
+		setEndTime: function() {
+			var dialog = this.getElem(this.ctrls.endTimeDialog);
+
+			dialog.open();
+
+		},
+		closeEndTime: function() {
+			var dialog = this.getElem(this.ctrls.endTimeDialog);
+			var end = this.getElem(this.ctrls.endTimePicker);
+
+			this.endTime = end.time;
+			this.geoji.endTime = end.time;
+
+			dialog.close();
 
 		},
 		saveGeoji: function() {
@@ -1820,6 +1997,22 @@ paper-icon-button.createMarker #icon {
 								console.log("date isnt defined.");
 							}
 							break;
+						case "startTime":
+							if (self.geoji.startTime !== null && self.geoji.startTime !== undefined) {
+								self.geojiEncrypted.startTime = self.geoji.startTime;
+								self.encrypt_MainObj(i + 1, cipher);
+							}else{
+								console.log("startTime isnt defined.");
+							}
+							break;
+						case "endTime":
+							if (self.geoji.endTime !== null && self.geoji.endTime !== undefined) {
+								self.geojiEncrypted.endTime = self.geoji.endTime;
+								self.encrypt_MainObj(i + 1, cipher);
+							}else{
+								console.log("endTime isnt defined.");
+							}
+							break;
 						case "private":
 
 							if (self.geoji.private !== null && self.geoji.private !== undefined) {
@@ -1951,6 +2144,18 @@ paper-icon-button.createMarker #icon {
 							self.decrypt_MainObj(i + 1, this.cipherKey);
 						}
 						break;
+					case "startTime":
+						if (self.encryptedObj.startTime !== null && self.encryptedObj.startTime !== undefined) {
+							self.decryptedObj.startTime = self.encryptedObj.startTime;
+							self.decrypt_MainObj(i + 1, this.cipherKey);
+						}
+						break;
+					case "endTime":
+						if (self.encryptedObj.endTime !== null && self.encryptedObj.endTime !== undefined) {
+							self.decryptedObj.endTime = self.encryptedObj.endTime;
+							self.decrypt_MainObj(i + 1, this.cipherKey);
+						}
+						break;
 					case "private":
 
 						if (self.encryptedObj.private !== null && self.encryptedObj.private !== undefined) {
@@ -2071,19 +2276,21 @@ paper-icon-button.createMarker #icon {
 				}
 			}
 		},
-		_setInclude: function() {
+		_setAnonymous: function() {
 			var profile = {};
 
-			if(this.geoji !== null && this.geoji !== undefined
-				&& this.include !== null && this.include !== undefined){
+			console.log(this.anonymous);
 
-				if(this.include){
-					profile.name = app.data.userName;
-					profile.profileImg = app.data.profileImg;
-					this.geoji.profile = profile;
-				}else{
+			if(this.geoji !== null && this.geoji !== undefined
+				&& this.anonymous !== null && this.anonymous !== undefined){
+
+				if(this.anonymous){
 					profile.name = "unknown";
 					profile.profileImg = "/images/mascot-unknown.png";
+					this.geoji.profile = profile;
+				}else{
+					profile.name = app.data.userName;
+					profile.profileImg = app.data.profileImg;
 					this.geoji.profile = profile;
 				}
 
@@ -2166,13 +2373,6 @@ paper-icon-button.createMarker #icon {
 				target.longitude = this.mapResult[0].longitude;
 				target.latitude = this.mapResult[0].latitude;
 			}
-		},
-		_setVidPrivate: function() {
-
-
-		},
-		_locationChange: function() {
-
 		}
 	});
 </script>
