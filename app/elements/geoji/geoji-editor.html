@@ -600,7 +600,7 @@ Polymer({
         var targetObj = {};
         var title = this.getElem(this.ctrls.title);
         var email = this.getElem(this.ctrls.email);
-        var public = this.getElem(this.ctrls.public);
+        var publicTgl = this.getElem(this.ctrls.public);
         var email = this.getElem(this.ctrls.email);
         var emailInput = this.getElem(this.ctrls.emailInput);
         var encrypt = this.getElem(this.ctrls.encrypt);
@@ -726,7 +726,7 @@ Polymer({
         this.geoji.target = targetObj;
 
 
-        this.geoji.private = public.checked;
+        this.geoji.private = publicTgl.checked;
 
         setTimeout(function() {
 
@@ -995,7 +995,6 @@ Polymer({
             var target = this.getElem(this.ctrls.targetMarker);
             var title = self.getElem(self.ctrls.title);
             var email = self.getElem(self.ctrls.email);
-            var public = self.getElem(self.ctrls.public);
             var email = self.getElem(self.ctrls.email);
             var emailInput = self.getElem(self.ctrls.emailInput);
             var add = self.getElem(self.ctrls.add);
@@ -1061,7 +1060,6 @@ Polymer({
         var privateDB = this.getElem(this.ctrls.geojiPrivate);
         var privateAuth = this.getElem(this.ctrls.privateAuth);
         var privateRef = privateAuth.ref;
-        var private = false;
         var marker;
 
         var copy = target.cloneNode(true);
@@ -1076,7 +1074,6 @@ Polymer({
             if (obj !== null) {
                 var title = self.getElem(self.ctrls.title);
                 var email = self.getElem(self.ctrls.email);
-                var public = self.getElem(self.ctrls.public);
                 var email = self.getElem(self.ctrls.email);
                 var emailInput = self.getElem(self.ctrls.emailInput);
                 var add = self.getElem(self.ctrls.add);
@@ -1143,7 +1140,6 @@ Polymer({
 
         privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
             var obj = snapshot.val()
-            private = true;
             doLoad(obj);
         });
 
@@ -1162,7 +1158,6 @@ Polymer({
         var privateRef = privateAuth.ref;
         var title = self.getElem(self.ctrls.title);
         var email = self.getElem(self.ctrls.email);
-        var public = self.getElem(self.ctrls.public);
         var email = self.getElem(self.ctrls.email);
         var emailInput = self.getElem(self.ctrls.emailInput);
         var add = self.getElem(self.ctrls.add);

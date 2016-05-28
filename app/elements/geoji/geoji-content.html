@@ -516,7 +516,6 @@ Polymer({
             var map = this.getElem(this.ctrls.map);
             var target = this.getElem(this.ctrls.targetMarker);
             var email = self.getElem(self.ctrls.email);
-            var public = self.getElem(self.ctrls.public);
             var mainMap = this.getElem(this.ctrls.geojiMap);
 
             mainMap.hidden = false;
@@ -611,7 +610,6 @@ Polymer({
                 self.geoji = obj;
                 var title = self.getElem(self.ctrls.title);
                 var email = self.getElem(self.ctrls.email);
-                var public = self.getElem(self.ctrls.public);
                 var email = self.getElem(self.ctrls.email);
                 var emailInput = self.getElem(self.ctrls.emailInput);
 
@@ -620,8 +618,6 @@ Polymer({
                 self.profileImg = obj.profile.profileImg;
                 self.date = obj.date;
                 self.end = obj.end;
-                console.log("WHAHAHAHAHAHAAH");
-                console.log(obj.profile.name);
                 map.clear();
                 target = self.targetMarker(obj.target.longitude, obj.target.latitude, target.id);
 
@@ -649,8 +645,7 @@ Polymer({
                                 case "txt":
                                     marker = self.txtMarker(obj[k].longitude, obj[k].latitude, k);
                                     break;
-                                case "img":
-                                    marker = self.imgMarker(obj[k].longitude, obj[k].latitude, k);
+                                case "img": marker = self.imgMarker(obj[k].longitude, obj[k].latitude, k);
                                     break;
                                 case "vid":
                                     marker = self.vidMarker(obj[k].longitude, obj[k].latitude, k);
@@ -685,8 +680,8 @@ Polymer({
         privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
 
             console.log(snapshot.val());
-            var obj = snapshot.val()
-            private = true;
+            var obj = snapshot.val();
+            
             if (!obj.encrypted) {
                 mainMap.hidden = false;
                 doLoad(obj);

@@ -170,6 +170,9 @@ gulp.task('vulcanize', function() {
       inlineCss: true,
       inlineScripts: true
     }))
+    .on( "error", function( err ) {
+      console.log( err );
+    })
     .pipe(gulp.dest(dist('elements')))
     .pipe($.size({title: 'vulcanize'}));
 });
