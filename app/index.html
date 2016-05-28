@@ -53,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <!-- endbuild -->
 
   <!-- Because this project uses vulcanize this should be your only html import
-       in this file. All other imports should go in elements.html -->
+  in this file. All other imports should go in elements.html -->
   <link rel="import" href="elements/elements.html">
 
   <!-- For shared styles, shared-styles.html import in elements.html -->
@@ -72,93 +72,93 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <section id="mainApp">
       <!-- <paper-drawer-panel id="paperDrawerPanel" ng-show="false" class="ng-hide"> -->
       <paper-drawer-panel id="paperDrawerPanel" force-narrow>
-        <!-- Drawer Scroll Header Panel -->
-        <paper-scroll-header-panel drawer fixed >
+      <!-- Drawer Scroll Header Panel -->
+      <paper-scroll-header-panel drawer fixed >
 
-          <!-- Drawer Toolbar -->
-          <paper-toolbar id="drawerToolbar">
-            <span class="menu-name">Menu</span>
-            <paper-icon-button icon="chevron-left" class="floatRight" on-tap="closeDrawer"></paper-icon-button>
-          </paper-toolbar>
+      <!-- Drawer Toolbar -->
+      <paper-toolbar id="drawerToolbar">
+      <span class="menu-name">Menu</span>
+      <paper-icon-button icon="chevron-left" class="floatRight" on-tap="closeDrawer"></paper-icon-button>
+    </paper-toolbar>
 
-          <span class="space"></span>
+    <span class="space"></span>
 
-          <!-- Drawer Content -->
-          <paper-menu attr-for-selected="data-route" selected="[[route]]">
-            <a data-route="home" href="{{baseUrl}}">
-              <iron-icon icon="explore"></iron-icon>
-              <span>FEED</span>
-            </a>
+    <!-- Drawer Content -->
+    <paper-menu attr-for-selected="data-route" selected="[[route]]">
+    <a data-route="home" href="{{baseUrl}}">
+      <iron-icon icon="explore"></iron-icon>
+      <span>FEED</span>
+    </a>
 
-            <a data-route="mine" href="{{baseUrl}}mine">
-              <iron-icon icon="bookmark-border"></iron-icon>
-              <span>MINE</span>
-            </a>
+    <a data-route="mine" href="{{baseUrl}}mine">
+      <iron-icon icon="bookmark-border"></iron-icon>
+      <span>MINE</span>
+    </a>
 
-            <a data-route="create" href="{{baseUrl}}create">
-              <iron-icon icon="create"></iron-icon>
-              <span>CREATE</span>
-            </a>
-          </paper-menu>
-        </paper-scroll-header-panel>
+    <a data-route="create" href="{{baseUrl}}create">
+      <iron-icon icon="create"></iron-icon>
+      <span>CREATE</span>
+    </a>
+  </paper-menu>
+</paper-scroll-header-panel>
 
-        <!-- Main Area -->
-        <paper-scroll-header-panel main id="headerPanelMain" headerHeight="100">
-          <!-- Main Toolbar -->
-          <paper-toolbar id="mainToolbar" class="">
-            <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+<!-- Main Area -->
+<paper-scroll-header-panel main id="headerPanelMain" headerHeight="100">
+<!-- Main Toolbar -->
+<paper-toolbar id="mainToolbar" class="">
+<paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
 
-            <span class="space"></span>
+<span class="space"></span>
 
-            <!-- Toolbar icons -->
-            <!-- <paper-icon-button icon="settings"></paper-icon-button> -->
-            
-            <geo-profile-img id="profilePic"></geo-profile-img>
+<!-- Toolbar icons -->
+<!-- <paper-icon-button icon="settings"></paper-icon-button> -->
+
+<geo-profile-img id="profilePic"></geo-profile-img>
 
 
-            <!-- Application name -->
-            <div class="middle middle-container">
-              <div class="app-name"><iron-icon icon="geoji-icons:mascot" class="mascot"></iron-icon>Geoji</div>
+<!-- Application name -->
+<div class="middle middle-container">
+  <div class="app-name"><iron-icon icon="geoji-icons:mascot" class="mascot"></iron-icon>Geoji</div>
 
-            </div>
+</div>
 
-          </paper-toolbar>
+</paper-toolbar>
 
-          <!-- Main Content -->
-          <div class="content">
-            <iron-pages attr-for-selected="data-route" selected="{{route}}">
+<!-- Main Content -->
+<div class="content">
+  <iron-pages attr-for-selected="data-route" selected="{{route}}">
 
-              <section id="mainFeed" data-route="home">
-                <geoji-feed id="geoFeed"></geoji-feed>
-              </section>
+  <section id="mainFeed" data-route="home">
+    <geoji-feed id="geoFeed"></geoji-feed>
+  </section>
 
-              <section id= "mainCollection" data-route="mine">
-                <geoji-mine id="geoMine"></geoji-mine>
-              </section>
+  <section id= "mainCollection" data-route="mine">
+    <geoji-mine id="geoMine"></geoji-mine>
+  </section>
 
-              <section data-route="user-info">
-                
-              </section>
+  <section data-route="user-info">
+    
+  </section>
 
-              <section id="mainCreate" data-route="create">
-                <geoji-editor id="editor"></geoji-editor>
-              </section>
+  <section id="mainCreate" data-route="create">
+    <geoji-editor id="editor"></geoji-editor>
+  </section>
 
-            </iron-pages>
-          </div>
-        </paper-scroll-header-panel>
-      </paper-drawer-panel>    
-    </section>
+</iron-pages>
+</div>
+</paper-scroll-header-panel>
+</paper-drawer-panel>    
+</section>
 
-    <section id="geoji" data-route="geoji">
-      <geoji-content id="mainMap"></geoji-content>
-    </section>
+<section id="geoji" data-route="geoji">
+  <geoji-content id="mainMap"></geoji-content>
+</section>
 
-    <paper-toast id="toast">
-      <span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">Ok</span>
-    </paper-toast>
+<paper-toast id="toast">
+<span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">Ok</span>
+</paper-toast>
 
-    <!-- Uncomment next block to enable Service Worker support (1/2) -->
+<!-- Uncomment next block to enable Service Worker support (1/2) -->
     <!--
     <paper-toast id="caching-complete"
                  duration="6000"
@@ -174,15 +174,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                          cache-config-file="cache-config.json">
       </platinum-sw-cache>
     </platinum-sw-register>
-    -->
+  -->
 
-  </template>
+</template>
 
-  <!-- build:js scripts/app.js -->
-  <script src="scripts/triplesec-3.0.14-min.js"></script>
-  <script src="bower_components/clipboard/dist/clipboard.min.js"></script>
-  <script src="scripts/app.js"></script>
-  <!-- endbuild-->
+<!-- build:js scripts/app.js -->
+<script src="scripts/triplesec-3.0.14-min.js"></script>
+<script src="bower_components/clipboard/dist/clipboard.min.js"></script>
+<script src="scripts/app.js"></script>
+<!-- endbuild-->
 </body>
 
 </html>
