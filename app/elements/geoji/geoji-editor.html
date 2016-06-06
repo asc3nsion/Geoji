@@ -92,13 +92,12 @@ paper-input-container.txtData {
 }
 
 paper-dialog.txtData {
-    width: 75vw;
-    height: 50%;
-    max-height: 500px;
-    min-height: 150px;
-    max-width: 300px;
+    width: 100vw;
+    max-height: 90%;
+    min-height: 70%;
+    max-width: 400px;
     min-width: 100px;
-    font-size: 1vw;
+    font-size: 1.8vw;
 }
 
 paper-button.txtData {
@@ -138,30 +137,38 @@ paper-dialog.decryptData {
 }
 
 paper-dialog.imgData {
-    width: 35vw;
-    max-height: 70%;
-    min-height: 50%;
-    font-size: 1vw;
+    width: 100vw;
+    max-height: 90%;
+    min-height: 70%;
+    max-width: 400px;
+    min-width: 100px;
+    font-size: 1.8vw;
 }
 
 paper-dialog.datePicker {
-    width: 100%;
+    width: 75%;
     max-width: 600px;
     min-width: 50px;
     font-size: 1vw;
+    position: absolute;
+    left: 0%;
 }
 
 paper-dialog.timePicker {
-    width: 100%;
+    width: 85%;
     max-width: 600px;
     min-width: 50px;
     font-size: 1vw;
+    margin: 0 auto;
+    padding: 0px;
 }
 
 paper-dialog.vidData {
-    width: 45vw;
+    width: 100vw;
     max-height: 90%;
     min-height: 70%;
+    max-width: 400px;
+    min-width: 100px;
     font-size: 1.8vw;
 }
 
@@ -192,30 +199,20 @@ paper-card.emailList {
 }
 
 paper-menu.editor {
-    width: 20%;
-    max-width: 20%;
-    min-width: 50px;
+    width: 28%;
     display: inline-block;
     z-index: 100;
-    font-size: 60%;
+
 }
 
-div.datepicker {
-    width: 1vw;
+div.dateTimes{
+    zoom: 0.9;
+    -moz-transform: scale(0.9);
 }
 
-jv-datepicker.editor {
-    width: 50%;
-    max-width: 350px;
-    min-width: 50px;
-    z-index: 1000;
-}
-
-paper-time-picker.editor {
+dev.errorHolder{
     width: 100%;
-    max-width: 350px;
-    min-width: 50px;
-    z-index: 1000;
+    margin-top:3px;
 }
 </style>
 <dom-module id="geoji-editor">
@@ -229,73 +226,72 @@ paper-time-picker.editor {
             <firebase-collection id="{{assignCtrl('geojiMine')}}" limit-to-first="3" limitToFirst="100">
             </firebase-collection>
             <paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}" class="relative">
+                <div class="errorHolder">ERRORS GO HERES</div>
                 <paper-input-container class="createMarker absolute z100">
                     <label>Title</label>
+                    <paper-tooltip>Enter the Geoji Title</paper-tooltip>
                     <input id="{{assignCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute" is="iron-input" bind-value="{{title}}">
                     <paper-icon-button suffix icon="clear"></paper-icon-button>
                 </paper-input-container>
-                <paper-menu class="editor left55pct absolute">
-                    <paper-submenu>
-                        <paper-item class="menu-trigger">Date
-                            <paper-icon-button suffix icon="arrow-drop-down-circle"></paper-icon-button>
-                        </paper-item>
-                        <paper-menu class="menu-content">
-                            <paper-item>
-                                <paper-input-container class="inlineOneHalf">
-                                    <label>Start</label>
-                                    <input id="{{assignCtrl('date')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{date}}">
-                                    <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setDate"></paper-icon-button>
-                                </paper-input-container>
-                            </paper-item>
-                            <paper-item>
-                                <paper-input-container class="inlineOneHalf">
-                                    <label>End</label>
-                                    <input id="{{assignCtrl('end')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{end}}">
-                                    <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setEnd"></paper-icon-button>
-                                </paper-input-container>
-                            </paper-item>
-                        </paper-menu>
-                    </paper-submenu>
-                </paper-menu>
                 <paper-menu class="editor left35pct absolute">
                     <paper-submenu>
-                        <paper-item class="menu-trigger">Time
+                        <paper-item class="menu-trigger">
+                            <paper-tooltip>Enter Date and Time information</paper-tooltip>
+                            <paper-icon-button suffix icon="icons:alarm"></paper-icon-button>
                             <paper-icon-button suffix icon="arrow-drop-down-circle"></paper-icon-button>
                         </paper-item>
                         <paper-menu class="menu-content">
                             <paper-item>
                                 <paper-input-container class="inlineOneHalf">
-                                    <label>Start Time</label>
-                                    <input id="{{assignCtrl('startTimeTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{startTime}}">
-                                    <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setStartTime"></paper-icon-button>
+                                    <iron-icon suffix icon="icons:date-range"></iron-icon>
+                                    <paper-input-container id="{{assignCtrl('dateInput')}}">
+                                        <input id="{{assignCtrl('date')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{date}}">
+                                    </paper-input-container>
+                                    <paper-icon-button suffix icon="icons:forward" on-tap="setDate"></paper-icon-button>
                                 </paper-input-container>
                             </paper-item>
                             <paper-item>
                                 <paper-input-container class="inlineOneHalf">
-                                    <label>End Time</label>
-                                    <input id="{{assignCtrl('endTimeTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{endTime}}">
-                                    <paper-icon-button suffix icon="arrow-drop-down-circle" on-tap="setEndTime"></paper-icon-button>
+                                    <iron-icon suffix icon="icons:date-range"></iron-icon>
+                                    <paper-input-container id="{{assignCtrl('endInput')}}">
+                                        <input id="{{assignCtrl('end')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{end}}">
+                                    </paper-input-container>
+                                    <paper-icon-button suffix icon="icons:eject" on-tap="setEnd"></paper-icon-button>
+                                </paper-input-container>
+                            </paper-item>
+                            <paper-item>
+                                <paper-input-container class="inlineOneHalf">
+                                    <iron-icon suffix icon="icons:query-builder"></iron-icon>
+                                    <paper-input-container id="{{assignCtrl('startTimeInput')}}">
+                                        <input id="{{assignCtrl('startTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{startTime}}">
+                                    </paper-input-container>
+                                    <paper-icon-button suffix icon="icons:forward" on-tap="setStartTime"></paper-icon-button>
+                                </paper-input-container>
+                            </paper-item>
+                            <paper-item>
+                                <paper-input-container class="inlineOneHalf">
+                                    <iron-icon suffix icon="icons:query-builder"></iron-icon>
+                                    <paper-input-container id="{{assignCtrl('endTimeInput')}}">
+                                        <input id="{{assignCtrl('endTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{endTime}}">
+                                    </paper-input-container>
+                                    <paper-icon-button suffix icon="icons:eject" on-tap="setEndTime"></paper-icon-button>
                                 </paper-input-container>
                             </paper-item>
                         </paper-menu>
                     </paper-submenu>
                 </paper-menu>
-                <paper-menu class="editor left70pct absolute">
+                <paper-menu class="editor left60pct absolute" data-tip="This is the text of the tooltip2">
                     <paper-submenu>
-                        <paper-item class="menu-trigger">Anonymous
-                            <paper-icon-button suffix icon="arrow-drop-down-circle"></paper-icon-button>
+                        <paper-item class="menu-trigger">
+                            <paper-tooltip>Check this make Geoji Anonymous</paper-tooltip>
+                            <paper-icon-button suffix icon="icons:block"></paper-icon-button>
+                            <paper-checkbox id="{{assignCtrl('includeProfile')}}" checked="{{anonymous}}"></paper-checkbox>
                         </paper-item>
-                        <paper-menu class="menu-content">
-                            <paper-item>
-                                <div class="anonymousData margin-left50pct">
-                                    <paper-checkbox id="{{assignCtrl('includeProfile')}}" checked="{{anonymous}}"></paper-checkbox>
-                                </div>
-                            </paper-item>
-                        </paper-menu>
                     </paper-submenu>
                 </paper-menu>
                 <div class="card-content absolute">
                     <div id="{{assignCtrl('containerPrivate')}}" class="editor margin-top80px">
+                        <paper-tooltip>Invite users to this Geoji</paper-tooltip>
                         <paper-toggle-button id="{{assignCtrl('public')}}" checked="{{private}}" class="margin-left3pct">Users</paper-toggle-button>
                         <paper-input-container id="{{assignCtrl('email')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
                             <label>Add Email</label>
@@ -306,6 +302,7 @@ paper-time-picker.editor {
                         </paper-input-container>
                     </div>
                     <div id="{{assignCtrl('containerEncrypt')}}" class="editor margin-top80px">
+                        <paper-tooltip>Encrypt data of this Geoji</paper-tooltip>
                         <paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}">Encrypt</paper-toggle-button>
                         <paper-input-container id="{{assignCtrl('cipher')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
                             <label>Cipher Key</label>
@@ -321,8 +318,8 @@ paper-time-picker.editor {
                 </div>
                 <google-map map="{{map}}" id="{{assignCtrl('map')}}" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}" min-zoom="9" max-zoom="30" language="en" api-key="AIzaSyCgmlzQ8iH-U2KDt2mhXJbZvQm-KB5dWSo" clickEvents="true" google-map-dblclick="placeMarker" fitToMarkers="true" zoom="20" drag-events="true">
                     <input id="{{assignCtrl('search')}}" autocomplete="true" type="text" list="addressList" placeholder="Search by name" class="bottomLeftCorner margin1pct" value="{{query::input}}">
-                    <google-map-marker id="{{assignCtrl('targetMarker')}}" name="targetMarker" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}" draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker>
-                    <paper-icon-button class="topCorner margin1pct" icon="autorenew" on-tap="refreshMap" style="background:white;"></paper-icon-button>
+                    <google-map-marker id="{{assignCtrl('targetMarker')}}" name="targetMarker" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}" draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"><paper-tooltip>your current location</paper-tooltip></google-map-marker>
+                    <paper-icon-button class="topCorner margin1pct" icon="autorenew" on-tap="refreshMap" style="background:white;"><paper-tooltip>Refresh Map</paper-tooltip></paper-icon-button>
                     <datalist id="addressList">
                         <template is="dom-repeat" items="{{mapResult}}" as="result">
                             <option data-value="{{result.name}}">{{result.name}} {{result.formatted_address}}</option>
@@ -330,11 +327,23 @@ paper-time-picker.editor {
                     </datalist>
                 </google-map>
                 <div class="card-actions">
-                    <paper-icon-button on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker"></paper-icon-button>
-                    <paper-icon-button on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker"></paper-icon-button>
-                    <paper-icon-button on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker"></paper-icon-button>
-                    <paper-button id="{{assignCtrl('add')}}" class="saveGeoji" raised on-tap="addGeoji">ADD</paper-button>
-                    <paper-button id="{{assignCtrl('save')}}" class="saveGeoji" raised on-tap="saveGeoji" hidden="true">SAVE</paper-button>
+                    <paper-icon-button on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker">
+                        <paper-tooltip>Create a text marker</paper-tooltip>
+                    </paper-icon-button>
+                    <paper-icon-button on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker">
+                        <paper-tooltip>Create an imaget marker</paper-tooltip>
+                    </paper-icon-button>
+                    <paper-icon-button on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker">
+                        <paper-tooltip>Create a video marker</paper-tooltip>
+                    </paper-icon-button>
+                    <paper-button id="{{assignCtrl('add')}}" class="saveGeoji" raised on-tap="addGeoji" disabled="{{invalid}}">
+                        <paper-tooltip>Save the Geoji</paper-tooltip>
+                        ADD
+                    </paper-button>
+                    <paper-button id="{{assignCtrl('save')}}" class="saveGeoji" raised on-tap="saveGeoji" hidden="true">
+                        <paper-tooltip>Save the Geoji</paper-tooltip>
+                        SAVE
+                    </paper-button>
                 </div>
             </paper-card>
             <paper-dialog class="txtData z1000" id="{{assignCtrl('txtDialog')}}" modal role="alertdialog">
@@ -383,45 +392,56 @@ paper-time-picker.editor {
                 <paper-progress class="bar" id="{{assignCtrl('decryptProgress')}}"></paper-progress>
                 <h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
                 <paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
+                    <paper-tooltip>Enter Cipher Key: At least 8 characters, 1 number and 1 symbol</paper-tooltip>
                     <input id="{{assignCtrl('decryptInput')}}" is="iron-input" type="text" class="txtData" bind-value="{{cipherKey}}"></input>
                 </paper-input-container>
                 <paper-button id="{{assignCtrl('cancelDecryptBtn')}}" class="txtData theme" raised on-tap="toggleDecryptDialog">CANCEL</paper-button>
                 <paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
             </paper-dialog>
-            <paper-dialog class="datePicker z1000" id="{{assignCtrl('dateDialog')}}" modal role="alertdialog">
-                <paper-card>
-                    <div class="datePicker">
+            <div class="dateTimes">
+                <paper-dialog class="timePicker z1000" id="{{assignCtrl('dateDialog')}}" modal role="alertdialog">
+                <h2>Start</h2>
+                    <paper-card class="center">
                         <div class="topCorner">
                             <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeDate" class="topCorner"></paper-icon-button>
                         </div>
                         <jv-datepicker id="{{assignCtrl('datePicker')}}" class="top10" date={{date}} modal></jv-datepicker>
-                    </div>
-                </paper-card>
-            </paper-dialog>
-            <paper-dialog class="datePicker z1000" id="{{assignCtrl('endDialog')}}" modal role="alertdialog">
-                <paper-card>
-                    <div class="topCorner">
-                        <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeEnd" class="topCorner"></paper-icon-button>
-                    </div>
-                    <jv-datepicker id="{{assignCtrl('endPicker')}}" class="top10" date={{end}} modal></jv-datepicker>
-                </paper-card>
-            </paper-dialog>
-            <paper-dialog class="timePicker z1000" id="{{assignCtrl('startTimeDialog')}}" modal role="alertdialog">
-                <paper-card>
-                    <div class="topCorner">
-                        <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeStartTime" class="topCorner"></paper-icon-button>
-                    </div>
-                    <paper-time-picker id="{{assignCtrl('startTimePicker')}}" narrow="true"></paper-time-picker>
-                </paper-card>
-            </paper-dialog>
-            <paper-dialog class="timePicker z1000" id="{{assignCtrl('endTimeDialog')}}" modal role="alertdialog">
-                <paper-card>
-                    <div class="topCorner">
-                        <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeEndTime" class="topCorner"></paper-icon-button>
-                    </div>
-                    <paper-time-picker id="{{assignCtrl('endTimePicker')}}" class="editor" narrow="true"></paper-time-picker>
-                </paper-card>
-            </paper-dialog>
+                    </paper-card>
+                </paper-dialog>
+            </div>
+            <div class="dateTimes">
+                <paper-dialog class="timePicker z1000" id="{{assignCtrl('endDialog')}}" modal role="alertdialog">
+                    <h2>End</h2>
+                    <paper-card class="center">
+                        <div class="topCorner">
+                            <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeEnd" class="topCorner"></paper-icon-button>
+                        </div>
+                        <jv-datepicker id="{{assignCtrl('endPicker')}}" class="top10" date={{end}} modal></jv-datepicker>
+                    </paper-card>
+                </paper-dialog>
+            </div>
+            <div class="dateTimes">
+                <paper-dialog class="timePicker z1000" id="{{assignCtrl('startTimeDialog')}}" modal role="alertdialog">
+                    <h2>Start</h2>
+                    <paper-card class="center">
+                        <div class="topCorner">
+                            <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeStartTime" class="topCorner"></paper-icon-button>
+                        </div>
+                        <paper-time-picker id="{{assignCtrl('startTimePicker')}}"></paper-time-picker>
+                    </paper-card>
+                </paper-dialog>
+            </div>
+            <div class="dateTimes">
+                <paper-dialog class="timePicker z1000" id="{{assignCtrl('endTimeDialog')}}" modal role="alertdialog">
+                    <h2>End</h2>
+                    <paper-card class="center">
+                        <div class="topCorner">
+                            <paper-icon-button suffix class="closeDialog" icon="clear" on-tap="closeEndTime" class="topCorner"></paper-icon-button>
+                        </div>
+                        <paper-time-picker id="{{assignCtrl('endTimePicker')}}" class="editor"></paper-time-picker>
+                    </paper-card>
+                </paper-dialog>
+            </div> 
             <google-map-search map="{{map}}" query="{{query}}" results="{{mapResult}}">
     </template>
 </dom-module>
@@ -456,6 +476,10 @@ Polymer({
             observer: "_setAnonymous",
             notify: false
         },
+        invalid: {
+            type: Boolean,
+            value: true
+        },
         cardImg: {
             type: String,
             value: ""
@@ -469,16 +493,32 @@ Polymer({
             value: ""
         },
         date: {
-            type: String
+            type: String,
+            value: "",
+            observer: "_validateDateTime",
+            notify: true
         },
         end: {
-            type: String
+            type: String,
+            value: "",
+            observer: "_validateDateTime",
+            notify: true
         },
         startTime: {
-            type: String
+            type: String,
+            value: "",
+            observer: "_validateDateTime",
+            notify: true
         },
         endTime: {
-            type: String
+            type: String,
+            value: "",
+            observer: "_validateDateTime",
+            notify: true
+        },
+        dateTime: {
+            type: Boolean,
+            value: false
         },
         coverSet: {
             type: String,
@@ -583,6 +623,10 @@ Polymer({
         },
 
     },
+    observers: [
+      '_checkValid(title.*)', '_checkValid(anonymous.*)', '_checkValid(date.*)', '_checkValid(end.*)', '_checkValid(startTime.*)', '_checkValid(endTime.*)',
+      '_checkValid(encrypted.*)'
+    ],
 
     behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId,
         UtilityBehaviors.JUtil, CryptoBehaviors.JEncrypt, CryptoBehaviors.JDecrypt
@@ -1650,18 +1694,6 @@ Polymer({
         }
 
     },
-    emailValidate: function() {
-        var input = this.getElem(this.ctrls.emailInput);
-        var email = this.getElem(this.ctrls.email);
-        if (email !== null && input !== null) {
-            if (input.value.includes('@') && input.value.includes('.')) {
-                email.invalid = false;
-                return true;
-            } else {
-                return false;
-            }
-        }
-    },
     createcipher: function() {
         var symbols = ["!", "@", "$", "%", "^", "&", "*", "_"];
         var caps = ["A", "B", "C", "D", "E", "F", "G", "H", "I",
@@ -2250,6 +2282,21 @@ Polymer({
 
 
     },
+    emailValidate: function() {
+        var input = this.getElem(this.ctrls.emailInput);
+        var email = this.getElem(this.ctrls.email);
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+
+        if (email !== null && input !== null && re.test(email)) {
+            if (input.value.includes('@') && input.value.includes('.')) {
+                email.invalid = false;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    },
     _validateCipher: function() {
         var input = this.getElem(this.ctrls.cipherInput);
         var cipher = this.getElem(this.ctrls.cipher);
@@ -2259,6 +2306,119 @@ Polymer({
             cipher.invalid = !re.test(this.cipherKey);
         }
 
+    },
+    _validateDateTime: function(){
+        var dateInput = this.getElem(this.ctrls.dateInput);
+        var endInput = this.getElem(this.ctrls.endInput);
+        var startTimeInput = this.getElem(this.ctrls.startTimeInput);
+        var endTimeInput = this.getElem(this.ctrls.endTimeInput);
+
+
+        if(this.date !== null && this.date !== undefined
+            && this.startTime !== null && this.startTime !== undefined
+            && this.endTime !== null && this.endTime !== undefined
+            && this.date !== null && this.date !== undefined
+            && this.end !== null && this.end !== undefined){
+
+            var dateArr = this.date.split("-");
+            var stTimeArr = this.startTime.split(":");
+            var endArr = this.end.split("-");
+            var enTimeArr = this.endTime.split(":");
+
+            if(stTimeArr[1] !== undefined && enTimeArr[1] !== undefined){
+
+                var stMinArr = stTimeArr[1].split(" ");
+                var stHours = parseFloat(stTimeArr[0]);
+                var stMinutes = parseFloat(stMinArr[0]);
+                var stTimeDay = stMinArr[1];
+                var date = [];
+                var enMinArr = enTimeArr[1].split(" ");
+                var enHours = parseFloat(enTimeArr[0]);
+                var enMinutes = parseFloat(enMinArr[0]);
+                var enTimeDay = enMinArr[1];
+                var end = [];
+                var datesValid = false;
+                var errors = [];
+
+
+                for(i in dateArr){
+                    date.push(parseFloat(dateArr[i]));
+                }
+
+                for(i in endArr){
+                    end.push(parseFloat(endArr[i]));
+                }
+
+                //if start year is less than or equal to end year
+                if(date[0]==end[0]){
+                    //if date in the same month
+                    if(date[1]==end[1]){
+                        //if on the same day
+                        if(date[2]==date[2]){//if on the same day
+                            if(stHours==enHours){
+                                    if(stTimeDay == enTimeDay){
+                                        if(stMinutes < enMinutes){
+                                            datesValid = true;
+                                        }else if(stMinutes >= enMinutes){
+                                            endTimeInput.invalid = true;
+                                            errors.push("End date must be after start date.");
+                                        }
+                                    }else if(stTimeDay == "AM" && enTimeDay == "PM"){
+                                        datesValid = true;
+                                        dateInput.invalid = false;
+                                        endInput.invalid = false;
+                                        startTimeInput.invalid = false;
+                                        endTimeInput.invalid = false;
+                                    }else if(stTimeDay == "PM" && enTimeDay == "AM"){
+                                        endTimeInput.invalid = true;
+                                        errors.push("Start date is before end date..");
+                                    }
+                            }else if(stHours<enHours){
+                                    if(stTimeDay == enTimeDay){
+                                        datesValid = true;
+                                        dateInput.invalid = false;
+                                        endInput.invalid = false;
+                                        startTimeInput.invalid = false;
+                                        endTimeInput.invalid = false;
+                                    }else if(stTimeDay == "AM" && enTimeDay == "PM"){
+                                        datesValid = true;
+                                        dateInput.invalid = false;
+                                        endInput.invalid = false;
+                                        startTimeInput.invalid = false;
+                                        endTimeInput.invalid = false;
+                                    }else if(stTimeDay == "PM" && enTimeDay == "AM"){
+                                        endTimeInput.invalid = true;
+                                        errors.push("Start date is before end date..");
+                                    }
+                            }
+                        }else if(date[2]<end[2]){//if start day before end day
+                                datesValid = true;
+                        }
+                    }else if(date[1]<end[1]){//if start is before end month
+                        datesValid = true;
+                        dateInput.invalid = false;
+                        endInput.invalid = false;
+                        startTimeInput.invalid = false;
+                        endTimeInput.invalid = false;
+                    }else if(date[1]>end[1]){//if start is before end month
+                        dateInput.invalid = true;
+                        errors.push("Start date is before end date..");
+                    }
+                }else if(date[0]<end[0]){
+                    datesValid = true;
+                    dateInput.invalid = false;
+                    endInput.invalid = false;
+                    startTimeInput.invalid = false;
+                    endTimeInput.invalid = false;
+                }else if(date[0]>end[0]){
+                    dateInput.invalid = true;
+                    errors.push("Start date is before end date..");
+                }
+            }
+        }
+
+        this.dateTime = datesValid;
+        console.log(datesValid);
     },
     _storeEmails: function() {
         this.geoji.emailList = this.emailList;
@@ -2305,6 +2465,54 @@ Polymer({
             target.longitude = this.mapResult[0].longitude;
             target.latitude = this.mapResult[0].latitude;
         }
+    },
+    _checkValid: function(){
+
+        var title = this.getElem(this.ctrls.title);
+        var start = this.getElem(this.ctrls.date);
+        var end = this.getElem(this.ctrls.end);
+        var startTime = this.getElem(this.ctrls.startTime);
+        var endTime = this.getElem(this.ctrls.endTime);
+        var cipherInput = this.getElem(this.ctrls.cipherInput);
+        geojiValid = false;
+
+        if(title !== null && title !== undefined
+            && start !== null && start !== undefined
+            && startTime !== null && startTime !== undefined
+            && endTime !== null && endTime !== undefined
+            && cipherInput !== null && cipherInput !== undefined
+            && this.encrypted !== null && this.encrypted !== undefined)
+        {
+
+            if(this.encrypted)
+            {
+
+                if(!cipherInput.invalid)
+                {
+                    if(this.title !== null && this.title !== undefined
+                    && this.title !== "" && !this.dateTime)
+                    {
+                        this.geojiValid = true;
+                    }
+                }
+
+            }else{
+                if(this.title !== null && this.title !== undefined
+                    && this.title !== "" && !this.dateTime)
+                {
+                    this.geojiValid = true;
+                }
+            }
+
+            if(this.invalid !== null && this.invalid !== undefined)
+            {
+                this.invalid = !geojiValid;
+                console.log("the geoji is: ");
+                console.log(this.invalid);
+            }
+
+        }
+
     }
 });
 </script>

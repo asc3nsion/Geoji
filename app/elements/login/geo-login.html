@@ -419,6 +419,7 @@ addEventListener('WebComponentsReady', function() {
             var regInput = this.getElem(this.ctrls.regEmailInput);
             var emailContainer = this.getElem(this.ctrls.emailContainer);
             var regEmailContainer = this.getElem(this.ctrls.regEmailContainer);
+            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
             var inputs = [input, regInput];
 
@@ -433,7 +434,7 @@ addEventListener('WebComponentsReady', function() {
                 }
 
                 if (active !== null && active !== undefined) {
-                    if (active.value.includes('@') && active.value.includes('.')) {
+                    if (re.test(active.value)) {
                         if (active.name === "email") {
                             emailContainer.invalid = false;
                         } else if (active.name === "registerEmail") {

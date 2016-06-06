@@ -21,6 +21,8 @@ This is an element button used as a base for other buttons.
     height: 6%;
     --iron-image-width: 90%;
     --iron-image-height: 90%;
+    max-width: 400px;
+    min-width: 40px;
     margin-top: -5%;
 }
 
@@ -45,6 +47,7 @@ paper-dialog.profilePic {
 <dom-module id="geo-profile-img">
     <template>
         <div>
+            <paper-tooltip>Change profile information, and Logout</paper-tooltip>
             <j-profile-img id="profilePic" class="j-profile-img" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
             <paper-spinner-lite id="{{assignCtrl('progressSpinner')}}" class="orange avatarSpinner"></paper-spinner-lite>
         </div>
