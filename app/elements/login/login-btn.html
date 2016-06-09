@@ -12,9 +12,19 @@ This depends on j-button element which is a generic button.
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 <style>
+
 paper-button.custom {
-    font-size: 1.3vw;
+    width: 25%;
+    height: 5%;
+    max-height: 80px;
+    min-height: 50px;
+    max-width: 300px;
+    min-width: 100px;
+    float: right;
+    margin: 3% 1% 1% 1%;
+    font-size: 100%;
 }
+
 </style>
 <dom-module id="login-btn">
     <template>
@@ -76,12 +86,6 @@ addEventListener('WebComponentsReady', function() {
             var params = [this.provider];
             var classes = ["theme"];
 
-            this.setParams(params);
-            this.assignClasses = classes;
-
-            this.styles = {
-                margin: "3% 3% 3% 3%"
-            }
         }
     });
 });

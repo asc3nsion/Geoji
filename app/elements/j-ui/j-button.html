@@ -14,9 +14,24 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/style/j-styles.html">
 <link rel="import" href="../../behaviors/interaction/j-handler.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
+<style>
+
+paper-button.jLogin {
+    width: 25%;
+    height: 5%;
+    max-height: 80px;
+    min-height: 50px;
+    max-width: 300px;
+    min-width: 100px;
+    float: right;
+    margin: 3% 1% 1% 1%;
+    font-size: 100%;
+}
+
+</style>
 <dom-module id="j-button">
     <template>
-        <paper-button id="{{assignElem()}}" raised on-tap="call">{{text}}</paper-button>
+        <paper-button id="{{assignElem()}}" raised on-tap="call" class="loginBtn">{{text}}</paper-button>
     </template>
 </dom-module>
 <script>

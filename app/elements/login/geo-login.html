@@ -47,7 +47,7 @@ This is an element button for google auth using firebase api
         paper-material.box {
             background-color: #E9E1E3;
             color: --primary-text-color;
-            font-size: 1.3vw;
+            font-size: 65%;
             border-radius: 8px;
         }
         
@@ -498,7 +498,18 @@ addEventListener('WebComponentsReady', function() {
         tabHandler: function() {
             var pages = document.querySelector('iron-pages');
             var tabs = document.querySelector('paper-tabs');
+            var nameInput = this.getElem(this.ctrls.regNameInput);
+            var emailInput = this.getElem(this.ctrls.emailInput);
+
             pages.selected = tabs.selected;
+
+            if(pages.selected === 1){
+                emailInput.focus();
+            }else if(pages.selected === 2){
+                nameInput.focus();
+            }
+
+            console.log(tabs.selected);
         },
         _validateEmail: function() {
             var input = this.getElem(this.ctrls.emailInput);
