@@ -36,20 +36,19 @@ fixedSize = it the size of the cropped square in pixels.
     <template>
         <style>
         paper-button.imgData {
-            float: right;
-            margin: 50px 10px 10px 10px;
-            font-size: 1.8vw;
-            position: relative;
+            width: 25%;
+            height: 5%;
+            max-height: 80px;
+            min-height: 50px;
+            max-width: 300px;
+            min-width: 100px;
+            margin: 1% 1% 1% 1%;
+            font-size: 12px;
         }
         
         :host {
             display: block;
             margin: 5px;
-        }
-        
-        paper-button {
-            float: right;
-            margin: 10px 10px 10px 10px;
         }
         
         .cropperDiv {
@@ -228,13 +227,13 @@ fixedSize = it the size of the cropped square in pixels.
             <paper-toast id="toastFail" text="Error uploading file!"></paper-toast>
         </div>
         <div class="upload layout horizontal">
-            <paper-button class="theme" id="{{assignCtrl('closeBtn')}}" raised class="red center imgData" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
+            <paper-button id="{{assignCtrl('closeBtn')}}" raised class="imgData theme" on-tap="handleDialogToggle" hidden="{{hideButtons}}">
                 Cancel
             </paper-button>
-            <paper-button class="theme" id="{{assignCtrl('chooseBtn')}}" raised class="blue center imgData" on-tap="on_upload_dialog" hidden="{{hideButtons}}">
+            <paper-button id="{{assignCtrl('chooseBtn')}}" raised class="imgData theme" on-tap="on_upload_dialog" hidden="{{hideButtons}}">
                 Choose file
             </paper-button>
-            <paper-button class="theme" id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class="imgData" disabled$='{{!file}}' hidden="{{hideButtons}}">
+            <paper-button id="{{assignCtrl('uploadBtn')}}" on-tap='onUpload' raised class="imgData theme" disabled$='{{!file}}' hidden="{{hideButtons}}">
                 <iron-icon icon='file-upload'></iron-icon>
                 Upload
             </paper-button>

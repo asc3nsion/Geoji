@@ -55,9 +55,20 @@ This is an element button for google auth using firebase api
             width: 80%;
             max-width: 450px;
         }
+
+        paper-dialog.invalidLogin {
+            width: 100vw;
+            height: 20vh;
+            max-height: 300px;
+            min-height: 100px;
+            max-width: 400px; 
+            min-width: 100px;
+            
+        }
         </style>
         <iron-ajax auto url="config.json" handle-as="json" last-response="{{config}}"></iron-ajax>
-        <firebase-auth id="firebaseLogin" user="{{user}}" status-known="{{statusKnown}}" location="https://geoji.firebaseio.com" provider="{{provider}}" on-error="errorHandler" on-user-created="userSuccessHandler" on-password-changed="userSuccessHandler" on-password-reset="userSuccessHandler" on-user-removed="userSuccessHandler"></firebase-auth>
+        <firebase-auth id="{{assignCtrl('usersAuth')}}" location="https://geoji.firebaseio.com/users"></firebase-auth>
+        <firebase-auth id="firebaseLogin" user="{{user}}" status-known="{{statusKnown}}" location="https://geoji.firebaseio.com" provider="{{provider}}" on-error="errorHandler" on-user-created="createUserHandler" on-password-changed="userSuccessHandler" on-password-reset="userSuccessHandler" on-user-removed="userSuccessHandler"></firebase-auth>
         <firebase-document id="firebaseUserData" location="{{userURL}}" data="{{userData}}"></firebase-document>
         <div class="container center-horiz center-vert">
             <paper-material class="half box login">
@@ -75,6 +86,7 @@ This is an element button for google auth using firebase api
                 <iron-pages selected="0" class="login">
                     <div>
                         <ul>
+                            <li class="center-horiz">Social Login</li>
                             <li class="center-horiz">
                                 <login-btn styles="{{btnStyle}}" input="{{getId()}}" handler="login" provider="google" social="true" icon="googleplus" icon_color="#FFFFFF"></login-btn>
                                 <login-btn input="{{getId()}}" handler="logout" provider="twitter" social="true" icon="twitter" icon_color="#FFFFFF"></login-btn>
@@ -84,6 +96,7 @@ This is an element button for google auth using firebase api
                     </div>
                     <div>
                         <ul>
+                            <li class="center-horiz">Password Login</li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('emailContainer')}}" class="login">
                                     <input id="{{assignCtrl('emailInput')}}" type="email" autocomplete="on" placeholder="email" value="{{email::input}}" name="email" bind-value="{{email}}" autofocus="true" class="login"></input>
@@ -105,9 +118,10 @@ This is an element button for google auth using firebase api
                     </div>
                     <div>
                         <ul>
+                            <li class="center-horiz">Password Register</li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('regNameContainer')}}" class="login">
-                                    <input id="{{assignCtrl('regNameInput')}}" type="text" autocomplete="on" placeholder="name" name="registerName" bind-value="{{name}}" autofocus="true" required="true"></input>
+                                    <input id="{{assignCtrl('regNameInput')}}" type="text" autocomplete="on" placeholder="name" name="registerName" value="{{name::input}}" bind-value="{{name}}" autofocus="true" required="true"></input>
                                     <label for="{{getCtrl('regNameInput')}}" hidden>register name</label>
                                 </paper-input-container>
                             </li>
@@ -126,11 +140,17 @@ This is an element button for google auth using firebase api
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
-                                <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="register" provider="REGISTER" basic="true"></login-btn>
+                                <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="register" provider="password" basic="true"></login-btn>
                             </li>
                         </ul>
                     </div>
                 </iron-pages>
+                <paper-dialog class="z1000 invalidLogin" id="{{assignCtrl('invalidDialog')}}" modal role="alertdialog">
+                    <h2>{{invalidError}}</h2>
+                    <div class="center">
+                        <paper-button id="{{assignCtrl('invalidBtn')}}" class="theme center" raised on-tap="toggleInvalidDialog">OK</paper-button>
+                    </div>
+                </paper-dialog>
             </paper-material>
             <div>
                 {{userData}}
@@ -205,7 +225,10 @@ addEventListener('WebComponentsReady', function() {
                 value: {
                     "color": "white"
                 }
-            }
+            },
+            invalidError: {
+                type: String
+            },
         },
         behaviors: [SelectionBehaviors.AutoId],
         attached: function() {
@@ -225,63 +248,126 @@ addEventListener('WebComponentsReady', function() {
             }
 
         },
+        toggleInvalidDialog: function() {
+
+            var e = this.getElem(this.ctrls.invalidDialog);
+            e.toggle();
+        },
         login: function(provider) {
             var params;
+            var emailContainer = this.getElem(this.ctrls.emailContainer);
+            var emailInput = this.getElem(this.ctrls.emailInput);
+            var pwContainer = this.getElem(this.ctrls.passwordContainer);
+            var pwInput = this.getElem(this.ctrls.password);
             var regEmailContainer = this.getElem(this.ctrls.regEmailContainer);
             var regPwContainer = this.getElem(this.ctrls.regPasswordContainer);
+            var usersAuth = this.getElem(this.ctrls.usersAuth);
+            var usersRef = usersAuth.ref;
+            var self = this;
+            var doLogin = false;
             this.provider = provider;
+            var params;
 
-            switch (provider) {
-                case "password":
-                    console.log("do a user login.");
-                    if (regEmailContainer.invalid === false && regPwContainer.invalid === false) {
+            usersRef.orderByChild("email").equalTo(emailInput.value).on("child_added", function(snapshot) {
+                console.log("user exists!");
+                doLogin = true;
+            });
+
+            if(doLogin || provider !== "password"){
+
+                switch (provider) {
+                    case "password":
+                        console.log("do a user login.");
+                        if (regEmailContainer.invalid === false && regPwContainer.invalid === false) {
+                            params = params || {};
+                            params.name = this.name;
+                            params.email = this.email;
+                            params.password = this.password;
+                            this.$.firebaseLogin.login(params);
+                            console.log(this.$.firebaseLogin.user);
+                        } else {
+                            console.log("invalid credentials");
+                        }
+                        break;
+                    case "google":
+                        console.log("do a google log in.");
                         params = params || {};
-                        params.name = this.name;
-                        params.email = this.email;
-                        params.password = this.password;
+                        params.scope = "email https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly";
+
                         this.$.firebaseLogin.login(params);
-                        console.log(this.$.firebaseLogin.user);
-                    } else {
-                        console.log("invalid credentials");
-                    }
-                    break;
-                case "google":
-                    console.log("do a google log in.");
-                    params = params || {};
-                    params.scope = "email https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly";
 
-                    this.$.firebaseLogin.login(params);
-
-                    break;
-                case "twitter":
-                    console.log("do a twitter log in.");
-                    break;
-                case "facebook":
-                    console.log("do a facebook log in.");
-                    break;
+                        break;
+                    case "twitter":
+                        console.log("do a twitter log in.");
+                        break;
+                    case "facebook":
+                        console.log("do a facebook log in.");
+                        break;
+                }
+            }
+            else
+            {
+                emailContainer.invalid = true;
+                var e = this.getElem(this.ctrls.invalidDialog);
+                this.invalidError = "Please register.";
+                e.toggle();
             }
 
         },
-        register: function() {
-            var regnameContainer = this.getElem(this.ctrls.regNameContainer);
+        register: function(provider) {
+            console.log(provider);
+            var regNameContainer = this.getElem(this.ctrls.regNameContainer);
             var nameInput = this.getElem(this.ctrls.regNameInput);
+            var emailInput = this.getElem(this.ctrls.regEmailInput);
             var regEmailContainer = this.getElem(this.ctrls.regEmailContainer);
             var regPwContainer = this.getElem(this.ctrls.regPasswordContainer);
+            var usersAuth = this.getElem(this.ctrls.usersAuth);
+            var usersRef = usersAuth.ref;
+            this.provider = provider;
+            var doRegister = true;
+            var params;
+            var self = this;
 
-            if (regEmailContainer.invalid === false && regPwContainer.invalid === false) {
-                if (regEmailContainer.invalid === false && regPwContainer.invalid === false && nameInput.value !== null && nameInput !== undefined && nameInput !== "") {
-                    params = params || {};
-                    params.name = this.name;
-                    params.email = this.email;
-                    params.password = this.password;
-                    this.$.firebaseLogin.login(params);
-                    console.log(this.$.firebaseLogin.user);
+            usersRef.orderByChild("email").equalTo(emailInput.value).on("child_added", function(snapshot) {
+                console.log("user exists!");
+                doRegister = false;
+            });
+
+            setTimeout(function() {
+                if(doRegister){
+                    if (regEmailContainer.invalid === false && regPwContainer.invalid === false) {
+                        if (regEmailContainer.invalid === false && regPwContainer.invalid === false && nameInput.value !== null && nameInput !== undefined && nameInput.value !== "") {
+                            params = params || {};
+                            params.name = nameInput.value;
+                            params.email = self.email;
+                            params.password = self.password;
+                            self.$.firebaseLogin.createUser(self.email, this.password);
+                        } else {
+                            console.log("invalid credentials");
+                            if(this.name === undefined || this.name === null || this.name === ""){
+                                regNameContainer.invalid = true;
+                            }
+                        }
+                    } else {
+                        console.log("invalid credentials");
+                    }
                 } else {
-                    console.log("invalid credentials");
+                    var params;
+                    var el = self.getElem(self.ctrls.invalidDialog);
+                    var _self =self;
+                    params = params || {};
+                    params.name = self.name;
+                    params.email = self.email;
+                    params.password = self.password;
+                    self.invalidError = "Already registered.";
+                    el.toggle();
+                    setTimeout(function() {
+                        el.close()
+                        _self.$.firebaseLogin.login(params);
+                    }, 1000);
                 }
-            } else {
-                console.log("invalid credentials");
-            }
+
+            }, 100);
 
             console.log("do register");
         },
@@ -363,12 +449,12 @@ addEventListener('WebComponentsReady', function() {
             this.message = e.type + ' success!';
         },
         createUserHandler: function(e) {
-            if (this.provider === "password") {
-                this.$.firebaseLogin.createUser(this.email, this.password);
-            } else if (this.provider === "google") {
-                //this.$.firebaseUsers.add
-            }
-
+            var params;
+            params = params || {};
+            params.name = this.name;
+            params.email = this.email;
+            params.password = this.password;
+            this.$.firebaseLogin.login(params);
         },
         changePasswordHandler: function(e) {
             this.$.firebaseLogin.changePassword(this.email, this.password, this.newPassword);

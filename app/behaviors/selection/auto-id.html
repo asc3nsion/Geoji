@@ -135,6 +135,22 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 				elem.className += ' ' + cl;
 			}	
 		},
+		removeClass: function(elem, cl){
+			//console.log("adding class "+ cl + " to: ");
+			console.log(elem);
+			if(elem !== null){
+				elem.className = elem.className.replace(cl, "");
+			}	
+		},
+		replaceClass: function(elem, o, n){
+			if(elem !== null){
+				if(elem.className.includes(o)){
+					elem.className = elem.className.replace(o, n);
+				}else{
+					elem.className += ' ' + n;
+				}
+			}	
+		},
 		setClass: function(cl){
 			var e = this.getSelf();
 

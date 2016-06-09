@@ -31,7 +31,8 @@
     "twitter-button": "^0.2.1",
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.2.1",
     "paper-time-picker24": "^1.5.3",
-    "paper-tooltip": "PolymerElements/paper-tooltip#^1.1.2"
+    "paper-tooltip": "PolymerElements/paper-tooltip#^1.1.2",
+    "paper-fab": "PolymerElements/paper-fab#^1.2.0"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
