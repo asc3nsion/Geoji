@@ -86,6 +86,12 @@ addEventListener('WebComponentsReady', function() {
             var params = [this.provider];
             var classes = ["theme"];
 
+            this.setParams(params);
+            this.assignClasses = classes;
+
+            this.styles = {
+                margin: "3% 3% 3% 3%"
+            }
         }
     });
 });

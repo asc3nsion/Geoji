@@ -19,10 +19,14 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/crypto/j-decrypt.html">
 <link rel="import" href="../../behaviors/util/j-util.html">
 <style>
+
+paper-card.editor{
+    width: 100%;
+}
+
 google-map {
     height: 40vh;
-    width: 80vw;
-    margin-top: 5%;
+    width: 95%;
 }
 
 paper-icon-button.createMarker #icon {
@@ -140,12 +144,11 @@ paper-dialog.decryptData {
 
 paper-dialog.imgData {
     width: 100vw;
-    height: 85vh;
-    max-height: 500px;
-    min-height: 200px;
     max-width: 500px;
     min-width: 100px;
     font-size: 1.8vw;
+    display:block;
+    overflow:auto;
 }
 
 paper-dialog.datePicker {
@@ -192,11 +195,12 @@ paper-progress.bar {
 }
 
 paper-card.emailList {
-    margin-top: 13%;
-    height: 10%;
+    margin-top: 9vh;
+    height: 100%;
     max-width: 100%;
     display: inline-block;
-    font-size: 60%;
+    font-size: 50%;
+    z-index: :0;
 }
 
 paper-menu.editor {
@@ -231,6 +235,11 @@ paper-fab.pass{
 paper-fab.fail{
     --paper-fab-background : red;
 }
+
+p.invalidError{
+    zoom: 0.7;
+    -moz-transform: scale(0.7);
+}
 </style>
 <dom-module id="geoji-editor">
     <template>
@@ -242,7 +251,7 @@ paper-fab.fail{
             <firebase-auth id="{{assignCtrl('mineAuth')}}"></firebase-auth>
             <firebase-collection id="{{assignCtrl('geojiMine')}}" limit-to-first="3" limitToFirst="100">
             </firebase-collection>
-            <paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}" class="relative">
+            <paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}" class="relative editor">
                 <div class="errorHolder"><p></p></div>
                 <paper-input-container id="{{assignCtrl('titleContainer')}}" class="createMarker absolute z100">
                     <paper-tooltip>Enter the Geoji Title</paper-tooltip>
@@ -320,7 +329,7 @@ paper-fab.fail{
                             <input id="{{assignCtrl('emailInput')}}" autocomplete="on" type="email" is="iron-input" type="email" autocomplete="on" bind-value="">
                             <label for="{{getCtrl('emailInput')}}">Email Invite</label>
                             <span class="space"></span>
-                            <paper-input-error>Enter a valid email!</paper-input-error>
+                            <paper-input-error><p class="invalidError margin-top30px">Enter a valid email!</p></paper-input-error>
                             <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
                         </paper-input-container>
                     </div>
@@ -329,11 +338,11 @@ paper-fab.fail{
                         <iron-icon id="{{assignCtrl('encryptIcon')}}" icon="icons:https" class="inlineBlock detail"></iron-icon>
                         <paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}" class="inlineBlock">Encrypt</paper-toggle-button>
                         <paper-input-container id="{{assignCtrl('cipher')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
-                            <input id="{{assignCtrl('cipherInput')}}" type="text" is="iron-input" bind-value="{{cipherKey}}">
+                            <input id="{{assignCtrl('cipherInput')}}" type="text" is="iron-input" bind-value="{{cipherKey}}" class="z300">
                             <input id="cipherHidden" is="iron-input" type="text" bind-value="{{cipherKey}}" hidden="true">
                             <label for="{{getCtrl('cipherInput')}}">Enter Cipher</label>
                             <span class="space"></span>
-                            <paper-input-error>8 characters minimum, with at least 1 capital, 1 number, and 1 symbol.</paper-input-error>
+                            <paper-input-error><p class="invalidError">8 characters, 1 number, 1 symbol</p></paper-input-error>
                             <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
                             <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden" hidden="true"></paper-icon-button>
                         </paper-input-container>
@@ -380,7 +389,7 @@ paper-fab.fail{
                 <paper-button id="{{assignCtrl('saveTxt')}}" class="txtData theme" raised on-tap="saveTxt">SAVE</paper-button>
             </paper-dialog>
             <paper-dialog class="imgData z1000" id="{{assignCtrl('imgDialog')}}" modal role="alertdialog">
-                <h2>Geoji Image</h2>
+                <h2 class="inlineBlock">Geoji Image</h2>
                 <paper-toggle-button id="{{assignCtrl('coverImg')}}" checked="{{coverSet}}" class="inlineBlock">Cover Image</paper-toggle-button>
                 <paper-spinner-lite id="{{assignCtrl('imgSpinner')}}" class="orange createMarker"></paper-spinner-lite>
                 <div id="{{assignCtrl('tempImgs')}}">
@@ -2312,9 +2321,9 @@ Polymer({
         var input = this.getElem(this.ctrls.emailInput);
         var email = this.getElem(this.ctrls.email);
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        console.log(input.value);
 
-
-        if (email !== null && input !== null && re.test(email)) {
+        if (email !== null && input !== null && re.test(input.value)) {
             if (input.value.includes('@') && input.value.includes('.')) {
                 email.invalid = false;
                 return true;
@@ -2326,7 +2335,7 @@ Polymer({
     _validateCipher: function() {
         var input = this.getElem(this.ctrls.cipherInput);
         var cipher = this.getElem(this.ctrls.cipher);
-        var re = /^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@%^&*#$%&?-_ "]).*$/;
+        var re = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/;
 
         if (cipher !== null && cipher !== undefined && input !== null && input !== undefined && this.cipherKey !== null && this.cipherKey !== undefined) {
             cipher.invalid = !re.test(this.cipherKey);

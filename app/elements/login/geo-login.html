@@ -52,8 +52,9 @@ This is an element button for google auth using firebase api
         }
         
         paper-material.login {
-            width: 80%;
-            max-width: 450px;
+            width: 100vw;
+            max-width: 500px;
+            min-width: 100px;
         }
 
         paper-dialog.invalidLogin {
@@ -65,6 +66,12 @@ This is an element button for google auth using firebase api
             min-width: 100px;
             
         }
+
+        p.invalidError{
+            zoom: 0.75;
+            -moz-transform: scale(0.75);
+        }
+
         </style>
         <iron-ajax auto url="config.json" handle-as="json" last-response="{{config}}"></iron-ajax>
         <firebase-auth id="{{assignCtrl('usersAuth')}}" location="https://geoji.firebaseio.com/users"></firebase-auth>
@@ -101,14 +108,14 @@ This is an element button for google auth using firebase api
                                 <paper-input-container id="{{assignCtrl('emailContainer')}}" class="login">
                                     <input id="{{assignCtrl('emailInput')}}" type="email" autocomplete="on" placeholder="email" value="{{email::input}}" name="email" bind-value="{{email}}" autofocus="true" class="login"></input>
                                     <label for="{{getCtrl('emailInput')}}" hidden>email</label>
-                                    <paper-input-error class="login">{{emailError}}</paper-input-error>
+                                    <paper-input-error class="login"><p class="invalidError">{{emailError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('passwordContainer')}}" class="login">
                                     <input id="{{assignCtrl('passwordInput')}}" type="password" autocomplete="on" placeholder="password" value="{{password::input}}" name="password" bind-value="{{password}}"></input>
                                     <label for="{{getCtrl('passwordInput')}}" hidden>password</label>
-                                    <paper-input-error class="login">{{passwordError}}</paper-input-error>
+                                    <paper-input-error class="login"><p class="invalidError">{{passwordError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
@@ -129,14 +136,14 @@ This is an element button for google auth using firebase api
                                 <paper-input-container id="{{assignCtrl('regEmailContainer')}}" class="login">
                                     <input id="{{assignCtrl('regEmailInput')}}" type="email" autocomplete="on" placeholder="email" name="registerEmail" value="{{email::input}}" bind-value="{{email}}"></input>
                                     <label for="{{getCtrl('regEmailInput')}}" hidden>register email</label>
-                                    <paper-input-error class="login">{{emailError}}</paper-input-error>
+                                    <paper-input-error class="login"><p class="invalidError">{{emailError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('regPasswordContainer')}}" class="login">
                                     <input id="{{assignCtrl('regPasswordInput')}}" type="password" autocomplete="on" placeholder="password" name="registerPassword" value="{{password::input}}" bind-value="{{password}}"></input>
                                     <label for="{{getCtrl('regPasswordInput')}}" hidden>register password</label>
-                                    <paper-input-error class="login">{{passwordError}}</paper-input-error>
+                                    <paper-input-error class="login"><p class="invalidError">{{passwordError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
@@ -268,26 +275,42 @@ addEventListener('WebComponentsReady', function() {
             this.provider = provider;
             var params;
 
-            usersRef.orderByChild("email").equalTo(emailInput.value).on("child_added", function(snapshot) {
-                console.log("user exists!");
-                doLogin = true;
-            });
+            var pwLogin = function(){
 
-            if(doLogin || provider !== "password"){
+                if (regEmailContainer.invalid === false && regPwContainer.invalid === false) {
+                    params = params || {};
+                    params.name = self.name;
+                    params.email = self.email;
+                    params.password = self.password;
+                    self.$.firebaseLogin.login(params);
 
-                switch (provider) {
+                } else {
+                    console.log("invalid credentials");
+                }
+
+            }
+
+            switch (provider) {
                     case "password":
+
                         console.log("do a user login.");
-                        if (regEmailContainer.invalid === false && regPwContainer.invalid === false) {
-                            params = params || {};
-                            params.name = this.name;
-                            params.email = this.email;
-                            params.password = this.password;
-                            this.$.firebaseLogin.login(params);
-                            console.log(this.$.firebaseLogin.user);
-                        } else {
-                            console.log("invalid credentials");
-                        }
+                        usersRef.orderByChild("email").equalTo(emailInput.value).on("child_added", function(snapshot) {
+                            console.log("user exists!");
+                            doLogin = true;
+                            pwLogin();
+                            
+                        });
+
+                        setTimeout(function() {
+                            if(!doLogin){
+                                emailContainer.invalid = true;
+                                var e = self.getElem(self.ctrls.invalidDialog);
+                                self.invalidError = "Please register.";
+                                e.toggle();
+                        
+                            }
+                        }, 1000);
+
                         break;
                     case "google":
                         console.log("do a google log in.");
@@ -303,14 +326,6 @@ addEventListener('WebComponentsReady', function() {
                     case "facebook":
                         console.log("do a facebook log in.");
                         break;
-                }
-            }
-            else
-            {
-                emailContainer.invalid = true;
-                var e = this.getElem(this.ctrls.invalidDialog);
-                this.invalidError = "Please register.";
-                e.toggle();
             }
 
         },
@@ -341,7 +356,7 @@ addEventListener('WebComponentsReady', function() {
                             params.name = nameInput.value;
                             params.email = self.email;
                             params.password = self.password;
-                            self.$.firebaseLogin.createUser(self.email, this.password);
+                            self.$.firebaseLogin.createUser(self.email, self.password);
                         } else {
                             console.log("invalid credentials");
                             if(this.name === undefined || this.name === null || this.name === ""){
@@ -426,7 +441,7 @@ addEventListener('WebComponentsReady', function() {
         providerData: function() {
             data = {};
             if (this.provider === "password") {
-                data.name = "unknown";
+                data.name = this.name;
                 data.email = this.user.password.email;
                 data.profileImg = "/images/mascot-unknown.png";
             } else if (this.provider === "google") {
@@ -440,7 +455,17 @@ addEventListener('WebComponentsReady', function() {
             this.$.firebaseLogin.logout();
         },
         errorHandler: function(e) {
+            var regPwContainer = this.getElem(this.ctrls.regPasswordContainer);
+            var regPw = this.getElem(this.ctrls.regPasswordInput);
+            var pwContainer = this.getElem(this.ctrls.passwordContainer);
+            var pw = this.getElem(this.ctrls.passwordInput);
             this.message = 'Error: ' + e.detail.message;
+            if(this.message.includes("password")){
+
+                var e = this.getElem(this.ctrls.invalidDialog);
+                this.invalidError = "wrong password";
+                e.toggle();
+            }
         },
         userExistsHandler: function(e) {
             this.message = e.type + ' success!';
@@ -449,9 +474,12 @@ addEventListener('WebComponentsReady', function() {
             this.message = e.type + ' success!';
         },
         createUserHandler: function(e) {
+            var nameInput = this.getElem(this.ctrls.regNameInput);
             var params;
+            console.log(nameInput.value);
+            console.log(this.user);
             params = params || {};
-            params.name = this.name;
+            params.name = nameInput.value;
             params.email = this.email;
             params.password = this.password;
             this.$.firebaseLogin.login(params);
@@ -509,7 +537,6 @@ addEventListener('WebComponentsReady', function() {
                 nameInput.focus();
             }
 
-            console.log(tabs.selected);
         },
         _validateEmail: function() {
             var input = this.getElem(this.ctrls.emailInput);
@@ -557,7 +584,7 @@ addEventListener('WebComponentsReady', function() {
 
             var inputs = [pwInput, regPwInput, confirmPwInput];
 
-            var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+            var re = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/;
 
             if (pwContainer !== null && pwContainer !== undefined && regPwContainer !== null && regPwContainer !== undefined) {
 

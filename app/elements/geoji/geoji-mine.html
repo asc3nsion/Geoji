@@ -235,54 +235,65 @@ Polymer({
 
         if (id !== null && id !== undefined) {
 
-            publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-                var obj = snapshot.val();
-                var card = self.getElem(self.ctrls[id] + "_myCard");
+            setTimeout(function() {
+                publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+                    var obj = snapshot.val();
+                    var card = self.getElem(self.ctrls[id] + "_myCard");
 
-                if (card !== null && card !== undefined) {
-                    if (obj.encrypted) {
-                        card.name = self.ctrls[id] + "_encrypted";
-                        card.heading = "Encrypted Geoji";
-                        card.image = "/images/mascot-encrypted.png";
-                        card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
-                    } else {
-                        card.name = self.ctrls[id] + "_decrypted";
-                        card.heading = obj.title;
-                        card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
-                        if (obj.coverImg !== null && obj.coverImg !== undefined) {
-                            card.image = obj.coverImg;
+                    if (card !== null && card !== undefined) {
+                        if (obj.encrypted) {
+                            card.name = self.ctrls[id] + "_encrypted";
+                            card.heading = "Encrypted Geoji";
+                            card.image = "/images/mascot-encrypted.png";
+                            if(obj.profile.profileImg !== null && obj.profile.profileImg !== undefined){
+                                card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
+                            }else{
+                                card.getElementsByClassName("cardProfile")[0].src = "/images/mascot-unknown.png";
+                            }
                         } else {
-                            card.image = "/images/mascot-default.png";
+                            card.name = self.ctrls[id] + "_decrypted";
+                            card.heading = obj.title;
+                            if(obj.profile.profileImg !== null && obj.profile.profileImg !== undefined){
+                                card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
+                            }else{
+                                card.getElementsByClassName("cardProfile")[0].src = "/images/mascot-unknown.png";
+                            }
+                            if (obj.coverImg !== null && obj.coverImg !== undefined) {
+                                card.image = obj.coverImg;
+                            } else {
+                                card.image = "/images/mascot-default.png";
 
+                            }
                         }
                     }
-                }
 
-            });
+                });
 
-            privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
-                var obj = snapshot.val();
-                var card = self.getElem(self.ctrls[id] + "_myCard");
+                privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+                    var obj = snapshot.val();
+                    var card = self.getElem(self.ctrls[id] + "_myCard");
 
-                if (card !== null && card !== undefined) {
-                    if (obj.encrypted) {
-                        card.name = self.ctrls[id] + "_encrypted";
-                        card.heading = "Encrypted Geoji";
-                        card.image = "/images/mascot-encrypted.png";
-                        card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
-                    } else {
-                        card.name = self.ctrls[id] + "_decrypted";
-                        card.heading = obj.title;
-                        card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
-                        if (obj.coverImg !== null && obj.coverImg !== undefined) {
-                            card.image = obj.coverImg;
+                    if (card !== null && card !== undefined) {
+                        if (obj.encrypted) {
+                            card.name = self.ctrls[id] + "_encrypted";
+                            card.heading = "Encrypted Geoji";
+                            card.image = "/images/mascot-encrypted.png";
+                            card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
                         } else {
-                            card.image = "/images/mascot-default.png";
+                            card.name = self.ctrls[id] + "_decrypted";
+                            card.heading = obj.title;
+                            card.getElementsByClassName("cardProfile")[0].src = obj.profile.profileImg;
+                            if (obj.coverImg !== null && obj.coverImg !== undefined) {
+                                card.image = obj.coverImg;
+                            } else {
+                                card.image = "/images/mascot-default.png";
 
+                            }
                         }
                     }
-                }
-            });
+                });
+            }, 50);
+
         }
 
     },
