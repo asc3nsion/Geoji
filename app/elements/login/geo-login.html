@@ -73,7 +73,6 @@ This is an element button for google auth using firebase api
         }
 
         </style>
-        <iron-ajax auto url="config.json" handle-as="json" last-response="{{config}}"></iron-ajax>
         <firebase-auth id="{{assignCtrl('usersAuth')}}" location="https://geoji.firebaseio.com/users"></firebase-auth>
         <firebase-auth id="firebaseLogin" user="{{user}}" status-known="{{statusKnown}}" location="https://geoji.firebaseio.com" provider="{{provider}}" on-error="errorHandler" on-user-created="createUserHandler" on-password-changed="userSuccessHandler" on-password-reset="userSuccessHandler" on-user-removed="userSuccessHandler"></firebase-auth>
         <firebase-document id="firebaseUserData" location="{{userURL}}" data="{{userData}}"></firebase-document>
