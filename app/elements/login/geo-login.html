@@ -72,11 +72,16 @@ This is an element button for google auth using firebase api
             -moz-transform: scale(0.75);
         }
 
+        paper-menu.optionalInfo{
+            width:90%;
+            background-color: #E9E1E3;
+        }
+
         </style>
         <firebase-auth id="{{assignCtrl('usersAuth')}}" location="https://geoji.firebaseio.com/users"></firebase-auth>
         <firebase-auth id="firebaseLogin" user="{{user}}" status-known="{{statusKnown}}" location="https://geoji.firebaseio.com" provider="{{provider}}" on-error="errorHandler" on-user-created="createUserHandler" on-password-changed="userSuccessHandler" on-password-reset="userSuccessHandler" on-user-removed="userSuccessHandler"></firebase-auth>
         <firebase-document id="firebaseUserData" location="{{userURL}}" data="{{userData}}"></firebase-document>
-        <div class="container center-horiz center-vert">
+        <div class="container center-horiz center-vert z50">
             <paper-material class="half box login">
                 <paper-tabs selected="0" on-iron-select="tabHandler">
                     <paper-tab>
@@ -105,20 +110,20 @@ This is an element button for google auth using firebase api
                             <li class="center-horiz">Password Login</li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('emailContainer')}}" class="login">
-                                    <input id="{{assignCtrl('emailInput')}}" type="email" autocomplete="on" placeholder="email" value="{{email::input}}" name="email" bind-value="{{email}}" autofocus="true" class="login"></input>
-                                    <label for="{{getCtrl('emailInput')}}" hidden>email</label>
+                                    <label for="{{assignLabel('lgnEmailInput')}}" hidden>email</label>
+                                    <input id="{{labeledCtrl('lgnEmailInput')}}" type="email" autocomplete="on" placeholder="email" value="{{email::input}}" name="email" bind-value="{{email}}" autofocus="true" class="login"></input>
                                     <paper-input-error class="login"><p class="invalidError">{{emailError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('passwordContainer')}}" class="login">
-                                    <input id="{{assignCtrl('passwordInput')}}" type="password" autocomplete="on" placeholder="password" value="{{password::input}}" name="password" bind-value="{{password}}"></input>
-                                    <label for="{{getCtrl('passwordInput')}}" hidden>password</label>
+                                    <label for="{{assignLabel('passwordInput')}}" hidden>password</label>
+                                    <input id="{{labeledCtrl('passwordInput')}}" type="password" autocomplete="on" placeholder="password" value="{{password::input}}" name="password" bind-value="{{password}}"></input>
                                     <paper-input-error class="login"><p class="invalidError">{{passwordError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
-                                <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="login" provider="password" basic="true"></login-btn>
+                                <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="login" provider="password" basic="true" invalid= "true"></login-btn>
                             </li>
                         </ul>
                     </div>
@@ -127,26 +132,45 @@ This is an element button for google auth using firebase api
                             <li class="center-horiz">Password Register</li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('regNameContainer')}}" class="login">
-                                    <input id="{{assignCtrl('regNameInput')}}" type="text" autocomplete="on" placeholder="name" name="registerName" value="{{name::input}}" bind-value="{{name}}" autofocus="true" required="true"></input>
-                                    <label for="{{getCtrl('regNameInput')}}" hidden>register name</label>
+                                    <label for="{{assignLabel('regNameInput')}}" hidden>register name</label>
+                                    <input id="{{labeledCtrl('regNameInput')}}" type="text" autocomplete="on" placeholder="name" name="registerName" value="{{name::input}}" bind-value="{{name}}" autofocus="true" required="true"></input>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('regEmailContainer')}}" class="login">
-                                    <input id="{{assignCtrl('regEmailInput')}}" type="email" autocomplete="on" placeholder="email" name="registerEmail" value="{{email::input}}" bind-value="{{email}}"></input>
-                                    <label for="{{getCtrl('regEmailInput')}}" hidden>register email</label>
+                                    <label for="{{assignLabel('regEmailInput')}}" hidden>register email</label>
+                                    <input id="{{labeledCtrl('regEmailInput')}}" type="email" autocomplete="on" placeholder="email" name="registerEmail" value="{{email::input}}" bind-value="{{email}}"></input>
                                     <paper-input-error class="login"><p class="invalidError">{{emailError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
                                 <paper-input-container id="{{assignCtrl('regPasswordContainer')}}" class="login">
-                                    <input id="{{assignCtrl('regPasswordInput')}}" type="password" autocomplete="on" placeholder="password" name="registerPassword" value="{{password::input}}" bind-value="{{password}}"></input>
-                                    <label for="{{getCtrl('regPasswordInput')}}" hidden>register password</label>
+                                    <label for="{{assignLabel('regPasswordInput')}}" hidden>register password</label>
+                                    <input id="{{labeledCtrl('regPasswordInput')}}" type="password" autocomplete="on" placeholder="password" name="registerPassword" value="{{password::input}}" bind-value="{{password}}"></input>
                                     <paper-input-error class="login"><p class="invalidError">{{passwordError}}</p></paper-input-error>
                                 </paper-input-container>
                             </li>
                             <li class="center-horiz">
-                                <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="register" provider="password" basic="true"></login-btn>
+                                <paper-menu class="inlineBlock optionalInfo">
+                                    <paper-icon-button id="{{labeledCtrl('regOptions')}}" suffix icon="arrow-drop-down-circle" on-tap="toggleOptions" class="z100">
+                                    Optional Information</paper-icon-button>
+                                    <label id="{{assignLabel('regOptions')}}" for="regOptions">Optional Information</label>
+                                    <iron-collapse id="optionCollapse" tabindex="0" opened="{{opened1}}">
+                                      <div class="content">
+                                        <paper-input-container>
+                                            <label id="{{assignLabel('lgnEmployer')}}" for="lgnEmployer">Employer</label>
+                                            <input id="{{labeledCtrl('lgnEmployer')}}" type="text" autocomplete="on" value="{{employer::input}}" bind-value=""></input>
+                                        </paper-input-container>
+                                        <paper-input-container>
+                                            <label id="{{assignLabel('lgnJobTitle')}}" for="lgnJobTitle">Job Title</label>
+                                            <input id="{{labeledCtrl('lgnJobTitle')}}" type="text" autocomplete="on" value="{{jobTitle::input}}" bind-value=""></input>
+                                        </paper-input-container>
+                                      </div>
+                                    </iron-collapse>
+                                </paper-menu>
+                            </li>
+                            <li class="center-horiz">
+                                <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="register" provider="password" basic="true" invalid></login-btn>
                             </li>
                         </ul>
                     </div>
@@ -186,6 +210,12 @@ addEventListener('WebComponentsReady', function() {
                 value: ""
             },
             name: {
+                type: String
+            },
+            employer: {
+                type: String
+            },
+            jobTitle: {
                 type: String
             },
             email: {
@@ -259,10 +289,13 @@ addEventListener('WebComponentsReady', function() {
             var e = this.getElem(this.ctrls.invalidDialog);
             e.toggle();
         },
+        toggleOptions: function(){
+            document.querySelector("#optionCollapse").toggle();
+        },
         login: function(provider) {
             var params;
             var emailContainer = this.getElem(this.ctrls.emailContainer);
-            var emailInput = this.getElem(this.ctrls.emailInput);
+            var emailInput = this.getElem(this.ctrls.lgnEmailInput);
             var pwContainer = this.getElem(this.ctrls.passwordContainer);
             var pwInput = this.getElem(this.ctrls.password);
             var regEmailContainer = this.getElem(this.ctrls.regEmailContainer);
@@ -273,6 +306,7 @@ addEventListener('WebComponentsReady', function() {
             var doLogin = false;
             this.provider = provider;
             var params;
+            var self = this;
 
             var pwLogin = function(){
 
@@ -281,6 +315,14 @@ addEventListener('WebComponentsReady', function() {
                     params.name = self.name;
                     params.email = self.email;
                     params.password = self.password;
+                    if(self.employer !== null && self.employer !== undefined){
+                        params.employer = self.employer;
+                        app.setUserData("employer", self.employer);
+                    }
+                    if(self.jobTitle !== null && self.jobTitle !== undefined){
+                        params.jobTitle = self.jobTitle;
+                        app.setUserData("jobTitle", self.jobTitle);
+                    }
                     self.$.firebaseLogin.login(params);
 
                 } else {
@@ -355,6 +397,12 @@ addEventListener('WebComponentsReady', function() {
                             params.name = nameInput.value;
                             params.email = self.email;
                             params.password = self.password;
+                            if(this.employer !== null && this.employer !== undefined){
+                                params.employer = this.employer;
+                            }
+                            if(this.jobTitle !== null && this.jobTitle !== undefined){
+                                params.jobTitle = this.jobTitle;
+                            }
                             self.$.firebaseLogin.createUser(self.email, self.password);
                         } else {
                             console.log("invalid credentials");
@@ -408,6 +456,16 @@ addEventListener('WebComponentsReady', function() {
                 } else {
                     app.data.profileImg = this.userData.profileImg;
                 }
+                if(this.userData.employer !== null){
+                    app.data.employer = this.userData.employer;
+                }else{
+                    app.data.employer = null;
+                }
+                if(this.userData.jobTitle !== null){
+                    app.data.jobTitle = this.userData.jobTitle;
+                }else{
+                    app.data.jobTitle = null;
+                }
                 app.data.uid = this.user.auth.uid;
                 app.data.email = this.userData.email;
                 app.element("profilePic").setURL(app.data.profileImg);
@@ -443,6 +501,16 @@ addEventListener('WebComponentsReady', function() {
                 data.name = this.name;
                 data.email = this.user.password.email;
                 data.profileImg = "/images/mascot-unknown.png";
+                if(this.employer !== null){
+                    data.employer = this.employer;
+                }else{
+                    data.employer = null;
+                }
+                if(this.jobTitle !== null){
+                    data.jobTitle = this.jobTitle;
+                }else{
+                    data.jobTitle = null;
+                }
             } else if (this.provider === "google") {
                 data.name = this.$.firebaseLogin.user.google.displayName;
                 data.email = this.$.firebaseLogin.user.google.email;
@@ -526,7 +594,8 @@ addEventListener('WebComponentsReady', function() {
             var pages = document.querySelector('iron-pages');
             var tabs = document.querySelector('paper-tabs');
             var nameInput = this.getElem(this.ctrls.regNameInput);
-            var emailInput = this.getElem(this.ctrls.emailInput);
+            var emailInput = this.getElem(this.ctrls.lgnEmailInput);
+            console.log(emailInput);
 
             pages.selected = tabs.selected;
 
@@ -538,7 +607,7 @@ addEventListener('WebComponentsReady', function() {
 
         },
         _validateEmail: function() {
-            var input = this.getElem(this.ctrls.emailInput);
+            var input = this.getElem(this.ctrls.lgnEmailInput);
             var regInput = this.getElem(this.ctrls.regEmailInput);
             var emailContainer = this.getElem(this.ctrls.emailContainer);
             var regEmailContainer = this.getElem(this.ctrls.regEmailContainer);
@@ -584,6 +653,7 @@ addEventListener('WebComponentsReady', function() {
             var inputs = [pwInput, regPwInput, confirmPwInput];
 
             var re = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/;
+            console.log("hello");
 
             if (pwContainer !== null && pwContainer !== undefined && regPwContainer !== null && regPwContainer !== undefined) {
 

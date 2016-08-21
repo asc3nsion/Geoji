@@ -51,6 +51,12 @@ Polymer({
         input: {
             type: String,
             value: ""
+        },
+        invalid: {
+            type: Boolean,
+            value: false,
+            observer: "_setValidity",
+            notify: true
         }
     },
 
@@ -67,6 +73,12 @@ Polymer({
                 this.assignClass(id, this.getClasses());
             }
         }
+
+        console.log("this is the invalid value: "+this.invalid);
+    },
+
+    _setValidity: function() {
+
     }
 });
 </script>

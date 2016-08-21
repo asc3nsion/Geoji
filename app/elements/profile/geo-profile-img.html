@@ -64,10 +64,20 @@ paper-dialog.profilePic {
                     <input id="{{assignCtrl('imgInput')}}" type="file" hidden="true"></input>
                 </li>
                 <li class="userDataInput center">
-                    <input id="{{assignCtrl('nameInput')}}" value="{{userName::input}}"></input>
+                    <h3>{{email}}</h3>
                 </li>
                 <li class="userDataInput center">
-                    <h3>{{email}}</h3></li>
+                    <label id="{{assignLabel('profileNameInput')}}" for="profileNameInput">Name</label>
+                    <input id="{{assignCtrl('profileNameInput')}}" value="{{userName::input}}"></input>
+                </li>
+                <li class="userDataInput center">
+                    <label id="{{assignLabel('employerInput')}}" for="employerInput">Employer</label>
+                    <input id="{{assignCtrl('employerInput')}}" value="{{employer::input}}"></input>
+                </li>
+                <li class="userDataInput center">
+                    <label id="{{assignLabel('jobTitleInput')}}" for="jobTitleInput">Job Title</label>
+                    <input id="{{assignCtrl('jobTitleInput')}}" value="{{jobTitle::input}}"></input>
+                </li>
             </ul>
             <div class="buttons">
                 <paper-button id="{{assignCtrl('logoutBtn')}}" dialog-dismiss on-tap="logoutUser">Log Out</paper-button>
@@ -94,6 +104,14 @@ Polymer({
             notify: true
         },
         userName: {
+            type: String,
+            value: ""
+        },
+        employer: {
+            type: String,
+            value: ""
+        },
+        jobTitle: {
             type: String,
             value: ""
         },
@@ -146,7 +164,7 @@ Polymer({
 
         var e = this.getElem(this.ctrls.imgInput);
         var p = this.getElem(this.ctrls.ImgUpload);
-        var nameInput = this.getElem(this.ctrls.nameInput);
+        var nameInput = this.getElem(this.ctrls.profileNameInput);
         var imageProcess = this.getElem(this.ctrls.imgProcess);
         var uploadBtn = imageProcess.uploadBtn;
         var processInput = this.getElem(imageProcess.ctrls.imgInput);
@@ -177,11 +195,11 @@ Polymer({
         });
         // document.addEventListener('imgur-upload-success', function(e) {
 
-        // 	console.log("WORKINGGGGGGGG?????");
+        //  console.log("WORKINGGGGGGGG?????");
 
         //   if((self.openEvents['imgur-upload-success'])&&(self.ctrls.saveBtn === uploadBtn)){
-        //   	console.log("GEO_PROFILE");
-        // 	console.log(e);
+        //      console.log("GEO_PROFILE");
+        //  console.log(e);
         //     self.url = e.detail.link;
         //     self.customUrl = e.detail.link;
         //     self.removeOpenEvent('imgur-upload-success');
@@ -209,6 +227,12 @@ Polymer({
         var e = this.getElem(this.ctrls.profileDialog);
         this.userName = app.data.userName;
         this.email = app.data.email;
+        if(app.data.employer !== null){
+            this.employer = app.data.employer;
+        }
+        if(app.data.jobTitle !== null){
+            this.jobTitle = app.data.jobTitle;
+        }
         e.toggle();
     },
     saveUserData: function() {
@@ -220,7 +244,7 @@ Polymer({
         this.update = true;
     },
     updateUserData: function() {
-        var nameInput = this.getElem(this.ctrls.nameInput);
+        var nameInput = this.getElem(this.ctrls.profileNameInput);
         var imgProcess = this.getElem(this.ctrls.imgProcess);
         var profileImg = this.getElem(this.ctrls.loadProfileImg);
         var profilePic = this.getElem("profilePic");
@@ -250,7 +274,7 @@ Polymer({
         app.logout();
     },
     cancelProfileChanges: function() {
-        var nameInput = this.getElem(this.ctrls.nameInput);
+        var nameInput = this.getElem(this.ctrls.profileNameInput);
 
         nameInput.value = app.data.userName;
         this.url = app.data.profileImg;

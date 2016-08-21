@@ -256,8 +256,8 @@ p.invalidError{
                 <paper-input-container id="{{assignCtrl('titleContainer')}}" class="createMarker absolute z100">
                     <paper-tooltip>Enter the Geoji Title</paper-tooltip>
                     <iron-icon id="{{assignCtrl('titleIcon')}}" icon="icons:add-circle-outline" class="inlineBlock z100 detail"></iron-icon>
-                    <input id="{{assignCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute z100" is="iron-input" bind-value="{{title}}">
-                    <label for="{{getCtrl('title')}}">Title</label>
+                    <label id="{{assignLabel('title')}}" for="title">Title</label>
+                    <input id="{{labeledCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute z100" is="iron-input" bind-value="{{title}}">
                     <paper-icon-button suffix icon="clear"></paper-icon-button>
                 </paper-input-container>
                 <paper-menu class="editor left35pct absolute z100">
@@ -272,8 +272,8 @@ p.invalidError{
                                 <paper-input-container class="inlineOneHalf">
                                     <iron-icon suffix icon="icons:date-range" class="detail"></iron-icon>
                                     <paper-input-container id="{{assignCtrl('dateInput')}}">
-                                        <input id="{{assignCtrl('date')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{date}}">
-                                        <label for="{{getCtrl('date')}}">Start Date</label>
+                                        <label id="{{assignLabel('date')}}" for="date">Start Date</label>
+                                        <input id="{{labeledCtrl('date')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{date}}">
                                     </paper-input-container>
                                     <paper-icon-button suffix icon="icons:forward" on-tap="setDate"></paper-icon-button>
                                 </paper-input-container>
@@ -282,8 +282,8 @@ p.invalidError{
                                 <paper-input-container class="inlineOneHalf">
                                     <iron-icon suffix icon="icons:date-range"></iron-icon>
                                     <paper-input-container id="{{assignCtrl('endInput')}}">
-                                        <input id="{{assignCtrl('end')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{end}}">
-                                        <label for="{{getCtrl('end')}}">End Date</label>
+                                        <label id="{{assignLabel('end')}}" for="end">End Date</label>
+                                        <input id="{{labeledCtrl('end')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{end}}">
                                     </paper-input-container>
                                     <paper-icon-button suffix icon="icons:eject" on-tap="setEnd"></paper-icon-button>
                                 </paper-input-container>
@@ -292,8 +292,8 @@ p.invalidError{
                                 <paper-input-container class="inlineOneHalf">
                                     <iron-icon suffix icon="icons:query-builder"></iron-icon>
                                     <paper-input-container id="{{assignCtrl('startTimeInput')}}">
-                                        <input id="{{assignCtrl('startTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{startTime}}">
-                                        <label for="{{getCtrl('startTime')}}">Start Time</label>
+                                        <label id="{{assignLabel('startTime')}}" for="startTime">Start Time</label>
+                                        <input id="{{labeledCtrl('startTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{startTime}}">
                                     </paper-input-container>
                                     <paper-icon-button suffix icon="icons:forward" on-tap="setStartTime"></paper-icon-button>
                                 </paper-input-container>
@@ -302,8 +302,8 @@ p.invalidError{
                                 <paper-input-container class="inlineOneHalf">
                                     <iron-icon suffix icon="icons:query-builder"></iron-icon>
                                     <paper-input-container id="{{assignCtrl('endTimeInput')}}">
-                                        <input id="{{assignCtrl('endTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{endTime}}">
-                                        <label for="{{getCtrl('endTime')}}">End Time</label>
+                                        <label id="{{assignLabel('endTime')}}" for="endTIme">End Time</label>
+                                        <input id="{{labeledCtrl('endTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{endTime}}">
                                     </paper-input-container>
                                     <paper-icon-button suffix icon="icons:eject" on-tap="setEndTime"></paper-icon-button>
                                 </paper-input-container>
@@ -326,8 +326,8 @@ p.invalidError{
                         <iron-icon id="{{assignCtrl('publicIcon')}}" icon="icons:mail" class="inlineBlock detail"></iron-icon>
                         <paper-toggle-button id="{{assignCtrl('public')}}" checked="{{private}}" class="margin-left3pct inlineBlock">Users</paper-toggle-button>
                         <paper-input-container id="{{assignCtrl('email')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
-                            <input id="{{assignCtrl('emailInput')}}" autocomplete="on" type="email" is="iron-input" type="email" autocomplete="on" bind-value="">
-                            <label for="{{getCtrl('emailInput')}}">Email Invite</label>
+                            <label id="{{assignLabel('emailInput')}}" for="emailInput">Email Invite</label>
+                            <input id="{{labeledCtrl('emailInput')}}" autocomplete="on" type="email" is="iron-input" type="email" autocomplete="on" bind-value="">
                             <span class="space"></span>
                             <paper-input-error><p class="invalidError margin-top30px">Enter a valid email!</p></paper-input-error>
                             <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
@@ -338,9 +338,9 @@ p.invalidError{
                         <iron-icon id="{{assignCtrl('encryptIcon')}}" icon="icons:https" class="inlineBlock detail"></iron-icon>
                         <paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}" class="inlineBlock">Encrypt</paper-toggle-button>
                         <paper-input-container id="{{assignCtrl('cipher')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
-                            <input id="{{assignCtrl('cipherInput')}}" type="text" is="iron-input" bind-value="{{cipherKey}}" class="z300">
+                            <label id="{{assignLabel('cipherInput')}}" for="cipherInput">Enter Cipher</label>
+                            <input id="{{labeledCtrl('cipherInput')}}" type="text" is="iron-input" bind-value="{{cipherKey}}" class="z300">
                             <input id="cipherHidden" is="iron-input" type="text" bind-value="{{cipherKey}}" hidden="true">
-                            <label for="{{getCtrl('cipherInput')}}">Enter Cipher</label>
                             <span class="space"></span>
                             <paper-input-error><p class="invalidError">8 characters, 1 number, 1 symbol</p></paper-input-error>
                             <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
@@ -360,13 +360,16 @@ p.invalidError{
                     </datalist>
                 </google-map>
                 <div class="card-actions">
-                    <paper-icon-button on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker">
+                    <label id="{{assignLabel('txtMarkerBtn')}}" for="txtMarkerBtn" name="text Marker button" style="display:none">Create a Text Marker</label>
+                    <paper-icon-button id="{{labeledCtrl('txtMarkerBtn')}}" on-tap="txtMarker" icon="geoji-icons:mascot-txt" class="createMarker">
                         <paper-tooltip>Create a text marker</paper-tooltip>
                     </paper-icon-button>
-                    <paper-icon-button on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker">
+                    <label id="{{assignLabel('imgMarkerBtn')}}" for="imgMarkerBtn" style="display:none">Create an Image Marker</label>
+                    <paper-icon-button id="{{labeledCtrl('imgMarkerBtn')}}" on-tap="imgMarker" icon="geoji-icons:mascot-img" class="createMarker">
                         <paper-tooltip>Create an imaget marker</paper-tooltip>
                     </paper-icon-button>
-                    <paper-icon-button on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker">
+                    <label id="{{assignLabel('vidMarkerBtn')}}" for="vidMarkerBtn" style="display:none">Create an Image Marker</label>
+                    <paper-icon-button id="{{labeledCtrl('vidMarkerBtn')}}" on-tap="vidMarker" icon="geoji-icons:mascot-vid" class="createMarker">
                         <paper-tooltip>Create a video marker</paper-tooltip>
                     </paper-icon-button>
                     <paper-button id="{{assignCtrl('add')}}" class="saveGeoji" raised on-tap="addGeoji" disabled="{{invalid}}">
@@ -403,12 +406,12 @@ p.invalidError{
                 <h2 class="inlineBlock">Geoji Video</h2>
                 <paper-spinner-lite id="{{assignCtrl('vidSpinner')}}" class="orange inlineBlock"></paper-spinner-lite>
                 <paper-input-container id="{{assignCtrl('vidTitle')}}" class="vidInput" bind-value="{{vidTitle}}">
-                    <label>Title</label>
-                    <input id="{{assignCtrl('vidTitleInput')}}" type="text" is="iron-input" bind-value="">
+                    <label for="{{assignLabel('vidTitleInput')}}">Title</label>
+                    <input id="{{labeledCtrl('vidTitleInput')}}" type="text" is="iron-input" bind-value="">
                 </paper-input-container>
                 <paper-input-container id="{{assignCtrl('vidUrl')}}" class="vidInput unselectable" bind-value="{{vidTitle}}">
-                    <label>Link</label>
-                    <input id="{{assignCtrl('vidUrlInput')}}" type="text" is="iron-input" bind-value="{{vidUrl}}">
+                    <label for="{{assignLabel('vidUrlInput')}}">Link</label>
+                    <input id="{{labeledCtrl('vidUrlInput')}}" type="text" is="iron-input" bind-value="{{vidUrl}}">
                 </paper-input-container>
                 <div id="{{assignCtrl('vidImgs')}}">
                     <iron-icon id="{{assignCtrl('vidIcon')}}" icon="geoji-icons:mascot-img-icon" class="createMarker"></iron-icon>
@@ -426,7 +429,8 @@ p.invalidError{
                 <h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
                 <paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
                     <paper-tooltip>Enter Cipher Key: At least 8 characters, 1 number and 1 symbol</paper-tooltip>
-                    <input id="{{assignCtrl('decryptInput')}}" is="iron-input" type="text" class="txtData" bind-value="{{cipherKey}}"></input>
+                    <label for="{{assignLabel('decryptInput')}}">Link</label>
+                    <input id="{{labeledCtrl('decryptInput')}}" is="iron-input" type="text" class="txtData" bind-value="{{cipherKey}}"></input>
                 </paper-input-container>
                 <paper-button id="{{assignCtrl('cancelDecryptBtn')}}" class="txtData theme" raised on-tap="toggleDecryptDialog">CANCEL</paper-button>
                 <paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
@@ -653,6 +657,14 @@ Polymer({
             value: [],
             observer: "_mapSearch",
             notify: true
+        },
+        employer: {
+            type: String,
+            value: ""
+        },
+        jobTitle: {
+            type: String,
+            value: ""
         },
 
     },
@@ -905,9 +917,9 @@ Polymer({
 
         //   if(imgDialog.id === imgProcess.parentElement.id && !imgDialog.hidden && self.geoji[self.selectedMarker] !== undefined){
 
-        //   	self.geoji[self.selectedMarker].img = e.detail.link;
+        //      self.geoji[self.selectedMarker].img = e.detail.link;
 
-        //   	imgDialog.toggle();
+        //      imgDialog.toggle();
         //   }
 
         //       });

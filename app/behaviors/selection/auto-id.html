@@ -75,6 +75,11 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 				value:{},
 				readOnly: false
 			},
+			labels:{
+				type: Object,
+				value:{},
+				readOnly: false
+			},
 			ctrl:{
 				type: String,
 				value: ""
@@ -179,8 +184,21 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 			var uid = this.makeId();
 			var ctrlNum = this.id + "_" + uid;
 			//console.log("assigning ctrl " + ctrlNum);
+			this
 
 			return this.storeCtrl(name, ctrlNum);
+		},
+		assignLabel: function(name){
+			//console.log(name);
+			var uid = this.makeId();
+			var ctrlNum = this.id + "_" + uid;
+
+			return this.storeLabel(name, ctrlNum);
+		},
+		labeledCtrl: function(name){
+
+			return this.storeCtrl(name, name);
+
 		},
 		addCtrl: function(id){
 
@@ -199,6 +217,19 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 
 			return num;
 		},
+		storeLabel: function(name, num){
+
+			if(name !== undefined){
+				var labels = this.labels;
+
+				if(labels === undefined || labels === null || labels == ""){
+					this.labels = {};
+				}
+				this.labels[name] = num;
+			}
+
+			return num;
+		},
 		ctrlSet: function(){
 
 			//console.log(this.name);
@@ -211,6 +242,22 @@ asignCtrl = Assigns unique id, and adds to ctrls table.
 			// 	parent.ctrls[this.ctrl] = this.id;
 			// }
 			
+		},
+		setLabel: function(id){
+			var self = this;
+			setTimeout(function() {
+	            var elem = self.getElem(id+"_label");
+	            var target = self.ctrls[id];
+	            console.log("elem");
+	            console.log(elem);
+	            console.log("target");
+	            console.log(target);
+	            elem.for = target;
+	            console.log(elem);
+	            console.log(elem.for);
+	        }, 900);
+
+	        return id+"_label";
 		},
 		getCtrl: function(key){
 

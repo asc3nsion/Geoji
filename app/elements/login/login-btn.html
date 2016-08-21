@@ -29,15 +29,15 @@ paper-button.custom {
 <dom-module id="login-btn">
     <template>
         <template is="dom-if" if="{{social}}">
-            <j-social-button styles="{{styles}}" input="{{input}}" handler="{{handler}}" icon="{{icon}}" icon_color="{{icon_color}}" parameters="{{parameters}}" classes="{{assignClasses}}">{{provider}}
+            <j-social-button styles="{{styles}}" input="{{input}}" handler="{{handler}}" icon="{{icon}}" icon_color="{{icon_color}}" parameters="{{parameters}}" classes="{{assignClasses}}" invalid="{{invalid}}">{{provider}}
             </j-social-button>
         </template>
         <template is="dom-if" if="{{iron_icon}}">
-            <j-icon-button styles="{{styles}}" input="{{input}}" handler="{{handler}}" icon="{{icon}}" icon_color="{{icon_color}}" text="{{provider}}" parameters="{{parameters}}" classes="{{assignClasses}}">{{provider}}
+            <j-icon-button styles="{{styles}}" input="{{input}}" handler="{{handler}}" icon="{{icon}}" icon_color="{{icon_color}}" text="{{provider}}" parameters="{{parameters}}" classes="{{assignClasses}}" invalid="{{invalid}}">{{provider}}
             </j-icon-button>
         </template>
         <template is="dom-if" if="{{basic}}">
-            <j-button styles="{{styles}}" input="{{input}}" handler="{{handler}}" text="{{provider}}" parameters="{{parameters}}" classes="{{assignClasses}}">{{provider}}
+            <j-button styles="{{styles}}" input="{{input}}" handler="{{handler}}" text="{{provider}}" parameters="{{parameters}}" classes="{{assignClasses}}" invalid="{{invalid}}">{{provider}}
             </j-button>
         </template>
     </template>
@@ -75,6 +75,10 @@ addEventListener('WebComponentsReady', function() {
                 value: false
             },
             iron_icon: {
+                type: Boolean,
+                value: false
+            },
+            invalid: {
                 type: Boolean,
                 value: false
             }
