@@ -33,17 +33,10 @@ This is an element button used as a base for other buttons.
             <paper-card id="[[assignCtrl(data.id)]]_myCard" heading="[[_computeTitle(data.id)]]" image="" class="collection">
                 <div class="topCorner"><img id="[[assignCtrl(data.id)]]_cardProfile" src="" alt="profile" class="cardProfile topCorner"></div>
                 <div class="card-actions">
-                    <paper-button on-tap="shareHandler" class="collection">
-                        <p id="{{data.id}}_shareBtn" class="linkText">Share</p>
-                    </paper-button>
-                    <a id="{{assignCtrl('createLink')}}" href="{{baseUrl}}/create">
-                        <paper-button id "{{assignCtrl('Edit')}}" on-tap="editHandler" class="collection">
-                            <p name="{{data.id}}editBtn" class="linkText">Edit</p>
-                        </paper-button>
-                    </a>
-                    <paper-button on-tap="dataDelete" class="collection">
-                        <p id="{{data.id}}_deleteBtn" class="linkText">Delete</p>
-                    </paper-button>
+                    <paper-fab icon="social:share" name="{{data.id}}shareBtn" title="Share Geoji" on-tap="shareHandler" class="collection inlineBlock margin-left8pct"></paper-fab>
+                    <a id="{{assignCtrl('createLink')}}" name="{{data.id}}editBtn" href="{{baseUrl}}/create" hidden="true"></a>
+                    <paper-fab name="{{data.id}}editBtn" icon="icons:create" title="Edit Geoji" on-tap="editHandler" class="collection inlineBlock margin-left8pct"></paper-fab>
+                    <paper-fab name="{{data.id}}deleteBtn" icon="icons:delete" title="Delete Geoji" on-tap="dataDelete" class="collection inlineBlock margin-left8pct"></paper-fab>
                 </div>
             </paper-card>
         </template>
@@ -132,8 +125,11 @@ Polymer({
             var mineAuth = self.getElem(self.ctrls.mineAuth);
             self.mineURL = "https://geoji.firebaseio.com/mine/" + app.data.uid;
             mineAuth.location = "https://geoji.firebaseio.com/mine/" + app.data.uid;
+            document.getElementById(this.getElem.createLink).addEventListener("click", function(event){
+                event.preventDefault()
+            });
             self._update();
-        }, 2000);;
+        }, 2000);
 
     },
     refresh: function() {
@@ -141,6 +137,14 @@ Polymer({
         this.mineURL = "https://geoji.firebaseio.com/mine/" + app.data.uid;
     },
     dataDelete: function(e) {
+
+        var fab;
+        if(e.target.name !== undefined && e.target.name.indexOf("deleteBtn") !== -1){
+            fab = e.target; 
+        }else{
+            fab = e.target.parentNode;
+        }
+
         var self = this;
         var publicDB = this.getElem(this.ctrls.geojiPublic);
         var publicAuth = this.getElem(this.ctrls.publicAuth);
@@ -150,7 +154,7 @@ Polymer({
         var privateRef = privateAuth.ref;
         var mine = self.getElem(self.ctrls.geojiMine);
         var mineRef = self.getElem(self.ctrls.mineAuth).ref;
-        var id = e.target.id.replace("_deleteBtn", "");
+        var id = fab.name.replace("deleteBtn", "");
 
 
         if (id !== null && id !== undefined) {
@@ -172,12 +176,20 @@ Polymer({
 
     },
     shareHandler: function(e) {
+
+        var fab;
+        if(e.target.name !== undefined && e.target.name.indexOf("shareBtn") !== -1){
+            fab = e.target; 
+        }else{
+            fab = e.target.parentNode;
+        }
+
         var shareDialog = this.getElem(this.ctrls.shareDialog);
         var shareInput = this.getElem(this.ctrls.shareInput);
         var url = window.location.href;
         var arr = url.split("/");
         var base = arr[0] + "//" + arr[2];
-        var id = e.target.id.replace("_shareBtn", "");
+        var id = fab.name.replace("shareBtn", "");
 
         shareInput.value = base + "/geoji/" + id;
         shareDialog.open();
@@ -196,30 +208,31 @@ Polymer({
         this.$.firebasePublicData.add(mainObj);
     },
     editHandler: function(e) {
+
+        var fab;
+
+        if(e.target.name !== undefined && e.target.name.indexOf("editBtn") !== -1){
+            fab = e.target; 
+        }else{
+            fab = e.target.parentNode;
+        }
+
         var editor = app.editor();
-        var id = e.target.name.replace("editBtn", "");
-        var self = this;
-        var cipherDialog = this.getElem(this.ctrls.cipherDialog);
-        var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
-        var target = this.getElem(this.ctrls.targetMarker);
-        var publicDB = this.getElem(this.ctrls.geojiPublic);
-        var publicAuth = this.getElem(this.ctrls.publicAuth);
-        var publicRef = publicAuth.ref;
-        var privateDB = this.getElem(this.ctrls.geojiPrivate);
-        var privateAuth = this.getElem(this.ctrls.privateAuth);
-        var obj = null;
-        var privateRef = privateAuth.ref;
-        var card = e.target.parentNode.parentNode.parentNode.parentNode;
+        var link = this.getElem(this.ctrls.createLink);
+        var id = fab.name.replace("editBtn", "");
+        var card = fab.parentNode.parentNode;
 
         if (card !== null && card !== undefined) {
             if (card.name.includes("encrypted") > 0) {
 
+                this.JClick(link.id);
                 editor.loadEncrypted(id);
 
             } else {
 
+                this.JClick(link.id);
                 editor.loadGeoji(id);
-
+                      
             }
         }
 

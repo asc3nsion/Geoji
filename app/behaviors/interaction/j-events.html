@@ -80,8 +80,15 @@ then the events table can be updated.
 			if(e && document.createEvent) {
 		      var evt = document.createEvent("MouseEvents");
 		      evt.initEvent(event, false, false);
+		      evt.preventDefault();
 		      e.dispatchEvent(evt);
 		   }
+ 		},
+ 		JClick: function(id){
+ 			var evt = document.createEvent("MouseEvent");
+			evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+			var e = document.getElementById(id);
+			e.dispatchEvent(evt);
  		},
  		addOpenEvent: function(key, val){
  			this.openEvents[key] = val;
