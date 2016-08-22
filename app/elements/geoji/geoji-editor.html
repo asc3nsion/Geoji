@@ -255,7 +255,6 @@ p.invalidError{
                 <div class="errorHolder"><p></p></div>
                 <paper-input-container id="{{assignCtrl('titleContainer')}}" class="createMarker absolute z100">
                     <paper-tooltip>Enter the Geoji Title</paper-tooltip>
-                    <iron-icon id="{{assignCtrl('titleIcon')}}" icon="icons:add-circle-outline" class="inlineBlock z100 detail"></iron-icon>
                     <label id="{{assignLabel('title')}}" for="title">Title</label>
                     <input id="{{labeledCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute z100" is="iron-input" bind-value="{{title}}">
                     <paper-icon-button suffix icon="clear"></paper-icon-button>
@@ -959,8 +958,6 @@ Polymer({
             } else {
                 if (!this.geoji.private) {
                     if (publicDB !== null && publicDB !== undefined) {
-                        console.log("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-                        console.log(this.geoji);
                         var obj = {};
                         obj.id = this.geoji.id;
                         obj.uid = app.data.uid;

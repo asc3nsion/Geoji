@@ -41,6 +41,7 @@ img.cardProfile {
     max-width: 5%;
     min-width: 75px;
     margin: 8px;
+    border-radius: 50%;
 }
 </style>
 <dom-module id="geoji-feed">
@@ -64,20 +65,20 @@ img.cardProfile {
                 <div class="topCorner"><img id="[[assignCtrl(data.id)]]_cardProfile" src="[[data.profile.profileImg]]" alt="profile" class="cardProfile topCorner"></div>
                 <div class="card-actions">
                     <template is="dom-if" if="{{canShare}}">
-                        <paper-button on-tap="shareHandler" class="collection">
-                            <p id="{{data.id}}_shareBtn" class="linkText">Share</p>
-                        </paper-button>
+                        <paper-fab icon="social:share" name="{{data.id}}shareBtn" title="Share Geoji" on-tap="shareHandler" class="collection inlineBlock margin-left8pct"></paper-fab>
                     </template>
-                    <a href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeExplore(data)}}">
-                        <paper-button id="{{data.id}}_exploreBtn" on-tap="exploreHandler" name="{{data.id}}_exploreBtn">
+                        
+                        <!-- <paper-button id="{{data.id}}_exploreBtn" on-tap="exploreHandler" name="{{data.id}}_exploreBtn">
                             <p id="{{data.id}}_exploreLink" class="linkText" class="collection">Explore</p>
-                        </paper-button>
-                    </a>
-                    <a id="{{data.id}}_decryptLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="{{_computeEncrypted(data)}}">
-                        <paper-button id="{{data.id}}_decryptBtn" on-tap="decryptHandler">
+                        </paper-button> -->
+                    <paper-fab icon="icons:visibility" name="{{data.id}}exploreBtn" title="Explore Geoji" on-tap="exploreHandler" class="collection inlineBlock margin-left8pct" hidden="{{_computeExplore(data)}}" ></paper-fab>
+                    <a id="{{data.id}}_dataLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="true"></a>
+                    <a id="{{data.id}}_decryptLink" href="{{baseUrl}}/geoji/{{data.id}}" hidden="true">
+                        <!-- <paper-button id="{{data.id}}_decryptBtn" on-tap="decryptHandler">
                             <p class="linkText">Decrypt</p>
-                        </paper-button>
+                        </paper-button> -->
                     </a>
+                    <paper-fab icon="icons:https" name="{{data.id}}decryptBtn" title="Decrypt Geoji" on-tap="decryptHandler" class="collection inlineBlock margin-left8pct" hidden="{{_computeEncrypted(data)}}" ></paper-fab>
                 </div>
             </paper-card>
         </template>
@@ -208,15 +209,21 @@ Polymer({
 
     },
     shareHandler: function(e) {
+
+        var fab;
+        if(e.target.name !== undefined && e.target.name.indexOf("shareBtn") !== -1){
+            fab = e.target; 
+        }else{
+            fab = e.target.parentNode;
+        }
+
         var shareDialog = this.getElem(this.ctrls.shareDialog);
         var shareInput = this.getElem(this.ctrls.shareInput);
-        console.log(e);
         var url = window.location.href;
         var arr = url.split("/");
-        console.log(arr);
         var base = arr[0] + "//" + arr[2];
-        var id = e.target.id.replace("_shareBtn", "");
-        console.log(base + "/geoji/" + id);
+        var id = fab.name.replace("shareBtn", "");
+
         shareInput.value = base + "/geoji/" + id;
         shareDialog.open();
     },
@@ -226,12 +233,20 @@ Polymer({
     },
     decryptHandler: function() {
         var cipherDialog = this.getElem(this.ctrls.cipherDialog);
-        // cipherDialog.open();
+        cipherDialog.open();
     },
     exploreHandler: function(e) {
-        var self = this;
+        var fab;
+        if(e.target.name !== undefined && e.target.name.indexOf("exploreBtn") !== -1){
+            fab = e.target; 
+        }else{
+            fab = e.target.parentNode;
+        }
         var map = this.getElem("mainMap");
-        var id = e.target.name.replace("exploreBtn", "");
+        var id = fab.name.replace("exploreBtn", "");
+        console.log("#" + id + "_dataLink");
+        var link = document.getElementById(id + "_dataLink");
+        this.JClick(link.id);
 
     },
     refresh: function() {
