@@ -7,8 +7,37 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
+paper-card.collection {
+    background-color: #fadd60;
+    border-radius: 35px;
+}
 
+paper-dialog.geo-profile-img {
+    background-color: #fadd60;
+    border-radius: 35px;
+}
 
+paper-checkbox.geoji-editor {
+    color: #594f4f;
+}
+
+iron-icon.geoji-editor {
+    color: #594f4f;
+}
+
+iron-icon.paper-icon-button {
+    color: #594f4f;
+}
+
+paper-input-container.geoji-editor{
+    background-color: #594f4f;
+    color: #fadd60;
+}
+
+paper-card.geoji-editor {
+    background-color: #fadd60;
+    border-radius: 28px;
+}
 paper-button.theme {
   background: #f50057;
 }
@@ -22,10 +51,17 @@ google-map {
   padding: 5px;
   width:500px;
   height: 300px;
+  border-radius: 15px;
 }
+
+.mascot{
+    height: 48px;
+    width: 48px;
+  }
 
 .top5{
   margin-top: 5%;
+
 }
 
 .top10{
@@ -60,6 +96,15 @@ ul{
 
 li.userDataInput{
     margin: 10px 0;
+}
+
+img.cardProfile {
+    max-width: 15%;
+    min-width: 50px;
+    height: 15%;
+    width: 15%;
+    margin: 8px;
+    border-radius: 50%;
 }
 
 
@@ -309,6 +354,64 @@ li.userDataInput{
   margin-left: 90%;
 }
 
+
+
+
+.margin-right3pct {
+  margin-right: 3%;
+}
+
+.margin-right5pct {
+  margin-right: 5%;
+}
+
+.margin-right8pct {
+  margin-right: 8%;
+}
+.margin-right10pct {
+  margin-right: 10%;
+}
+
+.margin-right20pct {
+  margin-right: 20%;
+}
+
+.margin-right30pct {
+  margin-right: 30%;
+}
+
+.margin-right40pct {
+  margin-right: 40%;
+}
+
+.margin-right50pct {
+  margin-right: 50%;
+}
+
+.margin-right60pct {
+  margin-right: 60%;
+}
+
+.margin-right70pct {
+  margin-right: 70%;
+}
+
+.margin-right80pct {
+  margin-right: 80%;
+}
+
+.margin-right90pct {
+  margin-right: 90%;
+}
+
+.topNeg3pct {
+  top: -3%;
+}
+
+.topNeg10pct {
+  top: -10%;
+}
+
 .top3pct {
   top: 3%;
 }
@@ -343,6 +446,14 @@ li.userDataInput{
 
 .top80pct {
   top: 80%;
+}
+
+.left0pct {
+  left: 0%;
+}
+
+.left1pct {
+  left: 1%;
 }
 
 .left3pct {
@@ -408,6 +519,12 @@ li.userDataInput{
 .floatRight {
   float: right;
 }
+
+.inlineList {
+  display: inline;
+  list-style-type: none;
+}
+
 .inlineBlock {
   display: inline-block;
 }
@@ -442,6 +559,12 @@ li.userDataInput{
   width: 75%;
 }
 
+.inlineFill {
+  display: inline-block;
+  width: 100%;
+}
+
+
 .topCorner{
     position:absolute;
     top:0;
@@ -464,3 +587,5 @@ li.userDataInput{
     position:absolute;
     bottom:0;
 }
+
+

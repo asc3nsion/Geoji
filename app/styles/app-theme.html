@@ -25,28 +25,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   /* Application theme */
 
   :root {
-    --primary-text-color: #212121;
-    --primary-background-color: white;
-    --secondary-text-color: #727272;
-    --disabled-text-color:  #BDBDBD;
-    --divider-color: #B6B6B6;
-    --primary-color: #CDDC39;
-    --light-primary-color: #F0F4C3;
-    --dark-primary-color:  #AFB42B;
+    --primary-text-color: #594f4f;
+    --primary-background-color: #ffffff;
+    --secondary-text-color: #b2ebf2;
+    --disabled-text-color:  #333532;
+    --divider-color: #e0e0e0;
+    --primary-color: #45ada8;
+    --light-primary-color: #c5cae9;
+    --dark-primary-color:  #45ada8; 
     --accent-color: #ff4081;
     --light-accent-color: #ff80ab;
     --dark-accent-color: #f50057;
+
+    --default-primary-color: #45ada8; --dark-primary-color: #45ada8; --light-primary-color: #c5cae9; --text-primary-color: #594f4f; --accent-color: #ff4081; --primary-text-color: #594f4f; --secondary-text-color: #594f4f; --disabled-text-color: #333532; --divider-color: #e0e0e0; --paper-checkbox-checked-color: #54d3e3; --paper-checkbox-checked-ink-color: #45ada8; --paper-checkbox-unchecked-color: #b2ebf2; --paper-checkbox-unchecked-ink-color: #594f4f; --paper-checkbox-label-color: #b2ebf2; --paper-fab-background: #45ada8; --paper-fab-disabled-background: #b2b5b1; --paper-fab-disabled-text: #333532; --paper-icon-button-disabled-text: #b2b5b1; --paper-input-container-color: #594f4f; --paper-input-container-focus-color: #45ada8; --paper-input-container-invalid-color: #ff8a65; --paper-input-container-input-color: #594f4f; --paper-menu-background-color: #37474f; --paper-menu-color: #b2ebf2; --paper-menu-disabled-color: #b2b5b1; --paper-progress-active-color: #80deea; --paper-progress-secondary-color: #547980; --paper-radio-button-checked-color: #80deea; --paper-radio-button-checked-ink-color: white; --paper-radio-button-unchecked-color: #b2ebf2; --paper-radio-button-unchecked-ink-color: #594f4f; --paper-radio-button-label-color: #b2ebf2; --paper-slider-knob-color: #80deea; --paper-slider-active-color: #80deea; --paper-slider-pin-color: #80deea; --paper-spinner-layer-1-color: #80deea; --paper-spinner-layer-2-color: #80deea; --paper-spinner-layer-3-color: #80deea; --paper-spinner-layer-4-color: #80deea; --paper-tabs-selection-bar-color: #fadd60; --paper-tab-ink: #fadd60; --paper-toggle-button-checked-bar-color: #80deea; --paper-toggle-button-checked-button-color: #80deea; --paper-toggle-button-checked-ink-color: #80deea; --paper-toggle-button-unchecked-bar-color: #b2ebf2; --paper-toggle-button-unchecked-button-color: white; --paper-toggle-button-unchecked-ink-color: white; --paper-toolbar-background: #45ada8; --paper-toolbar-color: white;
 
 
     /* Components */
 
      /* paper-drawer-panel */
-    --drawer-menu-color:           #ffffff;
+    --drawer-menu-color:           #45ada8;
     --drawer-border-color:         1px solid #ccc;
     --drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
 
     /* paper-menu */
-    --paper-menu-background-color: #fff;
+    --paper-menu-background-color: #fadd60;
     --menu-link-color:             #111111;
 
     /* paper-input */
@@ -74,6 +76,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --jv-datepicker-button-color: #80CBC4;
     --jv-datepicker-button-ink-color: #bcbcbc;
 
+  }
+
+  iron-collapse.iron-collapse-opened{
+    background-color: #594f4f;
+  }
+
+  paper-scroll-header-panel {
+    background: var(--paper-menu-background-color);
+  }
+
+  iron-con {
+    background: var(--paper-input-container-color);
+  }
+
+  paper-menu {
+    background: #F8E385;
+  }
+
+  iron-pages{
+    background: #594f4f;
   }
 
   div.messageContent {
@@ -112,6 +134,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   paper-scroll-header-panel {
     height: 100%;
+  }
+
+  paper-drawer-panel {
+    background: #594f4f;
   }
 
   paper-menu {
@@ -193,12 +219,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   paper-material {
-    border-radius: 15px;
+    border-radius: 35px;
     height: 100%;
     padding: 16px 0 16px 0;
     width: calc(98.66% - 16px);
-    margin: 16px auto;
-    background: white;
   }
 
   #toast .toast-hide-button {

@@ -253,12 +253,31 @@ p.invalidError{
             </firebase-collection>
             <paper-card id="{{assignCtrl('geojiCard')}}" heading="" image="{{cardImage}}" class="relative editor">
                 <div class="errorHolder"><p></p></div>
-                <paper-input-container id="{{assignCtrl('titleContainer')}}" class="createMarker absolute z100">
-                    <paper-tooltip>Enter the Geoji Title</paper-tooltip>
-                    <label id="{{assignLabel('title')}}" for="title">Title</label>
-                    <input id="{{labeledCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute z100" is="iron-input" bind-value="{{title}}">
-                    <paper-icon-button suffix icon="clear"></paper-icon-button>
-                </paper-input-container>
+                <paper-menu class="editor left0pct absolute z100 inlineFill">
+                    <paper-submenu>
+                        <paper-item class="menu-trigger">
+                            <paper-tooltip>Enter Date and Time information</paper-tooltip>
+                            <iron-icon suffix id="{{assignCtrl('dateIcon')}}" icon="icons:add-box" class="z100 detail"></iron-icon>
+                            <paper-icon-button suffix icon="arrow-drop-down-circle" class="z100"></paper-icon-button>
+                        </paper-item>
+                        <paper-menu class="menu-content">
+                            <paper-item>
+                                <paper-input-container id="{{assignCtrl('titleContainer')}}" class="inlineFill">
+                                    <paper-tooltip>Enter the Geoji Title</paper-tooltip>
+                                    <label id="{{assignLabel('title')}}" for="title">Title</label>
+                                    <input id="{{labeledCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute z100 inlineThreeEighths" is="iron-input" bind-value="{{title}}"></input>
+                                </paper-input-container>
+                            </paper-item>
+                            <paper-item>
+                                <paper-input-container id="{{assignCtrl('titleContainer')}}" class="inlineFill">
+                                    <paper-tooltip>Enter the Geoji Title</paper-tooltip>
+                                    <label id="{{assignLabel('title')}}" for="title">Description</label>
+                                    <textarea id="{{labeledCtrl('title')}}" type="text" autofocus="true" class="createMarker absolute z100" is="iron-input" bind-value="{{title}}"></textarea>
+                                </paper-input-container>
+                            </paper-item>
+                        </paper-menu>
+                    </paper-submenu>
+                </paper-menu>
                 <paper-menu class="editor left35pct absolute z100">
                     <paper-submenu>
                         <paper-item class="menu-trigger">

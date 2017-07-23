@@ -119,15 +119,32 @@ paper-dialog.decryptData {
             </div>
             <a id="{{assignCtrl('backLink')}}" data-route="home" href="/" hidden="true"></a>
             <div class="card-content floatRight">
-                <h3>{{detail}}</h3></div>
+                <h1>{{detail}}</h1></div>
             <google-map id="{{assignCtrl('map')}}" min-zoom="9" max-zoom="30" language="en" api-key="AIzaSyCgmlzQ8iH-U2KDt2mhXJbZvQm-KB5dWSo" clickEvents="true" fitToMarkers="true" zoom="20" class="mainMap">
                 <google-map-marker id="{{assignCtrl('targetMarker')}}" name="targetMarker" latitude="{{currentLatitude}}" longitude="{{currentLongitude}}" draggable="true" drag-events="true" click-events="true" icon="/images/marker-target.png"></google-map-marker>
             </google-map>
-            <div class="card-actions">
+            
+            <div role="listbox" class="inlineOneThird">
+              <paper-item>
+                <div class="inlineOneThird margin-right15pct"><img id="{{assignCtrl('cardProfile')}}" src="{{profileImg}}" alt="profile" class="cardProfile profileP"></div>
+                <paper-item-body two-line>
+                  <div><h2>{{profileName}}</h2></div>
+                  <div secondary>Change your Google+ profile photo</div>
+                </paper-item-body>
+              </paper-item>
+            </div>
+            <div role="listbox" class="floatRight margin-top3pct margin-right40pct">
+              <paper-item>
+                <paper-item-body two-line>
+                  <div>Start: {{date}}</div>
+                  <div secondary>End: {{end}}</div>
+                </paper-item-body>
+              </paper-item>
+            </div>
+            <!-- <div class="card-actions">
                 <div class="center">Start: {{date}}</div>
                 <div class="center">End: {{end}}</div>
-            </div>
-            <div class="bottomRightCorner"><img id="{{assignCtrl('cardProfile')}}" src="{{profileImg}}" alt="profile" on-tap="openProfile" class="cardProfile bottomRightCorner"></div>
+            </div> -->
         </paper-card>
         <paper-dialog class="txtContent" id="{{assignCtrl('txtDialog')}}" modal role="alertdialog">
             <div class="topCorner">

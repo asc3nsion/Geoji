@@ -42,13 +42,20 @@ paper-button.profileBtns {
 paper-dialog.profilePic {
     width: 10vw;
     height: 10vh;
+    border-radius: 35px;
+}
+
+.settings {
+    --iron-icon-height: 48px;
+    --iron-icon-width: 48px;
 }
 </style>
 <dom-module id="geo-profile-img">
     <template>
         <div>
             <paper-tooltip>Change profile information, and Logout</paper-tooltip>
-            <j-profile-img id="profilePic" class="j-profile-img" url="{{url}}" on-tap="dialogHandler"></j-profile-img>
+            <iron-icon icon="icons:settings" class="settings" url="{{url}}" on-tap="dialogHandler"></iron-icon>
+            <!-- <j-profile-img id="profilePic" class="j-profile-img" url="{{url}}" on-tap="dialogHandler"></j-profile-img> -->
             <paper-spinner-lite id="{{assignCtrl('progressSpinner')}}" class="orange avatarSpinner"></paper-spinner-lite>
         </div>
         <paper-dialog id="{{assignCtrl('profileDialog')}}" modal role="alertdialog">
@@ -69,14 +76,6 @@ paper-dialog.profilePic {
                 <li class="userDataInput center">
                     <label id="{{assignLabel('profileNameInput')}}" for="profileNameInput">Name</label>
                     <input id="{{assignCtrl('profileNameInput')}}" value="{{userName::input}}"></input>
-                </li>
-                <li class="userDataInput center">
-                    <label id="{{assignLabel('employerInput')}}" for="employerInput">Employer</label>
-                    <input id="{{assignCtrl('employerInput')}}" value="{{employer::input}}"></input>
-                </li>
-                <li class="userDataInput center">
-                    <label id="{{assignLabel('jobTitleInput')}}" for="jobTitleInput">Job Title</label>
-                    <input id="{{assignCtrl('jobTitleInput')}}" value="{{jobTitle::input}}"></input>
                 </li>
             </ul>
             <div class="buttons">
