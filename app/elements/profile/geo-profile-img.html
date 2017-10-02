@@ -43,6 +43,7 @@ paper-dialog.profilePic {
     width: 10vw;
     height: 10vh;
     border-radius: 35px;
+    z-index: 100;
 }
 
 .settings {
@@ -226,12 +227,6 @@ Polymer({
         var e = this.getElem(this.ctrls.profileDialog);
         this.userName = app.data.userName;
         this.email = app.data.email;
-        if(app.data.employer !== null){
-            this.employer = app.data.employer;
-        }
-        if(app.data.jobTitle !== null){
-            this.jobTitle = app.data.jobTitle;
-        }
         e.toggle();
     },
     saveUserData: function() {

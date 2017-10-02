@@ -100,8 +100,6 @@ This is an element button for google auth using firebase api
                             <li class="center-horiz">Social Login</li>
                             <li class="center-horiz">
                                 <login-btn styles="{{btnStyle}}" input="{{getId()}}" handler="login" provider="google" social="true" icon="googleplus" icon_color="#FFFFFF"></login-btn>
-                                <login-btn input="{{getId()}}" handler="logout" provider="twitter" social="true" icon="twitter" icon_color="#FFFFFF"></login-btn>
-                                <login-btn input="{{getId()}}" handler="login" provider="facebook" social="true" icon="facebook" icon_color="#FFFFFF"></login-btn>
                             </li>
                         </ul>
                     </div>
@@ -149,25 +147,6 @@ This is an element button for google auth using firebase api
                                     <input id="{{labeledCtrl('regPasswordInput')}}" type="password" autocomplete="on" placeholder="password" name="registerPassword" value="{{password::input}}" bind-value="{{password}}"></input>
                                     <paper-input-error class="login"><p class="invalidError">{{passwordError}}</p></paper-input-error>
                                 </paper-input-container>
-                            </li>
-                            <li class="center-horiz">
-                                <paper-menu class="inlineBlock optionalInfo">
-                                    <paper-icon-button id="{{labeledCtrl('regOptions')}}" suffix icon="arrow-drop-down-circle" on-tap="toggleOptions" class="z100">
-                                    Optional Information</paper-icon-button>
-                                    <label id="{{assignLabel('regOptions')}}" for="regOptions">Optional Information</label>
-                                    <iron-collapse id="optionCollapse" tabindex="0" opened="{{opened1}}">
-                                      <div class="content">
-                                        <paper-input-container>
-                                            <label id="{{assignLabel('lgnEmployer')}}" for="lgnEmployer">Employer</label>
-                                            <input id="{{labeledCtrl('lgnEmployer')}}" type="text" autocomplete="on" value="{{employer::input}}" bind-value=""></input>
-                                        </paper-input-container>
-                                        <paper-input-container>
-                                            <label id="{{assignLabel('lgnJobTitle')}}" for="lgnJobTitle">Job Title</label>
-                                            <input id="{{labeledCtrl('lgnJobTitle')}}" type="text" autocomplete="on" value="{{jobTitle::input}}" bind-value=""></input>
-                                        </paper-input-container>
-                                      </div>
-                                    </iron-collapse>
-                                </paper-menu>
                             </li>
                             <li class="center-horiz">
                                 <login-btn styles="{{btnStyles}}" input="{{getId()}}" handler="register" provider="password" basic="true" invalid></login-btn>

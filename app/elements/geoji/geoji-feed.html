@@ -459,6 +459,11 @@ Polymer({
             }
         }
 
+        var decryptFail = function() {
+            saveSpinner.active = false;
+            saveDialog.close();
+        }
+
         if (eKeys.length === dKeys.length) {
             var cipherDialog = this.getElem(this.ctrls.cipherDialog);
 
@@ -584,7 +589,15 @@ Polymer({
         if (obj !== null) {
             
             console.log("building Geoji...");
-            console.log(obj);
+            var map = app.element("mainMap");
+
+            if (map) {
+                app.show("mainMap");
+                map.buildGeoji(obj);
+                setTimeout(function() {
+                    map.refresh();
+                }, 1000);
+            }
 
         } else {
             console.log("cannot load geoji with id: " + obj.id);
