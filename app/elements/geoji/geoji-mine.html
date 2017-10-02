@@ -16,6 +16,8 @@ This is an element button used as a base for other buttons.
 <link rel="import" href="../../behaviors/interaction/j-events.html">
 <link rel="import" href="../../behaviors/selection/auto-id.html">
 <link rel="import" href="../../behaviors/style/j-styles.html">
+<link rel="import" href="../../behaviors/crypto/j-encrypt.html">
+<link rel="import" href="../../behaviors/crypto/j-decrypt.html">
 <style>
     img.profileImg {
         border-radius: 50%;
@@ -194,7 +196,7 @@ Polymer({
         var base = arr[0] + "//" + arr[2];
         var id = fab.name.replace("shareBtn", "");
 
-        shareInput.value = base + "/geoji/" + id;
+        shareInput.value = base + "/geoji%" + id;
         shareDialog.open();
     },
     closeShare: function() {

@@ -67,6 +67,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
     page('/geoji/:id', function(data) {
+      console.log("this should be internal load.");
       var map = app.element("mainMap");
       app.route = 'geoji';
       app.setLastRoute('geoji');
@@ -77,9 +78,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     // 404
     page('*', function() {
+      console.log(window.location.href);
       if(window.location.href.includes("geoji")){
+        console.log("external load.");
         var map = app.element("mainMap");
-        var arr = window.location.href.split("/");
+        var arr = window.location.href.split("%");
         var id = arr[arr.length-1];
         app.route = 'geoji';
         app.setLastRoute('geoji');

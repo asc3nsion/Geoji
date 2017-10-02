@@ -68,8 +68,12 @@ encryption installed.
  			var keys = Object.keys(obj);
  			var self = this;
 
- 			if (!this.skipKey(innerKey)) {
+ 			console.log(data);
+ 			console.log("the data is: " + typeof data);
+ 			console.log("the cipher is: " + typeof cipher);
 
+ 			if (!this.skipKey(innerKey)) {
+ 				console.log("makes it here 111...");
  				triplesec.decrypt({
 
  					data: new triplesec.Buffer(data, "hex"),
@@ -99,6 +103,7 @@ encryption installed.
  						}
 
  					} else {
+ 						console.log("makes it here...");
  						console.log(err);
  					}
 

@@ -278,63 +278,12 @@ p.invalidError{
                         </paper-menu>
                     </paper-submenu>
                 </paper-menu>
-                <paper-menu class="editor left35pct absolute z100">
-                    <paper-submenu>
-                        <paper-item class="menu-trigger">
-                            <paper-tooltip>Enter Date and Time information</paper-tooltip>
-                            <iron-icon suffix id="{{assignCtrl('dateIcon')}}" icon="icons:alarm-add" class="z100 detail"></iron-icon>
-                            <paper-icon-button suffix icon="arrow-drop-down-circle" class="z100"></paper-icon-button>
-                        </paper-item>
-                        <paper-menu class="menu-content">
-                            <paper-item>
-                                <paper-input-container class="inlineOneHalf">
-                                    <iron-icon suffix icon="icons:date-range" class="detail"></iron-icon>
-                                    <paper-input-container id="{{assignCtrl('dateInput')}}">
-                                        <label id="{{assignLabel('date')}}" for="date">Start Date</label>
-                                        <input id="{{labeledCtrl('date')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{date}}">
-                                    </paper-input-container>
-                                    <paper-icon-button suffix icon="icons:forward" on-tap="setDate"></paper-icon-button>
-                                </paper-input-container>
-                            </paper-item>
-                            <paper-item>
-                                <paper-input-container class="inlineOneHalf">
-                                    <iron-icon suffix icon="icons:date-range"></iron-icon>
-                                    <paper-input-container id="{{assignCtrl('endInput')}}">
-                                        <label id="{{assignLabel('end')}}" for="end">End Date</label>
-                                        <input id="{{labeledCtrl('end')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{end}}">
-                                    </paper-input-container>
-                                    <paper-icon-button suffix icon="icons:eject" on-tap="setEnd"></paper-icon-button>
-                                </paper-input-container>
-                            </paper-item>
-                            <paper-item>
-                                <paper-input-container class="inlineOneHalf">
-                                    <iron-icon suffix icon="icons:query-builder"></iron-icon>
-                                    <paper-input-container id="{{assignCtrl('startTimeInput')}}">
-                                        <label id="{{assignLabel('startTime')}}" for="startTime">Start Time</label>
-                                        <input id="{{labeledCtrl('startTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{startTime}}">
-                                    </paper-input-container>
-                                    <paper-icon-button suffix icon="icons:forward" on-tap="setStartTime"></paper-icon-button>
-                                </paper-input-container>
-                            </paper-item>
-                            <paper-item>
-                                <paper-input-container class="inlineOneHalf">
-                                    <iron-icon suffix icon="icons:query-builder"></iron-icon>
-                                    <paper-input-container id="{{assignCtrl('endTimeInput')}}">
-                                        <label id="{{assignLabel('endTime')}}" for="endTIme">End Time</label>
-                                        <input id="{{labeledCtrl('endTime')}}" type="text" class="inlineOneHalf" is="iron-input" bind-value="{{endTime}}">
-                                    </paper-input-container>
-                                    <paper-icon-button suffix icon="icons:eject" on-tap="setEndTime"></paper-icon-button>
-                                </paper-input-container>
-                            </paper-item>
-                        </paper-menu>
-                    </paper-submenu>
-                </paper-menu>
-                <paper-menu class="editor left60pct absolute" data-tip="This is the text of the tooltip2">
+                <paper-menu class="editor left50pct absolute" data-tip="This is the text of the tooltip2">
                     <paper-submenu>
                         <paper-item class="menu-trigger">
                             <paper-tooltip>Check this make Geoji Anonymous</paper-tooltip>
                             <iron-icon suffix icon="icons:block" class="detail"></iron-icon>
-                            <paper-checkbox id="{{assignCtrl('includeProfile')}}" checked="{{anonymous}}"></paper-checkbox>
+                            <paper-checkbox id="{{assignCtrl('includeProfile')}}" checked="{{anonymous}}" class="checkbox-anonymous"></paper-checkbox>
                         </paper-item>
                     </paper-submenu>
                 </paper-menu>
@@ -687,8 +636,7 @@ Polymer({
 
     },
     observers: [
-      '_checkValid(title.*)', '_checkValid(anonymous.*)', '_checkValid(date.*)', '_checkValid(end.*)', '_checkValid(startTime.*)', '_checkValid(endTime.*)',
-      '_checkValid(encrypted.*)', '_checkValid(cipherKey.*)'
+      '_checkValid(title.*)', '_checkValid(anonymous.*)','_checkValid(encrypted.*)', '_checkValid(cipherKey.*)'
     ],
 
     behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, InteractionBehaviors.JEvents, SelectionBehaviors.AutoId,
@@ -1931,10 +1879,13 @@ Polymer({
         var saveSpinner = this.getElem(this.ctrls.saveSpinner);
         var encryptProgress = this.getElem(this.ctrls.encryptProgress);
         var mineFeed = this.getElem("mineFeed");
+        var cipher = this.getElem(this.ctrls.cipherInput).value;
 
         encryptProgress.value = eKeys.length * 10;
 
         var encryptComplete = function() {
+            this.cipherKey = "";
+            this.getElem(this.ctrls.cipherInput).value = "";
             if (add !== undefined && add !== null) {
                 if (!add.hidden) {
                     encryptProgress.value = 0;
@@ -2083,6 +2034,12 @@ Polymer({
                             self.encrypt_MainObj(i + 1, cipher);
                         }
                         break;
+                    case "coverImg":
+                        console.log("coverImg");
+                        self.geojiEncrypted.coverImg = self.geoji.coverImg;
+                        self.encrypt_MainObj(i + 1, cipher);
+
+                        break;
                     default:
                         console.log("default");
                         console.log(keys[i]);
@@ -2141,6 +2098,7 @@ Polymer({
             decryptProgress.value = 0;
             decryptSpinner.active = false;
             this.buildGeoji(this.decryptedObj);
+            this.cipherKey = "";
 
             console.log("ALL DATA SHOULD BE DECRYPTED.");
 
@@ -2215,6 +2173,13 @@ Polymer({
 
                     if (self.encryptedObj.target !== null && self.encryptedObj.target !== undefined) {
                         self.decryptedObj.target = self.encryptedObj.target;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "coverImg":
+
+                    if (self.encryptedObj.coverImg !== null && self.encryptedObj.coverImg !== undefined) {
+                        self.decryptedObj.coverImg = self.encryptedObj.coverImg;
                         self.decrypt_MainObj(i + 1, this.cipherKey);
                     }
                     break;
@@ -2372,339 +2337,7 @@ Polymer({
 
     },
     _validateDateTime: function(){
-        var dateInput = this.getElem(this.ctrls.dateInput);
-        var endInput = this.getElem(this.ctrls.endInput);
-        var startTimeInput = this.getElem(this.ctrls.startTimeInput);
-        var endTimeInput = this.getElem(this.ctrls.endTimeInput);
-        var datesValid = false;
-        var icon = this.getElem(this.ctrls.dateIcon);
-        var self = this;
-
-
-        if(this.date !== null && this.date !== undefined
-            && this.startTime !== null && this.startTime !== undefined
-            && this.endTime !== null && this.endTime !== undefined
-            && this.date !== null && this.date !== undefined
-            && this.end !== null && this.end !== undefined){
-
-            var doValidate = function(dateArr, stTimeArr, endArr, enTimeArr){
-
-                if(stTimeArr[1] !== undefined && enTimeArr[1] !== undefined)
-                {
-
-                    var stMinArr = stTimeArr[1].split(" ");
-                    var stHours = parseFloat(stTimeArr[0]);
-                    var stMinutes = parseFloat(stMinArr[0]);
-                    var stTimeDay = stMinArr[1];
-                    var date = [];
-                    var enMinArr = enTimeArr[1].split(" ");
-                    var enHours = parseFloat(enTimeArr[0]);
-                    var enMinutes = parseFloat(enMinArr[0]);
-                    var enTimeDay = enMinArr[1];
-                    var end = [];
-                    var errors = [];
-
-
-                    for(i in dateArr)
-                    {
-                        date.push(parseFloat(dateArr[i]));
-                    }
-
-                    for(i in endArr)
-                    {
-                        end.push(parseFloat(endArr[i]));
-                    }
-
-                    var dateChecker = function(int){
-                        //if on the same day
-                            if(date[int]==end[int])
-                            {//if on the same day
-                                return 0;    
-                            }
-                            else if(date[int]<end[int])
-                            {//if start day before end day
-                                return 1; 
-                            }
-                            else if(date[int]>end[int])
-                            {
-                                return -1;
-                            }
-                    }
-
-                    var year = function(){
-                        //if on the same day
-                        return dateChecker(0)
-                    }
-
-                    var month = function(){
-                        //if on the same day
-                        return dateChecker(1)
-                    }
-
-                    var day = function(){
-                        //if on the same day
-                        return dateChecker(2)
-                    }
-
-                    var hour = function(){
-                        if(stHours === enHours)
-                        {
-                            return 0;
-                        }
-                        else if(stHours < enHours)
-                        {
-
-                            if(stHours === 12)
-                            {
-                                return -1;
-                            }
-                            else
-                            {
-                                return 1;         
-                            } 
-                        }
-                        else if(stHours > enHours)
-                        {
-                            if(stHours === 12)
-                            {
-                                return 1;
-                            }
-                            else
-                            {
-                                return -1;         
-                            }              
-                        }
-                    }
-
-                    var minute = function(){
-                        if(stMinutes === enMinutes)
-                        {
-                            return 0;
-                        }else if(stMinutes < enMinutes)
-                        {
-                            return 1; 
-                        }else if(stMinutes > enMinutes)
-                        {
-                            return -1;              
-                        }
-                    }
-
-                    var timeDaySame = function(){
-                        if(stTimeDay === enTimeDay)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;                          
-                        }
-                    }
-
-                    var timeValid = function(){
-                        if(timeDaySame()){
-
-                            if(hour() === 0)
-                            {
-
-                            }
-                            else if(hour() > 0)
-                            {
-
-                            }
-                            else if(hour() < 0)
-                            {
-
-                            }
-
-                        }else{
-
-                        }
-                    }
-
-                    var currentDate = function(){
-                        var sysDate = new Date();
-                        var yr = sysDate.getFullYear();
-                        var mth = sysDate.getMonth()+1;
-                        var dy = sysDate.getDate();
-                        var currentD = false;
-
-                        if(date[0] >= yr
-                            && date[1] >= mth
-                            && date[2] >= dy)
-                        {
-                            currentD = true;
-                        }
-
-                        //console.log("date is before: "+currentD);
-
-                        return currentD;
-                    }
-
-                    var setValid = function(){
-                        
-                        dateInput.invalid = false;
-                        endInput.invalid = false;
-                        startTimeInput.invalid = false;
-                        endTimeInput.invalid = false;
-                        self.replaceClass(icon, "fail", "pass");
-                        datesValid = true;
-                    }
-
-                    if(currentDate())
-                    {
-                        if(year() === 0)//if start year is equal to end year
-                        {
-                            if(month() === 0)
-                            {
-                                if(day() === 0){
-                                    //console.log("day is same");
-                                    if(hour() === 0)
-                                    {
-                                        if(minute() === 0)
-                                        {
-                                            
-                                            //console.log("end time must be later than start time.");
-                                            self.assignClass(icon, "fail");
-                                            startTimeInput.invalid = true;
-                                        }
-                                        else if(minute() < 0)
-                                        {
-                                            //console.log("start minutes is earlier than end minutes.");
-                                            self.assignClass(icon, "fail");
-                                            startTimeInput.invalid = true;
-                                        }
-                                        else if(minute() > 0)
-                                        {
-                                            //console.log("this should pass.");
-                                            setValid();
-                                        }
-                                    }
-                                    else if(hour() < 0)
-                                    {
-                                        //console.log("start hour cannot be before end hour.");
-                                        self.assignClass(icon, "fail");
-                                        startTimeInput.invalid = true;
-                                    }
-                                    else if(hour() > 0)
-                                    {
-                                        //console.log("this should pass.");
-                                        setValid();
-                                    }
-                                }else if(day() < 0){
-                                    //console.log("end day cannot be before end date.");
-                                    self.assignClass(icon, "fail");
-                                    dateInput.invalid = true;
-                                    endInput.invalid = true;
-                                }else if(day() > 0){
-                                    //console.log("this should be ok for anytime.");
-                                    setValid();
-                                }else if(day() === 0){
-                                    //console.log("check if start time is after end time.");
-                                    if(hour() === 0)
-                                    {
-                                        //console.log("if hour is same, minutes must be later.");
-                                        if(minute() === 0)
-                                        {
-                                            //console.log("start minutes, cant be same or less than end minutes.");
-                                            self.assignClass(icon, "fail");
-                                            startTimeInput.invalid = true;
-                                        }
-                                        else if(minute() > 0)
-                                        {
-                                            //console.log("this should be ok for anytime.");
-                                            setValid();
-                                        }
-                                        else if(minute() < 0)
-                                        {
-                                            //console.log("start minutes, cant be same or less than end minutes.");
-                                            self.assignClass(icon, "fail");
-                                            startTimeInput.invalid = true;
-                                        }
-
-                                    }
-                                    else if(hour() < 0)
-                                    {
-                                        //console.log("start hour cant be less than end hour.");
-                                        self.assignClass(icon, "fail");
-                                        startTimeInput.invalid = true;
-                                    }
-                                    if(hour() > 0)
-                                    {
-                                       // console.log("this should be ok for anytime.");
-                                        setValid();
-                                    }
-                                }
-                            }
-                            else if(month() < 0)
-                            {
-                                //console.log("start month cannot be before end month.");
-                                self.assignClass(icon, "fail");
-                                dateInput.invalid = true;
-                            }
-                            else if(month() > 0)
-                            {
-                                //console.log("this should pass.");
-                                setValid();
-                            }
-
-                        }
-                        else if(year() < 0)//if start year is less than end year
-                        {
-                            //console.log("start year cannot be before end year.");
-                            this.assignClass(icon, "fail");
-                            dateInput.invalid = true;
-                        }
-                        else if(year() > 0)//if start year is more than end year
-                        {
-                            //console.log("this should pass.");
-                            setValid();
-                        }
-                    }
-                    else
-                    {
-                        //console.log("start date cannot be before current date.");
-                        self.replaceClass(icon, "pass", "fail");
-                        self.assignClass(icon, "fail");
-                    }
-                }
-            }
-
-
-            if(this.date !== this.end && this.startTime !== this.endTime)
-            {
-
-                var dateArr = this.date.split("/");
-                var stTimeArr = this.startTime.split(":");
-                var endArr = this.end.split("/");
-                var enTimeArr = this.endTime.split(":");
-
-                doValidate(dateArr, stTimeArr, endArr, enTimeArr);
-                
-            }
-            else if(this.date !== this.end && this.startTime === this.endTime)
-            {
-                //console.log("time is not set");
-
-                this.assignClass(icon, "fail");
-                if(startTimeInput !== null && startTimeInput !== undefined
-                    && endTimeInput !== null && endTimeInput !== undefined){
-                    startTimeInput.invalid = true;
-                    endTimeInput.invalid = true;
-                }
-
-            }else if(this.date === this.end && this.startTime !== this.endTime)
-            {
-                var dateArr = this.date.split("/");
-                var stTimeArr = this.startTime.split(":");
-                var endArr = this.end.split("/");
-                var enTimeArr = this.endTime.split(":");
-
-                doValidate(dateArr, stTimeArr, endArr, enTimeArr);
-            }
-
-        }
-
-        this.dateTime = datesValid;
+        this.dateTime = true;
         //console.log(this.dateTime);
     },
     _storeEmails: function() {
@@ -2781,9 +2414,6 @@ Polymer({
 
 
         if(title !== null && title !== undefined
-            && start !== null && start !== undefined
-            && startTime !== null && startTime !== undefined
-            && endTime !== null && endTime !== undefined
             && cipherInput !== null && cipherInput !== undefined
             && this.encrypted !== null && this.encrypted !== undefined)
         {

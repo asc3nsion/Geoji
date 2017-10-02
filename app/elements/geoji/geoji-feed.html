@@ -39,6 +39,8 @@ p.linkText {
 </style>
 <dom-module id="geoji-feed">
     <template>
+        <firebase-auth id="{{assignCtrl('publicAuth')}}" location="https://geoji.firebaseio.com/public"></firebase-auth>
+        <firebase-auth id="{{assignCtrl('privateAuth')}}" location="https://geoji.firebaseio.com/private"></firebase-auth>
         <firebase-collection id="{{assignCtrl('geojiMine')}}" limit-to-first="100" location="{{mineURL}}" data="{{mineFeed}}">
         </firebase-collection>
         <firebase-collection id="{{assignCtrl('feed')}}" limit-to-first="100" location="{{feedURL}}" data="{{mainFeed}}">
@@ -71,7 +73,7 @@ p.linkText {
                             <p class="linkText">Decrypt</p>
                         </paper-button> -->
                     </a>
-                    <paper-fab icon="icons:https" name="{{data.id}}decryptBtn" title="Decrypt Geoji" on-tap="decryptHandler" class="collection inlineBlock margin-left8pct" hidden="{{_computeEncrypted(data)}}" ></paper-fab>
+                    <paper-fab icon="icons:https" name="{{data.id}}_decryptBtn" title="Decrypt Geoji" on-tap="decryptHandler" class="collection inlineBlock margin-left8pct" hidden="{{_computeEncrypted(data)}}" ></paper-fab>
                 </div>
             </paper-card>
         </template>
@@ -79,8 +81,7 @@ p.linkText {
             <paper-progress class="bar" id="{{assignCtrl('decryptProgress')}}"></paper-progress>
             <h2>Enter Cipher Key<paper-spinner-lite id="{{assignCtrl('decryptSpinner')}}"  class="center"></paper-spinner-lite></h2>
             <paper-input-container id="{{assignCtrl('decryptContainer')}}" class="txtData" bind-value="">
-                <input id="{{assignCtrl('decryptInput')}}" type="url" is="iron-input" class="txtData" bind-value="{{cipherKey}}"></input>
-                <label for="{{getCtrl('decryptInput')}}">decrypt</label>
+                <input id="{{assignCtrl('decryptInput')}}" is="iron-input" class="txtData" bind-value="{{cipherKey}}"></input>
             </paper-input-container>
             <paper-button id="{{assignCtrl('cancelDecryptBtn')}}" class="txtData theme" raised on-tap="toggleDecryptDialog">CANCEL</paper-button>
             <paper-button id="{{assignCtrl('decryptBtn')}}" class="txtData theme" raised on-tap="_decryptGeoji">DECRYPT</paper-button>
@@ -89,7 +90,7 @@ p.linkText {
             <h2>Share GEOJI<div class="topCorner"><paper-icon-button suffix class="closeShare" icon="clear" on-tap="closeShare" class="topCorner"></paper-icon-button></div></h2>
             <paper-input-container id="{{assignCtrl('shareContainer')}}" class="txtData" bind-value="{{shareUrl}}" class="share">
                 <input id="{{assignCtrl('shareInput')}}" type="text" is="iron-input" bind-value="{{shareUrl}}" class="share">
-                <label for="{{getCtrl('shareInput')}}">share</label>
+                <label for="{{getCtrl('shareInput')}}"></label>
                 <input id="cipherHidden" is="iron-input" bind-value="{{shareUrl}}" hidden="true">
                 <paper-input-error>Enter or Generate cipher</paper-input-error>
                 <paper-icon-button id="{{assignCtrl('shareCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden"></paper-icon-button>
@@ -174,11 +175,17 @@ Polymer({
         },
         shareUrl: {
             type: String
+        },
+        cipherKey: {
+            type: String,
+            value: null
         }
     },
-
+    observers: [
+      '_checkValid(title.*)', '_checkValid(anonymous.*)','_checkValid(encrypted.*)', '_checkValid(cipherKey.*)'
+    ],
     behaviors: [StyleBehaviors.JStyles, InteractionBehaviors.JHandler, SelectionBehaviors.AutoId,
-        StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil
+        StyleBehaviors.jStyles, InteractionBehaviors.JEvents, UtilityBehaviors.JUtil, CryptoBehaviors.JEncrypt, CryptoBehaviors.JDecrypt
     ],
 
     ready: function() {
@@ -217,16 +224,33 @@ Polymer({
         var base = arr[0] + "//" + arr[2];
         var id = fab.name.replace("shareBtn", "");
 
-        shareInput.value = base + "/geoji/" + id;
+        shareInput.value = base + "/geoji%" + id;
         shareDialog.open();
     },
     closeShare: function() {
         var shareDialog = this.getElem(this.ctrls.shareDialog);
         shareDialog.close();
     },
-    decryptHandler: function() {
+    decryptHandler: function(e) {
         var cipherDialog = this.getElem(this.ctrls.cipherDialog);
-        cipherDialog.open();
+        var decryptBtn = this.getElem(this.ctrls.decryptBtn);
+
+        var fab;
+
+        if(e.target.name !== undefined && e.target.name.indexOf("_decryptBtn") !== -1){
+            fab = e.target; 
+        }else{
+            fab = e.target.parentNode;
+        }
+
+        var id = fab.name.replace("_decrypBtn", "");
+        id = id.replace("_decryptBtn", "");
+        //decryptBtn.name = "decrypt_" + id;
+        console.log(e);
+        console.log("the ID is: " + id);
+
+        this.loadEncrypted(id);
+        //cipherDialog.open();
     },
     exploreHandler: function(e) {
         var fab;
@@ -371,6 +395,204 @@ Polymer({
         if (data.profile !== null && data.profile !== undefined) {
             return data.profile.profileImg;
         }
+    },
+    loadEncrypted: function(id) {
+        var self = this;
+        var map = this.getElem(this.ctrls.map);
+        var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+        var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+        var target = this.getElem(this.ctrls.targetMarker);
+        var publicDB = this.getElem(this.ctrls.geojiPublic);
+        var publicAuth = this.getElem(this.ctrls.publicAuth);
+        var publicRef = publicAuth.ref;
+        var privateDB = this.getElem(this.ctrls.geojiPrivate);
+        var privateAuth = this.getElem(this.ctrls.privateAuth);
+        var privateRef = privateAuth.ref;
+
+        publicRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+            var obj = snapshot.val()
+            self.decryptedObj = {};
+            self.encryptedObj = obj;
+            cipherDialog.open();
+            //doLoad(obj);
+        });
+
+        privateRef.orderByChild("id").equalTo(id).on("child_added", function(snapshot) {
+            var obj = snapshot.val();
+            self.decryptedObj = {};
+            self.encryptedObj = obj;
+            cipherDialog.open();
+            //doLoad(obj);
+        });
+
+
+    },
+    decrypt_MainObj: function(i, cipher) {
+        var self = this;
+        this.geoji = this.decryptedObj;
+        var keys = Object.keys(self.encryptedObj);
+        var dKeys = Object.keys(self.decryptedObj);
+        var eKeys = Object.keys(self.encryptedObj);
+        var add = this.getElem(this.ctrls.add);
+        var save = this.getElem(this.ctrls.save);
+        var saveDialog = this.getElem(this.ctrls.saveDialog);
+        var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+        var decryptProgress = this.getElem(this.ctrls.decryptProgress);
+
+        this.decryptCallback = this.decrypt_MainObj;
+        decryptProgress.value = dKeys.length * 10;
+
+        if (this.decryptedObj === null && this.decryptedObj === undefined) {
+            this.decryptedObj = {};
+        }
+
+        var decryptComplete = function() {
+            if (add !== undefined && add !== null) {
+                if (!add.hidden) {
+                    add.hidden = true;
+                    save.hidden = false;
+                    saveSpinner.active = false;
+                    saveDialog.close();
+                } else {
+
+                }
+            }
+        }
+
+        if (eKeys.length === dKeys.length) {
+            var cipherDialog = this.getElem(this.ctrls.cipherDialog);
+
+            cipherDialog.close();
+            decryptProgress.value = 0;
+            decryptSpinner.active = false;
+            this.buildGeoji(this.decryptedObj);
+            this.cipherKey = "";
+
+            console.log("ALL DATA SHOULD BE DECRYPTED.");
+
+        } else {
+            switch (keys[i]) {
+                case "id":
+                    if (self.encryptedObj.id !== null && self.encryptedObj.id !== undefined) {
+                        self.decryptedObj.id = self.encryptedObj.id;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "profile":
+                    if (self.encryptedObj.profile !== null && self.encryptedObj.profile !== undefined) {
+                        self.decryptedObj.profile = self.encryptedObj.id;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "title":
+                    console.log("decrypt title");
+
+                    self.decryptMainKey(keys[i], self.encryptedObj.title, this.cipherKey, i);
+                    break;
+                case "date":
+                    if (self.encryptedObj.date !== null && self.encryptedObj.date !== undefined) {
+                        self.decryptedObj.date = self.encryptedObj.date;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "end":
+                    if (self.encryptedObj.end !== null && self.encryptedObj.end !== undefined) {
+                        self.decryptedObj.end = self.encryptedObj.end;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "startTime":
+                    if (self.encryptedObj.startTime !== null && self.encryptedObj.startTime !== undefined) {
+                        self.decryptedObj.startTime = self.encryptedObj.startTime;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "endTime":
+                    if (self.encryptedObj.endTime !== null && self.encryptedObj.endTime !== undefined) {
+                        self.decryptedObj.endTime = self.encryptedObj.endTime;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "private":
+
+                    if (self.encryptedObj.private !== null && self.encryptedObj.private !== undefined) {
+                        self.decryptedObj.private = self.encryptedObj.private;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "encrypted":
+                    console.log("decrypt encrypted");
+
+                    if (self.encryptedObj.encrypted !== null && self.encryptedObj.encrypted !== undefined) {
+                        self.decryptedObj.encrypted = true;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "emailList":
+                    console.log("decrypt email list");
+
+                    if (self.encryptedObj.emailList !== null && self.encryptedObj.emailList !== undefined) {
+                        self.decryptedObj.emailList = [];
+                        self.decryptArray(keys[i], self.encryptedObj.emailList, this.cipherKey, i, 0);
+                    }
+
+                    break;
+                case "target":
+
+                    if (self.encryptedObj.target !== null && self.encryptedObj.target !== undefined) {
+                        self.decryptedObj.target = self.encryptedObj.target;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                case "coverImg":
+
+                    if (self.encryptedObj.coverImg !== null && self.encryptedObj.coverImg !== undefined) {
+                        self.decryptedObj.coverImg = self.encryptedObj.coverImg;
+                        self.decrypt_MainObj(i + 1, this.cipherKey);
+                    }
+                    break;
+                default:
+                    console.log("decrypt default");
+                    console.log(self.encryptedObj);
+
+                    console.log(self.encryptedObj[keys[i]]);
+
+                    if (typeof self.encryptedObj[keys[i]] === "object") {
+                        console.log("decrypting innerObj");
+                        self.decryptedObj[keys[i]] = {};
+                        self.decryptInnerObj(keys[i], self.encryptedObj[keys[i]], this.cipherKey, i, 0);
+                    }
+
+                    break;
+            }
+        }
+
+    },
+    _decryptGeoji: function() {
+        var cipher = this.getElem(this.ctrls.decryptInput).value;
+        var decryptSpinner = this.getElem(this.ctrls.decryptSpinner);
+
+        decryptSpinner.active = true;
+
+        this.skipKeys = ["id", "type", "date", "target", "profile"];
+
+        console.log("Begin Decrrypt...");
+
+        this.decrypt_MainObj(0, this.cipherKey);
+    },
+    buildGeoji: function(obj) {
+        if (obj !== null) {
+            
+            console.log("building Geoji...");
+            console.log(obj);
+
+        } else {
+            console.log("cannot load geoji with id: " + obj.id);
+        }
+    },
+    toggleDecryptDialog: function() {
+        var e = this.getElem(this.ctrls.cipherDialog);
+        e.toggle();
     },
     _locationChange: function() {
         var self = this;

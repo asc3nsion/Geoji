@@ -12,7 +12,16 @@ paper-card.collection {
     border-radius: 35px;
 }
 
+paper-button.j-social-button {
+      background: #45ada8;
+}
+
 paper-dialog.geo-profile-img {
+    background-color: #fadd60;
+    border-radius: 35px;
+}
+
+paper-dialog.geoji-editor {
     background-color: #fadd60;
     border-radius: 35px;
 }
@@ -39,7 +48,7 @@ paper-card.geoji-editor {
     border-radius: 28px;
 }
 paper-button.theme {
-  background: #f50057;
+  background: #45ada8;
 }
 
 paper-button.theme:hover {
