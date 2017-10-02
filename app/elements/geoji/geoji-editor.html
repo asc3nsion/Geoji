@@ -236,6 +236,22 @@ paper-fab.fail{
     --paper-fab-background : red;
 }
 
+#createCipherIcon .paper-icon-button{
+    color: #c5cae9;
+}
+
+#copyCipherIcon .paper-icon-button{
+    color: #c5cae9;
+}
+
+#showCipherIcon .paper-icon-button{
+    color: #c5cae9;
+}
+
+#addEmailIcon .paper-icon-button{
+    color: #c5cae9;
+}
+
 p.invalidError{
     zoom: 0.7;
     -moz-transform: scale(0.7);
@@ -289,7 +305,7 @@ p.invalidError{
                             <input id="{{labeledCtrl('emailInput')}}" autocomplete="on" type="email" is="iron-input" type="email" autocomplete="on" bind-value="">
                             <span class="space"></span>
                             <paper-input-error><p class="invalidError margin-top30px">Enter a valid email!</p></paper-input-error>
-                            <paper-icon-button suffix icon="add" on-tap="addEmail"></paper-icon-button>
+                            <paper-icon-button suffix icon="add" on-tap="addEmail" id="addEmailIcon"></paper-icon-button>
                         </paper-input-container>
                     </div>
                     <div id="{{assignCtrl('containerEncrypt')}}" class="editor margin-top80px">
@@ -298,12 +314,12 @@ p.invalidError{
                         <paper-toggle-button id="{{assignCtrl('encrypt')}}" checked="{{encrypted}}" class="inlineBlock">Encrypt</paper-toggle-button>
                         <paper-input-container id="{{assignCtrl('cipher')}}" class="createMarkerData" bind-value="{{emailValue}}" hidden="true">
                             <label id="{{assignLabel('cipherInput')}}" for="cipherInput">Enter Cipher</label>
-                            <input id="{{labeledCtrl('cipherInput')}}" type="text" is="iron-input" bind-value="{{cipherKey}}" class="z300">
-                            <input id="cipherHidden" is="iron-input" type="text" bind-value="{{cipherKey}}" hidden="true">
+                            <input id="{{labeledCtrl('cipherInput')}}" type="password" is="iron-input" bind-value="{{cipherKey}}" class="z300">
                             <span class="space"></span>
                             <paper-input-error><p class="invalidError">8 characters, 1 number, 1 symbol</p></paper-input-error>
-                            <paper-icon-button suffix icon="autorenew" on-tap="createcipher"></paper-icon-button>
-                            <paper-icon-button id="{{assignCtrl('cipherCopy')}}" suffix icon="content-copy" on-tap="copycipher" class="cut" data-clipboard-action="copy" data-clipboard-target="#cipherHidden" hidden="true"></paper-icon-button>
+                            <paper-icon-button suffix icon="autorenew" on-tap="createcipher" id="createCipherIcon"></paper-icon-button>
+                            <paper-icon-button id="copyCipherIcon" suffix icon="content-copy" on-tap="copycipher"></paper-icon-button>
+                            <paper-icon-button id="showCipherIcon" suffix icon="icons:visibility" on-tap="toggleciphervisible"></paper-icon-button>
                         </paper-input-container>
                     </div>
                     <paper-card id="{{assignCtrl('list')}}" class="emailList">{{emailString}}</paper-card>
@@ -653,7 +669,6 @@ Polymer({
         var encrypt = this.getElem(this.ctrls.encrypt);
         var cipher = this.getElem(this.ctrls.cipher);
         var cipherInput = this.getElem(this.ctrls.cipherInput);
-        var cipherCopy = this.getElem(this.ctrls.cipherCopy);
         var imgDialog = this.getElem(this.ctrls.imgDialog);
         var imgProcess = this.getElem(this.ctrls.imgProcess);
         var imgIcon = this.getElem(this.ctrls.imgIcon);
@@ -686,6 +701,7 @@ Polymer({
         var hours = sysDate.getHours();
         var minutes = sysDate.getMinutes();
         var timeOfDay = " AM";
+
 
         if (hours > 12) {
             hours = hours - 12;
@@ -736,8 +752,6 @@ Polymer({
             }
 
         };
-
-        this.clipboard = new Clipboard(cipherCopy);
 
         var inlines = [containerPrivate, containerEncrypt];
         var containers = [containerPrivate, containerEncrypt];
@@ -1718,15 +1732,32 @@ Polymer({
     },
     copycipher: function() {
         var cipherInput = this.getElem(this.ctrls.cipherInput);
-        var cipherCopy = this.getElem(this.ctrls.cipherCopy);
-        var hidden = document.querySelector("#cipherHidden");
-        var cipher = cipherInput.value;
-        hidden.value = cipher;
+        cipherInput['type'] = 'text';
+        cipherInput.select();
 
-        cipherCopy["data-clipboard-text"] = cipher;
-        //console.log(this.clipboard);
+        try {
+            var successful = document.execCommand('copy');
+            var msg = successful ? 'successful' : 'unsuccessful';
+            console.log('Copying text command was ' + msg);
+            cipherInput['type'] = 'password';
+          } catch (err) {
+            console.log('Oops, unable to copy');
+          }
 
-        //window.prompt("Copy to clipboard: Ctrl+C, Enter", cipherInput.value);
+    },
+    toggleciphervisible: function() {
+        var cipherInput = this.getElem(this.ctrls.cipherInput);
+
+        if(cipherInput['type'] == 'password')
+        {
+            cipherInput['type'] = 'text'
+        }
+        else if(cipherInput['type'] == 'text')
+        {
+            cipherInput['type'] = 'password'
+        }
+        
+
     },
     encrypt_MainKey: function(key, data, cipher, i) {
         var self = this;
@@ -1871,13 +1902,15 @@ Polymer({
         var saveSpinner = this.getElem(this.ctrls.saveSpinner);
         var encryptProgress = this.getElem(this.ctrls.encryptProgress);
         var mineFeed = this.getElem("mineFeed");
+        var input = this.getElem(this.ctrls.cipherInput);
         var cipher = this.getElem(this.ctrls.cipherInput).value;
 
         encryptProgress.value = eKeys.length * 10;
 
         var encryptComplete = function() {
+
             this.cipherKey = "";
-            this.getElem(this.ctrls.cipherInput).value = "";
+            input.value = "";
             if (add !== undefined && add !== null) {
                 if (!add.hidden) {
                     encryptProgress.value = 0;
@@ -2259,7 +2292,6 @@ Polymer({
             this.getElem(this.ctrls.cipher).hidden = !pToggle.checked;
             if (this.getElem(this.ctrls.cipher).hidden === false) {
                 cipherInput.focus();
-                cipherInput.value = "undefined";
                 cipherInput.blur();
             }
         }
